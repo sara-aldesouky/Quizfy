@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}My Quizzes{% endblock %}
+{% block content %}
+<div class="row">
+    <h1>My Quizzes</h1>
+    <a class="btn" href="{% url 'create_quiz' %}">+ Create Quiz</a>
+</div>
+{% if not quizzes %}
+<p>No Quizzes yet.</p>
+{% endif %}
+
+{% for q in quizzes %}
+<div class="card">
+    <h3>{{q.title}}</h3>
+    <p><b>Code:</b>{{q.code}}</p>
+    <p><b>Questions:</b>{{q.questions.count}} |
+        <b>Submission:</b> {{q.submission.count}}
+    </p>
+    <div class="actions">
+        <a class="btn secondary" href="{% url 'create_questions' q.id %}">Add Question</a>
+        <a class="btn secondary" href="{% url 'quiz_submissions' q.id %}">View Submissions</a>
+        <a class="btn danger" href="{% url 'delete_quiz' q.id %}">Delete</a>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

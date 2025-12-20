@@ -1,0 +1,10 @@
+{% extends "base.html"%}
+{% block title %} Enter Quiz{% endblock %}
+{% block content %}
+<h1>Enter Quiz</h1>
+<form method="post" class="card">
+    {% csrf_token %}
+    {{form.as_p}}
+    <button class="btn" type="submit">Start</button>
+</form>
+{% endblock %}

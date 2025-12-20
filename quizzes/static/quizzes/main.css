@@ -1,0 +1,276 @@
+/* ======================================================
+   RESET + BASE
+   ====================================================== */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: #0b1220;
+  color: #e8eefc;
+  line-height: 1.6;
+}
+
+a {
+  color: #cfe1ff;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+.container {
+  width: min(960px, 92%);
+  margin: 0 auto;
+  padding: 20px 0;
+}
+
+/* ======================================================
+   TOP BAR
+   ====================================================== */
+.topbar {
+  background: #121a2b;
+  border-bottom: 1px solid #26324a;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.topbar .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+nav a {
+  margin-left: 16px;
+  opacity: 0.9;
+}
+nav a:hover {
+  opacity: 1;
+}
+
+/* ======================================================
+   TYPOGRAPHY
+   ====================================================== */
+h1 {
+  font-size: 28px;
+  margin: 14px 0;
+}
+
+h2 {
+  font-size: 20px;
+  margin: 18px 0 10px;
+}
+
+h3 {
+  margin: 0 0 6px;
+}
+
+/* ======================================================
+   CARDS & LAYOUT
+   ====================================================== */
+.card {
+  background: #121a2b;
+  border: 1px solid #26324a;
+  border-radius: 16px;
+  padding: 16px;
+  margin: 14px 0;
+  box-shadow: 0 12px 28px rgba(0,0,0,.35);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+/* ======================================================
+   BUTTONS
+   ====================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: #2b6bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  transition: transform .08s ease, box-shadow .2s ease, opacity .2s;
+}
+
+.btn:hover {
+  box-shadow: 0 10px 24px rgba(43,107,255,.35);
+  opacity: .95;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn.secondary {
+  background: #1c2740;
+}
+
+.btn.danger {
+  background: #ff3a3a;
+}
+
+/* ======================================================
+   DJANGO MESSAGES
+   ====================================================== */
+.messages {
+  margin-top: 12px;
+}
+
+.msg {
+  padding: 10px 12px;
+  border-radius: 12px;
+  margin: 8px 0;
+  background: #1b2440;
+  border: 1px solid #2a355a;
+  font-weight: 600;
+}
+
+.msg.error {
+  background: #3a1720;
+  border-color: rgba(255,58,58,.7);
+}
+
+.msg.success {
+  background: #133524;
+  border-color: rgba(77,255,136,.6);
+}
+
+/* ======================================================
+   FORMS (THIS FIXES UGLY DJANGO FORMS)
+   ====================================================== */
+form.card p {
+  margin-bottom: 14px;
+}
+
+label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #dfe8ff;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #26324a;
+  background: #0b1220;
+  color: #e8eefc;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: #2b6bff;
+  box-shadow: 0 0 0 4px rgba(43,107,255,.25);
+}
+
+.helptext {
+  display: block;
+  font-size: 13px;
+  opacity: .8;
+  margin-top: 6px;
+}
+
+.errorlist {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+  color: #ffb4b4;
+  font-weight: 700;
+}
+
+/* ======================================================
+   QUIZ UI
+   ====================================================== */
+.qbox {
+  padding: 10px 0;
+}
+
+.qtext {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.qimg {
+  max-width: 100%;
+  border-radius: 14px;
+  border: 1px solid #26324a;
+  margin: 10px 0;
+}
+
+/* Make quiz options clickable cards */
+.qbox label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #26324a;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  background: rgba(255,255,255,.02);
+}
+
+.qbox label:hover {
+  background: rgba(43,107,255,.08);
+}
+
+.qbox input[type="radio"] {
+  transform: scale(1.1);
+}
+
+/* ======================================================
+   RESULTS
+   ====================================================== */
+.ok {
+  color: #4dff88;
+  font-weight: 800;
+}
+
+.bad {
+  color: #ff7b7b;
+  font-weight: 800;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid #26324a;
+  margin: 16px 0;
+}

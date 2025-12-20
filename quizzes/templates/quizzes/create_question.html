@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Add Question{% endblock %}
+{% block content %}
+<h1>Add Question</h1>
+<p><b>Quiz:</b>{{quiz.title}} ({{quiz.code}})</p>
+<form method="post" enctype="multipart/form-data" class="card">
+    {% csrf_token %}
+    {{form.as_p}}
+    <button class="btn" type="submit">Add</button>
+</form>
+{% endblock %}

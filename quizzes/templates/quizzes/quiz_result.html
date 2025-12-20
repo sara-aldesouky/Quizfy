@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Result{% endblock %}
+{% block content %}
+<h1>Result</h1>
+<div class="card">
+    <p><b>Student:</b>{{submission.student_name}}</p>
+    <p><b>Quiz:</b>{{quiz.title}}</p>
+    <p><b>Score:</b>{{submission.score}}/{{submission.total}}</p>
+</div>
+
+<h2>Review</h2>
+{% for a in answers %}
+<div class="qbox">
+    <div class="qtext"><b>Q{{forloop.counter}}.</b>{{a.question.text}}</div>
+    <p>
+        <b>Your answer:</b> {{a.selected|default:"(blank)"}}|
+        <b>Correct:</b>{{a.question.correct_option}}
+        {% if a.is_correct %}
+        <span class="ok">Correct</span>
+        {% else %}
+        <span class="bad">Wrong</span>
+        {% endif %}
+    </p>
+</div>
+{% endfor %}
+{% endblock %}

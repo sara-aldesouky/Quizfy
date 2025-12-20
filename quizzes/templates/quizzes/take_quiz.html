@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title%}Take Quiz{% endblock %}
+{% block content %}
+<h1>{{quiz.title}}</h1>
+<p><b>Code:</b> {{quiz.code}}</p>
+
+<form method="post" class="card">
+    {% csrf_token %}
+    {% if not student_name %}
+    <p><label>Your name:</label><br>
+    <input type="text" name="student_name" required></p>
+    {% else %}
+    <p><b>Student:</b>{{student_name}}</p>
+    {% endif %}
+    {% for q in questions %}
+    <div class="qbox">
+        <div class="qtext">
+            <b>Q{{ forloop.counter }}.</b>{{q.text}}
+        </div>
+        {% if q.image %}
+        <img class="qimg" src="{{q.image.url}}" alt="Question Image">
+        {% endif %}
+
+        <label>
+            <input type="radio" name="question_{{q.id}}" value="1">
+            {{q.option1}}
+        </label><br>
+        <label>
+            <input type="radio" name="question_{{q.id}}" value="2">
+            {{q.option2}}
+        </label><br>
+        <label>
+            <input type="radio" name="question_{{q.id}}" value="3">
+            {{q.option3}}
+        </label><br>
+        <label>
+            <input type="radio" name="question_{{q.id}}" value="4">
+            {{q.option4}}
+        </label><br>
+    </div>
+        {% endfor %}
+        <button class="btn" type="submit">Submit</button>
+
+</form>
+{% endblock %}

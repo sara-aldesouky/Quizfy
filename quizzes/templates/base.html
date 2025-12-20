@@ -1,0 +1,38 @@
+{% load static %}
+<!doctype html>
+<html>
+    <head>
+    
+    <link rel="stylesheet" href="{% static 'quizzes/main.css' %}">
+    <meta charset="utf-8"/>
+    <meta name='viewport' content="width=device-width,initial-scale=1"/>
+    <title>{% block title%}Quiz Platform{% endblock%}</title>
+    
+    </head>
+    <body>
+        <header class="topbar">
+            <div class="container">
+                <div class="brand">Quiz Platform</div>
+                <nav>
+                    <a href='/'>Student</a>
+                    <a href='/teacher/quizzes/'>Teacher</a>
+                    {% if user.is_authenticated%}
+                    <a href="/logout/">Logout</a>
+                    {% endif%}
+
+                </nav>
+            </div>
+        </header>
+        <main class="container">
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="msg {{message.tags}}"> {{message}}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </body>
+</html>

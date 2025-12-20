@@ -1,0 +1,18 @@
+{% extends "base.html"%}
+{% block title %}Submissions{% endblock %}
+{% block content %}
+<h1>Submissions</h1>
+<p><b>Quiz:</b> {{quiz.title}} ({{quiz.code}})</p>
+
+{% if not submissions %}
+<p>No submissions yet.</p>
+{% endif %}
+
+{% for s in submissions %}
+<div class="card">
+    <p><b>{{s.student_name}}</b></p>
+    <p>Score: {{s.score}}/{{s.total}}</p>
+    <p>Submitted: {{s.submitted_at}}</p>
+</div>
+{% endfor %}
+{% endblock %}
