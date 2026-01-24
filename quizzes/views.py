@@ -346,24 +346,40 @@ def allow_extra_attempt(request, quiz_id, student_id):
     messages.success(request, f"Extra attempt allowed for {student.username}.")
     return redirect("quiz_submissions", quiz_id=quiz.id)
 
-@student_required
+
 def quiz_result(request, quiz_code, submission_id):
-    quiz = get_object_or_404(Quiz, code=quiz_code.upper())
+    quiz = get_object_or_404(Quiz, code=quiz_code)
 
-    submission = get_object_or_404(
-        Submission,
-        id=submission_id,
-        quiz=quiz,
-        student_user=request.user,  
-    )
+    # ✅ scope submission to the quiz to avoid mismatches
+    submission = get_object_or_404(Submission, id=submission_id, quiz=quiz)
 
-    answers = submission.answers.select_related("question").all().order_by("question__id")
+    # ✅ safe student display
+    student_name = submission.student_name or ""
+    university_id = ""
+    section = ""
 
-    return render(request, "quizzes/quiz_result.html", {
+    if submission.student_user_id:
+        try:
+            u = submission.student_user
+            sp = getattr(u, "student_profile", None)
+            if sp:
+                student_name = f"{sp.first_name} {sp.second_name} {sp.third_name}".strip() or student_name
+                university_id = sp.university_id or ""
+                section = sp.section or ""
+            else:
+                # fallback to username if no profile
+                student_name = u.username or student_name
+        except User.DoesNotExist:
+            pass
+
+    context = {
         "quiz": quiz,
         "submission": submission,
-        "answers": answers
-    })
+        "student_name": student_name,
+        "university_id": university_id,
+        "section": section,
+    }
+    return render(request, "quizzes/quiz_result.html", context)
 
 @transaction.atomic
 def teacher_signup(request):

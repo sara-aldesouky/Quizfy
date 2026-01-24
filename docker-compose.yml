@@ -1,20 +1,21 @@
 services:
-  db:
-    image: postgres:16
-    environment:
-      POSTGRES_DB: quizdb
-      POSTGRES_USER: quizuser
-      POSTGRES_PASSWORD: quizpass
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+ db:
+  image: postgres:16
+  environment:
+    POSTGRES_DB: quizfy
+    POSTGRES_USER: quizfy
+    POSTGRES_PASSWORD: quizfy
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+    interval: 3s
+    timeout: 5s
+    retries: 20
 
-  web:
-    build: .
-    depends_on:
-      - db
-    env_file: .env
-    ports:
-      - "8000:8000"
+ web:
+  build: .
+  depends_on:
+    db:
+      condition: service_healthy
 
 volumes:
   pgdata:

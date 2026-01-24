@@ -4,46 +4,190 @@
 {% block title %}Result{% endblock %}
 
 {% block content %}
-<h1>Result</h1>
+<div class="result-wrap">
 
-<div class="card">
-    <p><b>Student:</b> {{ submission.student_name }}</p>
-    <p><b>Quiz:</b> {{ quiz.title }}</p>
-    <p><b>Score:</b> {{ submission.score }} / {{ submission.total }}</p>
-</div>
-
-<h2>Review</h2>
-
-{% for a in answers %}
-  <div class="qbox">
-    <div class="qtext">
-      <b>Q{{ forloop.counter }}.</b> {{ a.question.text }}
+  <!-- Header -->
+  <div class="result-header">
+    <div>
+      <h1 class="result-title">Quiz Result</h1>
+      <p class="result-sub">
+        <span class="muted">Student:</span> <b>{{ submission.student_name }}</b>
+        <span class="dot">•</span>
+        <span class="muted">Quiz:</span> <b>{{ quiz.title }}</b>
+      </p>
     </div>
 
-    <p>
-      <b>Your answer:</b> {{ a.question|option_text:a.selected }}
-      |
-      <b>Correct:</b> {{ a.question|option_text:a.question.correct_option }}
-
-      {% if a.is_correct %}
-        <span class="ok">Correct</span>
-      {% else %}
-        <span class="bad">Wrong</span>
-      {% endif %}
-    </p>
+    <div class="score-chip">
+      <div class="score-big">{{ submission.score }}</div>
+      <div class="score-small">/ {{ submission.total }}</div>
+    </div>
   </div>
-{% endfor %}
 
-<hr>
+  <!-- Summary cards -->
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="summary-label">Score</div>
+      <div class="summary-value">{{ submission.score }} / {{ submission.total }}</div>
+    </div>
 
-<div style="margin-top:20px; display:flex; gap:12px;">
-  <a href="{% url 'student_dashboard' %}" class="btn secondary">
-    ⬅ Back to Dashboard
-  </a>
+    <div class="summary-card">
+      <div class="summary-label">Percentage</div>
+      <div class="summary-value">
+        {% if submission.total %}
+          {{ submission.score|pct:submission.total }}
+        {% else %}
+          —
+        {% endif %}
+      </div>
+    </div>
 
-  <a href="{% url 'home' %}" class="btn">
-    ➕ Take Another Quiz
-  </a>
+    <div class="summary-card">
+      <div class="summary-label">Status</div>
+      <div class="summary-value">
+        {% if submission.total and submission.score >= submission.total|mul:0.5 %}
+          <span class="pill ok">Passed</span>
+        {% else %}
+          <span class="pill bad">Needs Work</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Review -->
+  <div class="review-head">
+    <h2>Review</h2>
+    <p class="muted">See what you answered vs the correct answer.</p>
+  </div>
+
+  <div class="review-list">
+    {% for a in answers %}
+      <div class="review-card {% if a.is_correct %}is-correct{% else %}is-wrong{% endif %}">
+        <div class="review-top">
+          <div class="qnum">Q{{ forloop.counter }}</div>
+          {% if a.is_correct %}
+            <span class="pill ok">Correct</span>
+          {% else %}
+            <span class="pill bad">Wrong</span>
+          {% endif %}
+        </div>
+
+        <div class="qtext">
+          {{ a.question.text }}
+        </div>
+
+        <div class="answer-grid">
+          <div class="answer-box">
+            <div class="answer-label">Your answer</div>
+            <div class="answer-value">
+              {{ a.question|option_text:a.selected|default:"—" }}
+            </div>
+          </div>
+
+          <div class="answer-box">
+            <div class="answer-label">Correct answer</div>
+            <div class="answer-value">
+              {{ a.question|option_text:a.question.correct_option }}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Actions -->
+  <div class="result-actions">
+    <a href="{% url 'student_dashboard' %}" class="btn secondary">
+      ⬅ Back to Dashboard
+    </a>
+    <a href="{% url 'home' %}" class="btn">
+      ➕ Take Another Quiz
+    </a>
+  </div>
+
 </div>
 
+<style>
+  .result-wrap{max-width:980px;margin:0 auto;padding:6px 4px;}
+  .muted{opacity:.75}
+  .dot{margin:0 10px;opacity:.35}
+
+  .result-header{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    gap:14px;margin:8px 0 14px;
+  }
+  .result-title{margin:0;font-size:28px;letter-spacing:-.3px}
+  .result-sub{margin:6px 0 0;font-size:14px}
+
+  .score-chip{
+    display:flex;align-items:baseline;gap:8px;
+    padding:12px 16px;border-radius:16px;
+    background:linear-gradient(135deg, rgba(37,99,235,.16), rgba(15,23,42,.16));
+    border:1px solid rgba(255,255,255,.10);
+    min-width:140px;justify-content:center;
+  }
+  .score-big{font-size:28px;font-weight:800}
+  .score-small{font-size:14px;opacity:.8}
+
+  .summary-grid{
+    display:grid;grid-template-columns:repeat(3, minmax(0,1fr));
+    gap:12px;margin:12px 0 18px;
+  }
+  .summary-card{
+    background:rgba(17,24,39,.55);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:16px;padding:14px;
+  }
+  .summary-label{font-size:12px;opacity:.75;margin-bottom:6px}
+  .summary-value{font-size:16px;font-weight:700}
+
+  .review-head{margin:18px 0 10px}
+  .review-head h2{margin:0 0 6px}
+  .review-list{display:flex;flex-direction:column;gap:12px}
+
+  .review-card{
+    border-radius:16px;padding:14px;
+    border:1px solid rgba(255,255,255,.08);
+    background:rgba(15,23,42,.70);
+  }
+  .review-card.is-correct{box-shadow:0 0 0 1px rgba(34,197,94,.18) inset}
+  .review-card.is-wrong{box-shadow:0 0 0 1px rgba(239,68,68,.18) inset}
+
+  .review-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .qnum{
+    font-weight:800;font-size:12px;letter-spacing:.6px;text-transform:uppercase;
+    opacity:.85;
+  }
+
+  .qtext{font-size:15px;line-height:1.45;margin-bottom:12px}
+
+  .answer-grid{
+    display:grid;grid-template-columns:repeat(2, minmax(0,1fr));
+    gap:10px;
+  }
+  .answer-box{
+    border-radius:14px;padding:12px;
+    background:rgba(17,24,39,.55);
+    border:1px solid rgba(255,255,255,.06);
+  }
+  .answer-label{font-size:12px;opacity:.75;margin-bottom:6px}
+  .answer-value{font-weight:700;font-size:14px;line-height:1.35}
+
+  .pill{
+    padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800;
+    border:1px solid rgba(255,255,255,.10);
+  }
+  .pill.ok{background:rgba(34,197,94,.14)}
+  .pill.bad{background:rgba(239,68,68,.14)}
+
+  .result-actions{
+    margin-top:18px;display:flex;gap:12px;flex-wrap:wrap;
+  }
+
+  @media (max-width: 850px){
+    .summary-grid{grid-template-columns:1fr}
+    .answer-grid{grid-template-columns:1fr}
+    .result-header{align-items:flex-start;flex-direction:column}
+    .score-chip{align-self:flex-start}
+  }
+</style>
 {% endblock %}
