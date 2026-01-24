@@ -7,3 +7,4 @@ psycopg2-binary
 
 Pillow
 openpyxl
+sendgrid==6.11.0
