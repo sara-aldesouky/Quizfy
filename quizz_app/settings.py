@@ -93,5 +93,20 @@ MEDIA_ROOT = BASE_DIR / "media"
 LOGIN_URL = "/student/login/"
 LOGIN_REDIRECT_URL = "/student/dashboard/"
 LOGOUT_REDIRECT_URL = "/student/login/"
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "django.request": {"handlers": ["console"], "level": "ERROR", "propagate": False},
+    },
+}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
