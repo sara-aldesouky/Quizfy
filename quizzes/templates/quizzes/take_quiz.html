@@ -10,6 +10,17 @@
   </div>
 {% endif %}
 
+<!-- ✅ Overlay shown if teacher stops quiz -->
+<div id="quizStoppedOverlay" class="quiz-stopped-overlay" style="display:none;">
+  <div class="quiz-stopped-card">
+    <h2 style="margin:0 0 8px;">Quiz Closed</h2>
+    <p style="margin:0 0 14px; opacity:.85;">
+      The teacher stopped this quiz. You can’t continue.
+    </p>
+    <a class="btn primary" href="{% url 'home' %}">Back Home</a>
+  </div>
+</div>
+
 <form id="quizForm" method="post">
   {% csrf_token %}
 
@@ -28,55 +39,123 @@
     </div>
   {% endfor %}
 
-  <button class="btn" type="submit">Submit Quiz</button>
+  <button id="submitBtn" class="btn" type="submit">Submit Quiz</button>
 </form>
 
-{% if remaining_seconds != None %}
-<script>
-  const formEl = document.getElementById("quizForm");
-  const timerEl = document.getElementById("timerText");
-  let remaining = Number("{{ remaining_seconds }}");
+<style>
+  /* Professional overlay */
+  .quiz-stopped-overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.72);
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+  }
+  .quiz-stopped-card{
+    width: min(520px, 92vw);
+    border-radius: 18px;
+    padding: 18px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(17,24,39,.92);
+    box-shadow: 0 18px 55px rgba(0,0,0,.50);
+  }
+</style>
 
-  function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(";").shift();
-    return null;
+<script>
+(function(){
+  const formEl = document.getElementById("quizForm");
+  const submitBtn = document.getElementById("submitBtn");
+  const overlay = document.getElementById("quizStoppedOverlay");
+
+  // ✅ Quiz status endpoint
+  const statusUrl = "{% url 'quiz_status' quiz.code %}";
+
+  // ✅ track if quiz is stopped
+  let stopped = false;
+
+  function lockUI(){
+    if (stopped) return;
+    stopped = true;
+
+    // Disable all inputs and submit
+    document.querySelectorAll("#quizForm input, #quizForm button, #quizForm select, #quizForm textarea")
+      .forEach(el => el.disabled = true);
+
+    overlay.style.display = "flex";
   }
 
-  function ensureCsrfInput() {
-    if (!formEl.querySelector('input[name="csrfmiddlewaretoken"]')) {
-      const csrf = getCookie("csrftoken");
-      if (csrf) {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = "csrfmiddlewaretoken";
-        input.value = csrf;
-        formEl.prepend(input);
+  async function checkStatus(){
+    try{
+      const res = await fetch(statusUrl, { cache: "no-store" });
+      const data = await res.json();
+      if (!data.active){
+        lockUI();
+      }
+    }catch(e){
+      // ignore temporary network errors
+    }
+  }
+
+  // check immediately + every 2 seconds
+  checkStatus();
+  setInterval(checkStatus, 1000);
+;
+
+  // -----------------------------
+  // ✅ Timer logic (your code)
+  // -----------------------------
+  {% if remaining_seconds != None %}
+    const timerEl = document.getElementById("timerText");
+    let remaining = Number("{{ remaining_seconds }}");
+
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(";").shift();
+      return null;
+    }
+
+    function ensureCsrfInput() {
+      if (!formEl.querySelector('input[name="csrfmiddlewaretoken"]')) {
+        const csrf = getCookie("csrftoken");
+        if (csrf) {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = "csrfmiddlewaretoken";
+          input.value = csrf;
+          formEl.prepend(input);
+        }
       }
     }
-  }
 
-  function fmt(sec){
-    const m = Math.floor(sec/60);
-    const s = sec % 60;
-    return `${m}:${String(s).padStart(2,"0")}`;
-  }
-
-  function tick(){
-    timerEl.textContent = fmt(remaining);
-
-    if (remaining <= 0) {
-      ensureCsrfInput();
-      formEl.submit();
-      return;
+    function fmt(sec){
+      const m = Math.floor(sec/60);
+      const s = sec % 60;
+      return `${m}:${String(s).padStart(2,"0")}`;
     }
 
-    remaining--;
-    setTimeout(tick, 1000);
-  }
+    function tick(){
+      // if teacher stopped quiz, don’t auto-submit
+      if (stopped) return;
 
-  tick();
+      timerEl.textContent = fmt(remaining);
+
+      if (remaining <= 0) {
+        ensureCsrfInput();
+        formEl.submit();
+        return;
+      }
+
+      remaining--;
+      setTimeout(tick, 1000);
+    }
+
+    tick();
+  {% endif %}
+})();
 </script>
-{% endif %}
+
 {% endblock %}

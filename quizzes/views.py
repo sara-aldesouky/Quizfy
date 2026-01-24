@@ -1347,3 +1347,6 @@ def export_student_folder_excel(request, folder_id, student_id):
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
     wb.save(response)
     return response
+def quiz_status(request, quiz_code):
+    quiz = get_object_or_404(Quiz, code=quiz_code)
+    return JsonResponse({"active": bool(quiz.is_active)})

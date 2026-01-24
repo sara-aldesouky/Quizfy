@@ -74,6 +74,8 @@ path(
     views.adjust_attempts,
     name="adjust_attempts",
 ),
+path("quiz/<str:quiz_code>/status/", views.quiz_status, name="quiz_status"),
+
 
 
 
