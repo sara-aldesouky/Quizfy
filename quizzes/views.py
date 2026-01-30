@@ -948,7 +948,7 @@ def export_submissions_excel(request, quiz_id):
     start_data_row = header_row + 1
 
     for s in submissions:
-        full_name, university_id, section = student_info(s)
+        full_name, university_id,
         score = int(s.score or 0)
         total = int(s.total or 0)
         pct = (score / total) if total else 0
