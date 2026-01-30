@@ -791,19 +791,20 @@ def _latest_per_student(subs_queryset):
 
 def _student_info(submission):
     """
-    Returns: full_name, university_id, section
+    Returns: (full_name, university_id)
     """
-    full_name = submission.student_name or ""
+    full_name = (submission.student_name or "").strip()
     university_id = ""
-   
 
-    if submission.student_user and hasattr(submission.student_user, "student_profile"):
-        sp = submission.student_user.student_profile
-        full_name = f"{sp.first_name} {sp.second_name} {sp.third_name}".strip()
-        university_id = sp.university_id or ""
-       
+    u = getattr(submission, "student_user", None)
+    sp = getattr(u, "student_profile", None) if u else None
 
-    return full_name, university_id, 
+    if sp:
+        full_name = " ".join(filter(None, [sp.first_name, sp.second_name, sp.third_name])).strip() or full_name
+        university_id = getattr(sp, "university_id", "") or ""
+
+    return full_name, university_id
+
 
 
 def _autosize(ws, max_width=45):
@@ -852,21 +853,8 @@ def export_submissions_excel(request, quiz_id):
     ws = wb.active
     ws.title = "Submissions"
 
-    # ---------------------------
-    # Helpers
-    # ---------------------------
-    def student_info(s):
-        full_name = s.student_name or ""
-        university_id = ""
-        
+        return full_name, university_id = _student_info(s)
 
-        if s.student_user and hasattr(s.student_user, "student_profile"):
-            sp = s.student_user.student_profile
-            full_name = f"{sp.first_name} {sp.second_name} {sp.third_name}".strip()
-            university_id = sp.university_id or ""
-           
-
-        return full_name, university_id, section
 
     def autosize(ws, max_width=45):
         for col in range(1, ws.max_column + 1):
@@ -948,7 +936,7 @@ def export_submissions_excel(request, quiz_id):
     start_data_row = header_row + 1
 
     for s in submissions:
-        full_name, university_id,
+        full_name, university_id = _student_info(s)
         score = int(s.score or 0)
         total = int(s.total or 0)
         pct = (score / total) if total else 0
@@ -1098,7 +1086,7 @@ def export_folder_boxes_excel(request, folder_id):
         start_data_row = row
 
         for s in latest:
-            full_name, university_id, 
+            full_name, university_id = _student_info(s)
             score = int(s.score or 0)
             total = int(s.total or 0)
             pct = (score / total) if total else 0
