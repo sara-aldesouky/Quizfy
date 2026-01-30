@@ -853,17 +853,11 @@ def export_submissions_excel(request, quiz_id):
     ws = wb.active
     ws.title = "Submissions"
 
-        return full_name, university_id = _student_info(s)
+      
 
 
-    def autosize(ws, max_width=45):
-        for col in range(1, ws.max_column + 1):
-            letter = get_column_letter(col)
-            max_len = 0
-            for cell in ws[letter]:
-                if cell.value is not None:
-                    max_len = max(max_len, len(str(cell.value)))
-            ws.column_dimensions[letter].width = min(max_len + 2, max_width)
+        
+
 
     # ---------------------------
     # Styles (MATCH Student Report)
@@ -885,7 +879,7 @@ def export_submissions_excel(request, quiz_id):
     # ---------------------------
     # Row 1: Big Title Bar
     # ---------------------------
-    ws.merge_cells("A1:G1")
+    ws.merge_cells("A1:F1")
     ws["A1"] = "Quiz Submissions Report"
     ws["A1"].font = title_font
     ws["A1"].alignment = center
@@ -895,7 +889,7 @@ def export_submissions_excel(request, quiz_id):
     # ---------------------------
     # Row 2: Subtitle Bar
     # ---------------------------
-    ws.merge_cells("A2:G2")
+   ws.merge_cells("A2:F2")
     ws["A2"] = (
         f"Quiz: {quiz.title}  |  Code: {quiz.code}  |  "
         f"Generated: {timezone.now().strftime('%Y-%m-%d %H:%M')}  |  Teacher: {request.user.username}"
@@ -955,14 +949,14 @@ def export_submissions_excel(request, quiz_id):
 
     # Borders + percentage format
     for r in range(start_data_row, end_row + 1):
-        ws.cell(row=r, column=6).number_format = "0.0%"
+        ws.cell(row=r, column=5).number_format = "0.0%"
         for c in range(1, len(headers) + 1):
             ws.cell(row=r, column=c).border = border
             ws.cell(row=r, column=c).alignment = left if c in (1,) else center
 
     # Excel Table style (filters + stripes)
     if end_row >= start_data_row:
-        ref = f"A{header_row}:G{end_row}"
+        ref = f"A{header_row}:F{end_row}"
         table = Table(displayName=f"QuizSubs{quiz.id}", ref=ref)
         table.tableStyleInfo = TableStyleInfo(
             name="TableStyleMedium9",
@@ -976,7 +970,8 @@ def export_submissions_excel(request, quiz_id):
     # Freeze under header
     ws.freeze_panes = f"A{start_data_row}"
 
-    autosize(ws, max_width=45)
+    _autosize(ws, max_width=45)
+
 
     filename = f"{quiz.code}_submissions_report.xlsx"
     response = HttpResponse(
@@ -1102,7 +1097,8 @@ def export_folder_boxes_excel(request, folder_id):
                 dc.border = border
                 dc.alignment = center if c >= 4 else left
 
-            ws.cell(row=row, column=6).number_format = "0.00%"
+            ws.cell(row=row, column=5).number_format = "0.00%"
+
             row += 1
 
         end_row = row - 1
