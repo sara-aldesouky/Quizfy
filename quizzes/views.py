@@ -795,13 +795,13 @@ def _student_info(submission):
     """
     full_name = submission.student_name or ""
     university_id = ""
-    section = ""
+   
 
     if submission.student_user and hasattr(submission.student_user, "student_profile"):
         sp = submission.student_user.student_profile
         full_name = f"{sp.first_name} {sp.second_name} {sp.third_name}".strip()
         university_id = sp.university_id or ""
-        section = sp.section or ""
+       
 
     return full_name, university_id, section
 
@@ -858,13 +858,13 @@ def export_submissions_excel(request, quiz_id):
     def student_info(s):
         full_name = s.student_name or ""
         university_id = ""
-        section = ""
+        
 
         if s.student_user and hasattr(s.student_user, "student_profile"):
             sp = s.student_user.student_profile
             full_name = f"{sp.first_name} {sp.second_name} {sp.third_name}".strip()
             university_id = sp.university_id or ""
-            section = sp.section or ""
+           
 
         return full_name, university_id, section
 
@@ -926,7 +926,6 @@ def export_submissions_excel(request, quiz_id):
     headers = [
         "Student Full Name",
         "University ID",
-        "Section",
         "Score",
         "Total",
         "Percentage",
@@ -958,7 +957,6 @@ def export_submissions_excel(request, quiz_id):
         ws.append([
             full_name,
             university_id,
-            section,
             score,
             total,
             pct,
@@ -1067,7 +1065,7 @@ def export_folder_boxes_excel(request, folder_id):
         q_headers = [f"Q{i}" for i in range(1, len(questions) + 1)]
 
         headers = [
-            "Student Full Name", "University ID", "Section",
+            "Student Full Name", "University ID", 
             "Score", "Total", "Percentage"
         ] + q_headers
 
@@ -1249,7 +1247,6 @@ def export_student_folder_excel(request, folder_id, student_id):
     info_rows = [
         ("Student Full Name", f"{sp.first_name} {sp.second_name} {sp.third_name}".strip() if sp else student.username),
         ("University ID", sp.university_id if sp else ""),
-        ("Section", sp.section if sp else ""),
         ("City", sp.city if sp else ""),
         ("Major", sp.get_major_display() if sp else ""),
     ]

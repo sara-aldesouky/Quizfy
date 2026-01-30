@@ -79,16 +79,7 @@
         {% if form.university_id.errors %}
           <div class="field-error">{{ form.university_id.errors }}</div>
         {% endif %}
-      </div>
-
-      <div class="field half {% if form.section.errors %}input-error{% endif %}">
-        <label>Section</label>
-        {{ form.section }}
-        {% if form.section.errors %}
-          <div class="field-error">{{ form.section.errors }}</div>
-        {% endif %}
-      </div>
-
+      </div>     
       <div class="field half {% if form.city.errors %}input-error{% endif %}">
         <label>City</label>
         {{ form.city }}
