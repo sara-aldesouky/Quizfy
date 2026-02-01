@@ -9,7 +9,6 @@
   <form method="post" autocomplete="off" novalidate>
     {% csrf_token %}
 
-    {# ✅ authentication error goes here (wrong username/password) #}
     {% if form.non_field_errors %}
       <div class="msg error">
         {{ form.non_field_errors }}
@@ -21,7 +20,7 @@
       <div class="section-title">Login</div>
 
       <div class="field half">
-        <label>Email or Username</label>
+        <label>University ID</label>
         {{ form.username }}
         {% if form.username.errors %}
           <div class="msg error">{{ form.username.errors }}</div>
@@ -48,9 +47,9 @@
   Don’t have an account?
   <a href="{% url 'student_signup' %}">Sign up</a>
 </p>
+
 <p style="margin-top:12px;">
   <a href="{% url 'password_reset' %}">Forgot password?</a>
 </p>
-
 
 {% endblock %}

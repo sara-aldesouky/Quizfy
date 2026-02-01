@@ -87,14 +87,12 @@ def slugify_simple(value: str) -> str:
     value = re.sub(r"[^a-z0-9]", "", value)
     return value
 
-
 class StudentSignupForm(UserCreationForm):
     first_name = forms.CharField(max_length=60)
     second_name = forms.CharField(max_length=60)
     third_name = forms.CharField(max_length=60)
 
     university_id = forms.CharField(max_length=30)
-    section = forms.CharField(max_length=20)
 
     city = forms.ChoiceField(choices=StudentProfile.CITY_CHOICES)
     major = forms.ChoiceField(choices=StudentProfile.MAJOR_CHOICES)
@@ -108,7 +106,6 @@ class StudentSignupForm(UserCreationForm):
             "second_name",
             "third_name",
             "university_id",
-            "section",
             "city",
             "major",
             "email",
@@ -137,7 +134,6 @@ class StudentSignupForm(UserCreationForm):
         return username
 
     def save(self, commit=True):
-        # UserCreationForm handles password hashing/validation.
         user = super().save(commit=False)
 
         first = self.cleaned_data["first_name"]
@@ -157,7 +153,6 @@ class StudentSignupForm(UserCreationForm):
             user.save()
 
         return user
-
 
 class FolderForm(forms.ModelForm):
     class Meta:

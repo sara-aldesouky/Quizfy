@@ -109,49 +109,35 @@ class Answer(models.Model):
     selected = models.IntegerField(null=True, blank=True)
     is_correct = models.BooleanField(default=False)
 
-    class Meta:
-        unique_together = ("submission", "question")
-
-
 class StudentProfile(models.Model):
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
-        related_name="student_profile"
-    )
-
     CITY_CHOICES = [
         ("Riyadh", "Riyadh"),
         ("Jeddah", "Jeddah"),
         ("Dammam", "Dammam"),
-        ("Al-Ahsa","Al-Ahsa"),
-        ("Medina", "Medina"),
-        ("Hail", "Hail")
+        ("Al-Ahsa", "Al-Ahsa"),
     ]
 
     MAJOR_CHOICES = [
         ("CS", "Computer Science"),
         ("IT", "Information Technology"),
         ("BUS", "Business"),
-        ("LS", "Language Studies")
+        ("LS", "Language Studies"),
     ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="student_profile")
 
     first_name = models.CharField(max_length=60)
     second_name = models.CharField(max_length=60)
     third_name = models.CharField(max_length=60)
 
-    university_id = models.CharField(
-        max_length=30,
-        unique=True,
-        validators=[numeric_only]
-    )
+    university_id = models.CharField(max_length=30, unique=True)
 
-    city = models.CharField(max_length=20, choices=CITY_CHOICES)
-    section = models.CharField(max_length=20, validators=[numeric_only])
-    major = models.CharField(max_length=10, choices=MAJOR_CHOICES)
+    city = models.CharField(max_length=30, choices=CITY_CHOICES)
+    major = models.CharField(max_length=30, choices=MAJOR_CHOICES)
 
     def __str__(self):
-        return f"{self.first_name} {self.second_name} ({self.university_id})"
+        return f"{self.first_name} {self.second_name} {self.third_name}".strip()
+
 
 class SubjectFolder(models.Model):
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name="folders")

@@ -571,7 +571,6 @@ def teacher_logout(request):
     logout(request)
     return redirect('teacher_login')
 
-
 @transaction.atomic
 def student_signup(request):
     if request.user.is_authenticated:
@@ -581,10 +580,8 @@ def student_signup(request):
 
     if request.method == "POST":
         if form.is_valid():
-            # ✅ let UserCreationForm handle password hashing
-            user = form.save()  # commit=True by default
+            user = form.save()
 
-            # ✅ create profile ONLY here
             StudentProfile.objects.create(
                 user=user,
                 first_name=form.cleaned_data["first_name"],
@@ -592,7 +589,6 @@ def student_signup(request):
                 third_name=form.cleaned_data["third_name"],
                 university_id=form.cleaned_data["university_id"],
                 city=form.cleaned_data["city"],
-                section=form.cleaned_data["section"],
                 major=form.cleaned_data["major"],
             )
 
@@ -615,7 +611,7 @@ def student_login(request):
         if form.is_valid():
             user = form.get_user()
 
-            # Optional: keep teacher accounts out of student login
+            # ✅ Keep teacher accounts out of student login
             if user.is_staff:
                 messages.error(request, "This login is for students only.")
                 return render(request, "quizzes/student_login.html", {"form": form})
@@ -623,7 +619,7 @@ def student_login(request):
             login(request, user)
             return redirect("student_dashboard")
 
-        messages.error(request, "Invalid username/email or password.")
+        messages.error(request, "Invalid University ID or password.")
 
     return render(request, "quizzes/student_login.html", {"form": form})
 
