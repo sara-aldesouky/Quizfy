@@ -117,6 +117,10 @@ EMAIL_HOST_USER = "quizfyplatform@gmail.com"
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
 EMAIL_TIMEOUT = 10
 
+# Debug: Use console backend if EMAIL_HOST_PASSWORD is not set
+if not EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
 # If you want password reset links to point to your Render domain
 # (helps when generating absolute URLs in emails)
 SITE_URL = os.environ.get("SITE_URL", "http://127.0.0.1:8000")
