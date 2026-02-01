@@ -22,7 +22,7 @@
   <h2>Enter Quiz Code</h2>
   <form method="post" style="display: flex; gap: 12px; margin-top: 16px;">
     {% csrf_token %}
-    <input type="text" name="quiz_code" placeholder="Enter quiz code..." style="flex: 1; padding: 10px 14px; border: 1px solid rgba(255,255,255,.1); border-radius: 10px; background: rgba(0,0,0,.2); color: rgba(255,255,255,.9);">
+    <input type="text" name="quiz_code" placeholder="Enter quiz code..." class="quiz-code-input" style="flex: 1;">
     <button class="btn primary" type="submit">Start Quiz</button>
   </form>
 </div>

@@ -15,26 +15,25 @@
 <body>
 <header class="topbar">
     <div class="container">
-    <div class="brand"><a href="{% url 'home' %}" style="color: inherit; text-decoration: none;">Quizfy</a></div>
+    <div class="brand"><a href="{% url 'landing' %}" style="color: inherit; text-decoration: none;">Quizfy</a></div>
 
     <nav class="navbar">
         <div class="nav-left">
-          <a href="{% url 'home' %}" class="logo">Quizfy</a>
+          <button class="hamburger" onclick="toggleMenu()" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+          <a href="{% url 'landing' %}" class="logo">Quizfy</a>
         </div>
       
-        <div class="nav-right">
+        <div class="nav-right" id="mobile-nav">
           {% if user.is_authenticated %}
       
             {% if user.is_staff %}
               <!-- TEACHER NAV -->
-              <a href="{% url 'home' %}" class="nav-link">Home</a>
               <a href="{% url 'teacher_quizzes' %}" class="nav-link">My Quizzes</a>
               <a href="{% url 'change_password' %}" class="nav-link">Change Password</a>
               <a href="{% url 'app_logout' %}" class="btn danger small">Logout</a>
       
             {% else %}
-              <!-- STUDENT NAV -->
-              <a href="{% url 'home' %}" class="nav-link">Home</a>
+              <!-- STUDENT NAV (compact: keep Dashboard, remove duplicate Home) -->
               <a href="{% url 'student_dashboard' %}" class="nav-link">Dashboard</a>
               <a href="{% url 'change_password' %}" class="nav-link">Change Password</a>
               <a href="{% url 'app_logout' %}" class="btn danger small">Logout</a>
@@ -79,6 +78,33 @@ function toggleTheme() {
     document.querySelector('.theme-toggle').textContent = '☀️';
   }
 }
+</script>
+<script>
+// Mobile menu toggle and entrance animations
+function toggleMenu(){
+  const nav = document.getElementById('mobile-nav');
+  const btn = document.querySelector('.hamburger');
+  if(!nav) return;
+  const isOpen = nav.classList.toggle('open');
+  btn.setAttribute('aria-expanded', isOpen);
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  // staggered entrance for cards
+  document.querySelectorAll('.card').forEach(function(el, idx){
+    setTimeout(function(){ el.classList.add('animate-in'); }, idx * 70);
+  });
+
+  // close mobile menu on resize to larger screens
+  window.addEventListener('resize', function(){
+    if(window.innerWidth > 600){
+      const nav = document.getElementById('mobile-nav');
+      if(nav) nav.classList.remove('open');
+      const btn = document.querySelector('.hamburger');
+      if(btn) btn.setAttribute('aria-expanded', 'false');
+    }
+  });
+});
 </script>
 </body>
 </html>

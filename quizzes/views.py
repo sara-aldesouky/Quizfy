@@ -36,6 +36,13 @@ def home(request):
         return redirect("student_dashboard")
     return render(request, "quizzes/landing.html")
 
+
+def landing(request):
+    """Render the public landing page without redirecting authenticated users.
+    This lets the logo/home link always go to the marketing landing page.
+    """
+    return render(request, "quizzes/landing.html")
+
 def student_required(view_func):
     return user_passes_test(
         lambda u: u.is_authenticated and not u.is_staff and hasattr(u, "student_profile"),

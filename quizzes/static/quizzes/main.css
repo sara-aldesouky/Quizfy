@@ -152,6 +152,20 @@ nav a:hover{
   margin-left: 8px;
 }
 
+/* Hamburger for mobile */
+.hamburger{
+  display: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.hamburger:focus{ outline: 3px solid rgba(59,130,246,.18); }
+
 .theme-toggle:hover{
   background: rgba(255,255,255,.08);
   border-color: var(--primary);
@@ -255,6 +269,7 @@ p{ color: var(--muted); line-height: 1.55; }
   transition: transform .08s ease, filter .15s ease, background .15s ease, border-color .15s ease;
   max-width:100%;
 }
+.btn:focus{ outline: 3px solid rgba(59,130,246,.14); }
 .btn:hover{
   background: rgba(255,255,255,.10);
   border-color: rgba(255,255,255,.18);
@@ -264,6 +279,7 @@ p{ color: var(--muted); line-height: 1.55; }
 .btn.primary{
   border: 0;
   background: linear-gradient(180deg, var(--primary) 0%, var(--primary2) 100%);
+  box-shadow: 0 8px 30px rgba(37,99,235,.12);
 }
 .btn.primary:hover{ filter: brightness(1.06); }
 
@@ -319,7 +335,7 @@ input, select, textarea{
   border-radius: 14px;
   border: 1px solid rgba(255,255,255,.14);
   background: rgba(255,255,255,.06);
-  color: #fff;
+  color: var(--text);
   outline: none;
   transition: border-color .12s ease, box-shadow .12s ease, background .12s ease;
 }
@@ -329,6 +345,35 @@ input:focus, select:focus, textarea:focus{
   border-color: rgba(59,130,246,.78);
   box-shadow: 0 0 0 4px rgba(59,130,246,.20);
   background: rgba(255,255,255,.075);
+}
+
+/* Specific tweak for the dashboard quiz code input */
+.quiz-code-input{
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.03);
+  color: var(--text);
+}
+
+/* Entrance animation for cards and small elements */
+@keyframes fadeUp {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.card{ will-change: transform, opacity; }
+.card.animate-in{ animation: fadeUp 420ms cubic-bezier(.2,.9,.2,1) both; }
+
+/* Mobile nav hidden by default and transitions */
+@media (max-width: 600px){
+  .hamburger{ display: inline-flex; }
+  .nav-right{ display: none; position: absolute; top: 64px; right: 12px; }
+  .nav-right.open{
+    display:flex; flex-direction: column; gap: 10px; padding: 12px; min-width: 200px;
+    background: linear-gradient(180deg, var(--card1) 0%, var(--card0) 100%);
+    border-radius: 12px; border: 1px solid var(--border2); box-shadow: var(--shadow2);
+  }
+  nav a{ padding: 10px 12px; }
 }
 
 /* Radios/checkboxes: remove red and match theme */

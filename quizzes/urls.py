@@ -6,6 +6,7 @@ from django.urls import reverse_lazy
 
 urlpatterns = [
     path("", views.home, name="home"),
+    path("landing/", views.landing, name="landing"),
     path("teacher/help-bot/", views.teacher_help_bot, name="teacher_help_bot"),
 
     path("quiz/<str:quiz_code>/", views.take_quiz, name="take_quiz"),
