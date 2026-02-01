@@ -1,0 +1,137 @@
+SENDGRID SETUP - COMPLETE GUIDE
+================================
+
+STATUS: Code changes deployed to Render
+NEXT STEP: Get SendGrid API Key and configure Render
+
+WHY SENDGRID?
+=============
+• Gmail SMTP is blocked by Render's network
+• SendGrid is specifically designed for transactional emails
+• Free tier: 100 emails/day (more than enough)
+• Reliable delivery, excellent logging
+• Works perfectly with Render
+
+STEP 1: CREATE SENDGRID ACCOUNT
+================================
+
+1. Go to https://sendgrid.com
+2. Click "Start for Free"
+3. Sign up with your email
+4. Verify your email address
+5. Create account
+
+STEP 2: GET API KEY
+====================
+
+1. Log into your SendGrid account
+2. Go to Settings (left sidebar) → API Keys
+3. Click "Create API Key"
+4. Give it a name: "Quizfy"
+5. Click "Create & Edit"
+6. Copy the API Key (you'll only see it once!)
+   - It looks like: SG.xxxxxxxxxxxx_xxxxxxxxxxxxx
+7. Save it somewhere safe (Notepad, password manager, etc.)
+
+STEP 3: CONFIGURE RENDER
+=========================
+
+1. Go to https://dashboard.render.com
+2. Click your service "quizz-app-scml"
+3. Go to Settings → Environment Variables
+4. Click "+ Add Environment Variable"
+
+ADD TWO VARIABLES:
+
+Variable #1:
+  Name: SENDGRID_API_KEY
+  Value: (paste your API key from Step 2)
+  Click "Add"
+
+Variable #2:
+  Name: EMAIL_FROM_ADDRESS
+  Value: noreply@quizfy.com
+  Click "Add"
+
+5. Wait 5-10 minutes for Render to redeploy
+
+STEP 4: TEST PASSWORD RESET
+============================
+
+After Render redeploys:
+
+1. Go to https://quizz-app-scml.onrender.com/password-reset/
+2. Enter an email address
+3. Click "Send Password Reset Email"
+4. Wait 10 seconds
+5. Check your email inbox (and spam folder)
+6. You should receive reset email from: noreply@quizfy.com
+
+STEP 5: CHECK LOGS (If email doesn't arrive)
+=============================================
+
+1. Go to Render Dashboard → Logs
+2. Scroll down and look for "[SENDGRID]" messages
+3. Should see:
+   [SENDGRID] Attempting to send 1 message(s)
+   [SENDGRID] Subject: Password reset on Quizfy
+   [SENDGRID] From: noreply@quizfy.com
+   [SENDGRID] To: [recipient@email.com]
+   [SENDGRID] Successfully sent 1 message(s)
+
+If you see an error, it will be logged there.
+
+VERIFYING SENDER EMAIL (Optional but recommended)
+=================================================
+
+To verify that emails really come from your domain:
+
+1. Log into SendGrid
+2. Go to Settings → Sender Authentication
+3. Click "Verify a Single Sender"
+4. Add your sender email details
+5. Follow verification steps
+
+This is optional - emails work without it, but verification
+helps avoid spam folder.
+
+TROUBLESHOOTING
+===============
+
+"SENDGRID_API_KEY environment variable not found"
+→ Check you added it on Render Settings
+→ Make sure you waited for redeploy (watch Logs)
+→ If already added, try restarting the service
+
+"SendGrid API Error: 401 Unauthorized"
+→ The API key is wrong or invalid
+→ Delete and recreate a new API key on SendGrid
+→ Update it on Render
+→ Redeploy
+
+Email not arriving:
+→ Check spam folder first
+→ Check Render logs for SendGrid messages
+→ Verify recipient email address is correct
+→ Try sending to yourself to test
+
+IMPORTANT NOTES
+===============
+
+• SendGrid free tier = 100 emails/day
+  (Should be plenty for password resets)
+
+• Emails are sent immediately (no queue)
+
+• Delivery usually takes 1-10 seconds
+
+• All emails are logged in SendGrid dashboard
+  (Go to Activity → Live to see all sent emails)
+
+• No more Gmail 2-Step Verification issues
+
+• No more network blocking issues
+
+
+NEXT: Get SendGrid API key and follow Step 3
+All code is already deployed and waiting for this key!
