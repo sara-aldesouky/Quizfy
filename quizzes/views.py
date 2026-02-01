@@ -27,6 +27,8 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
+import qrcode
+from io import BytesIO
 
 
 def home(request):
@@ -42,6 +44,29 @@ def landing(request):
     This lets the logo/home link always go to the marketing landing page.
     """
     return render(request, "quizzes/landing.html")
+
+@staff_required
+def quiz_qr_code(request, quiz_id):
+    """Generate and serve a QR code image for a quiz."""
+    quiz = get_object_or_404(Quiz, id=quiz_id, teacher=request.user)
+    
+    try:
+        # Generate QR code pointing to quiz access page
+        qr_data = f"/quiz/{quiz.code}/"
+        qr = qrcode.QRCode(version=1, box_size=10, border=2)
+        qr.add_data(qr_data)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        
+        # Serve as PNG
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+        buffer.seek(0)
+        
+        return HttpResponse(buffer.getvalue(), content_type="image/png")
+    except Exception as e:
+        # Return a blank 1x1 pixel if generation fails
+        return HttpResponse(bytes.fromhex("89504e470d0a1a0a0000000d494844520000000100000001080202000090773db30000000c49444154785e6300010000050001000b0b80c30000000049454e44ae426082"), content_type="image/png")
 
 def student_required(view_func):
     return user_passes_test(

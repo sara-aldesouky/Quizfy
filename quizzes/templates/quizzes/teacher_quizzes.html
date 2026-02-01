@@ -22,7 +22,7 @@
           <b>Code:</b> <code style="background: rgba(255,255,255,.06); padding: 2px 6px; border-radius: 4px;">{{ q.code }}</code>
         </p>
       </div>
-      <button class="btn secondary" onclick="showQR('{{ q.code }}', '{{ q.get_qr_code_base64 }}')" title="View QR Code">
+      <button class="btn secondary" onclick="showQR('{{ q.code }}', '/quiz/{{ q.code }}/qr/')" title="View QR Code">
         📱 QR
       </button>
     </div>
@@ -52,9 +52,11 @@
 </div>
 
 <script>
-function showQR(code, qrBase64) {
-  document.getElementById('qrImage').src = qrBase64;
-  document.getElementById('qrCode').textContent = 'Code: ' + code;
+function showQR(code, qrUrl) {
+  const img = document.getElementById('qrImage');
+  img.src = qrUrl;
+  img.alt = `QR Code for ${code}`;
+  document.getElementById('qrCode').textContent = 'Quiz Code: ' + code;
   document.getElementById('qrModal').style.display = 'flex';
 }
 

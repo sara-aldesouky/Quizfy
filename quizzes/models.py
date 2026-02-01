@@ -52,17 +52,22 @@ class Quiz(models.Model):
         """Generate a QR code that points to the quiz link.
         Students must be logged in to access the quiz directly via code.
         """
-        # Use a proper quiz URL - students will be prompted to login if not authenticated
-        qr_data = f"/quiz/{self.code}/"
-        qr = qrcode.QRCode(version=1, box_size=10, border=2)
-        qr.add_data(qr_data)
-        qr.make(fit=True)
-        img = qr.make_image(fill_color="black", back_color="white")
-        buffer = BytesIO()
-        img.save(buffer, format="PNG")
-        buffer.seek(0)
-        img_base64 = base64.b64encode(buffer.read()).decode()
-        return f"data:image/png;base64,{img_base64}"
+        try:
+            # Use a proper quiz URL - students will be prompted to login if not authenticated
+            qr_data = f"/quiz/{self.code}/"
+            qr = qrcode.QRCode(version=1, box_size=10, border=2)
+            qr.add_data(qr_data)
+            qr.make(fit=True)
+            img = qr.make_image(fill_color="black", back_color="white")
+            buffer = BytesIO()
+            img.save(buffer, format="PNG")
+            buffer.seek(0)
+            img_base64 = base64.b64encode(buffer.read()).decode()
+            return f"data:image/png;base64,{img_base64}"
+        except Exception as e:
+            # Log error and return a placeholder
+            print(f"QR Code generation error for {self.code}: {e}")
+            return ""
 
     def save(self, *args, **kwargs):
         """Auto-generate a code if missing."""
