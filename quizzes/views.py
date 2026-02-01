@@ -29,7 +29,9 @@ from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 import qrcode
 from io import BytesIO
+import logging
 
+logger = logging.getLogger(__name__)
 
 def student_required(view_func):
     return user_passes_test(
@@ -60,15 +62,18 @@ def landing(request):
 
 def quiz_scan(request, quiz_code):
     """Handle QR code scan - redirect to quiz after checking if student is logged in."""
+    logger.info(f"quiz_scan called with quiz_code: {quiz_code}")
     quiz_code = quiz_code.upper()
     quiz = get_object_or_404(Quiz, code=quiz_code)
     
     # If student is logged in, take them directly to the quiz
     if request.user.is_authenticated and hasattr(request.user, "student_profile"):
+        logger.info("User is authenticated and has a student profile. Redirecting to quiz.")
         return redirect("take_quiz", quiz_code=quiz_code)
     
     # If not logged in, redirect to student login with next parameter
     next_url = f"/quiz/{quiz_code}/"
+    logger.info(f"User not authenticated. Redirecting to login with next: {next_url}")
     return redirect(f"/student/login/?next={next_url}")
 
 
