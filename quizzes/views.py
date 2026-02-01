@@ -67,16 +67,14 @@ def quiz_scan(request, quiz_code):
     quiz_code = quiz_code.upper()
     quiz = get_object_or_404(Quiz, code=quiz_code)
     
-    # If student is logged in, take them directly to the quiz
+    # If student is logged in and has student profile, take them directly to the quiz
     if request.user.is_authenticated and hasattr(request.user, "student_profile"):
         logger.info("User is authenticated and has a student profile. Redirecting to quiz.")
         return redirect("take_quiz", quiz_code=quiz_code)
     
-    # If not logged in, redirect to student login with the quiz URL as next
+    # If not logged in, redirect to student login
     logger.info("User not authenticated. Redirecting to login.")
-    from django.urls import reverse
-    quiz_url = reverse("take_quiz", kwargs={"quiz_code": quiz_code})
-    return redirect(f"{reverse('student_login')}?next={quiz_url}")
+    return redirect("student_login")
 
 
 @staff_required
@@ -260,11 +258,12 @@ def edit_quiz_settings(request, quiz_id):
 def take_quiz(request, quiz_code):
     # Check if user is authenticated and is a student
     if not request.user.is_authenticated:
-        return redirect(f"{reverse('student_login')}?next={reverse('take_quiz', kwargs={'quiz_code': quiz_code})}")
-    
-    if not hasattr(request.user, "student_profile"):
         messages.error(request, "You must be logged in as a student to take this quiz.")
         return redirect("student_login")
+    
+    if not hasattr(request.user, "student_profile"):
+        messages.error(request, "Only students can take quizzes.")
+        return redirect("student_dashboard")
     
     quiz = get_object_or_404(Quiz, code=quiz_code.upper())
 
