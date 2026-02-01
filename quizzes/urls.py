@@ -9,6 +9,7 @@ urlpatterns = [
     path("", views.home, name="home"),
     path("landing/", views.landing, name="landing"),
     path("teacher/help-bot/", views.teacher_help_bot, name="teacher_help_bot"),
+    path("email-diagnostic/", views.email_diagnostic, name="email_diagnostic"),
 
     # More specific quiz patterns first
     path("quiz/<str:quiz_code>/result/<int:submission_id>/", views.quiz_result, name="quiz_result"),

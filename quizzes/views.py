@@ -1440,3 +1440,53 @@ def change_password_done(request):
     Confirmation page after password change.
     """
     return render(request, "quizzes/change_password_done.html")
+
+
+# DIAGNOSTIC ENDPOINT - For troubleshooting email
+def email_diagnostic(request):
+    """
+    Display email configuration for debugging.
+    Only accessible if DEBUG=True (safe on production).
+    """
+    import os
+    from django.contrib.sites.models import Site
+    
+    if not settings.DEBUG:
+        return JsonResponse({"error": "Not available in production"}, status=403)
+    
+    pwd = settings.EMAIL_HOST_PASSWORD
+    
+    config = {
+        "EMAIL_BACKEND": settings.EMAIL_BACKEND,
+        "EMAIL_HOST": settings.EMAIL_HOST,
+        "EMAIL_PORT": settings.EMAIL_PORT,
+        "EMAIL_USE_TLS": settings.EMAIL_USE_TLS,
+        "EMAIL_HOST_USER": settings.EMAIL_HOST_USER,
+        "EMAIL_HOST_PASSWORD_SET": bool(pwd),
+        "EMAIL_HOST_PASSWORD_LENGTH": len(pwd) if pwd else 0,
+        "DEFAULT_FROM_EMAIL": settings.DEFAULT_FROM_EMAIL,
+        "SITE_ID": getattr(settings, 'SITE_ID', None),
+    }
+    
+    # Get site info
+    try:
+        sites = list(Site.objects.values('id', 'domain', 'name'))
+        config["SITES"] = sites
+    except:
+        config["SITES"] = "Error fetching sites"
+    
+    # Try to send test email
+    try:
+        from django.core.mail import send_mail
+        result = send_mail(
+            subject="Quizfy Email Test",
+            message="Test email from Quizfy diagnostics",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=["test@example.com"],
+            fail_silently=False,
+        )
+        config["TEST_EMAIL_RESULT"] = f"Success (returned {result})"
+    except Exception as e:
+        config["TEST_EMAIL_RESULT"] = f"Error: {type(e).__name__}: {str(e)}"
+    
+    return JsonResponse(config, indent=2)
