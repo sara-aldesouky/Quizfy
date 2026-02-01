@@ -71,10 +71,11 @@ def quiz_scan(request, quiz_code):
         logger.info("User is authenticated and has a student profile. Redirecting to quiz.")
         return redirect("take_quiz", quiz_code=quiz_code)
     
-    # If not logged in, redirect to student login
-    # The student_login view will redirect to student_dashboard after login
+    # If not logged in, redirect to student login with the quiz URL as next
     logger.info("User not authenticated. Redirecting to login.")
-    return redirect("student_login")
+    from django.urls import reverse
+    quiz_url = reverse("take_quiz", kwargs={"quiz_code": quiz_code})
+    return redirect(f"{reverse('student_login')}?next={quiz_url}")
 
 
 @staff_required
@@ -662,7 +663,7 @@ def student_login(request):
         return redirect("student_dashboard")
 
     form = StudentLoginForm(request, data=request.POST or None)
-    next_url = request.GET.get("next", "student_dashboard")
+    next_url = request.GET.get("next", None)
 
     if request.method == "POST":
         if form.is_valid():
@@ -674,7 +675,11 @@ def student_login(request):
                 return render(request, "quizzes/student_login.html", {"form": form})
 
             login(request, user)
-            return redirect(next_url)
+            
+            # Redirect to next URL if provided and safe, otherwise to dashboard
+            if next_url and next_url.startswith('/'):
+                return redirect(next_url)
+            return redirect("student_dashboard")
 
         messages.error(request, "Invalid University ID or password.")
 
