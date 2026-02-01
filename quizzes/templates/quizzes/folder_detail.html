@@ -35,7 +35,7 @@
         </div>
 
         <div class="actions" style="margin:0;">
-          {# ✅ THIS IS THE NEW BUTTON YOU WANT #}
+          <button class="btn secondary" onclick="showQR('{{ quiz.code }}', '/quiz/{{ quiz.code }}/qr/')" title="View QR Code" style="white-space: nowrap;">📱 QR</button>
           <a class="btn" href="{% url 'teacher_quiz_detail' quiz.id %}">Open</a>
 
           <a class="btn" href="{% url 'create_question' quiz.id %}">+ Add Q</a>
@@ -64,5 +64,34 @@
     </p>
   </div>
 {% endif %}
+
+<!-- QR Code Modal -->
+<div id="qrModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,.8); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: var(--card0); border-radius: 18px; padding: 24px; text-align: center; max-width: 400px; width: 100%;">
+    <h2 style="margin: 0 0 16px 0;">Quiz QR Code</h2>
+    <img id="qrImage" src="" alt="QR Code" style="max-width: 100%; border-radius: 10px; margin: 16px 0; border: 2px solid var(--border);">
+    <p id="qrCode" style="font-size: 14px; margin: 12px 0; word-break: break-all;"></p>
+    <button class="btn primary" onclick="closeQR()" style="width: 100%;">Close</button>
+  </div>
+</div>
+
+<script>
+function showQR(code, qrUrl) {
+  const img = document.getElementById('qrImage');
+  img.src = qrUrl;
+  img.alt = `QR Code for ${code}`;
+  document.getElementById('qrCode').textContent = 'Quiz Code: ' + code;
+  document.getElementById('qrModal').style.display = 'flex';
+}
+
+function closeQR() {
+  document.getElementById('qrModal').style.display = 'none';
+}
+
+// Close modal on background click
+document.getElementById('qrModal').addEventListener('click', function(e) {
+  if (e.target === this) closeQR();
+});
+</script>
 
 {% endblock %}
