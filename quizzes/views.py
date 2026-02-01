@@ -67,7 +67,10 @@ def quiz_scan(request, quiz_code):
         return redirect("take_quiz", quiz_code=quiz_code)
     
     # If not logged in, redirect to student login with next parameter
-    return redirect(f"/student/login/?next=/quiz/{quiz_code}/")
+    # Use the quiz take_quiz URL as the next destination
+    from django.urls import reverse
+    next_url = reverse("take_quiz", kwargs={"quiz_code": quiz_code})
+    return redirect(f"/student/login/?next={next_url}")
 
 
 @staff_required
@@ -76,8 +79,11 @@ def quiz_qr_code(request, quiz_code):
     quiz = get_object_or_404(Quiz, code=quiz_code.upper(), teacher=request.user)
     
     try:
-        # Generate QR code pointing to quiz scan endpoint
-        qr_data = f"/quiz/scan/{quiz.code}/"
+        # Build absolute URL for QR code (works when scanned on mobile)
+        protocol = "https" if request.is_secure() else "http"
+        domain = request.get_host()
+        qr_data = f"{protocol}://{domain}/quiz/scan/{quiz.code}/"
+        
         qr = qrcode.QRCode(version=1, box_size=10, border=2)
         qr.add_data(qr_data)
         qr.make(fit=True)
@@ -651,6 +657,7 @@ def student_login(request):
         return redirect("student_dashboard")
 
     form = StudentLoginForm(request, data=request.POST or None)
+    next_url = request.GET.get("next", "student_dashboard")
 
     if request.method == "POST":
         if form.is_valid():
@@ -662,7 +669,7 @@ def student_login(request):
                 return render(request, "quizzes/student_login.html", {"form": form})
 
             login(request, user)
-            return redirect("student_dashboard")
+            return redirect(next_url)
 
         messages.error(request, "Invalid University ID or password.")
 
