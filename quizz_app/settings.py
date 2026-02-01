@@ -109,8 +109,6 @@ LOGGING = {
     },
 }
 
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "no-reply@quizfy.com")
-
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
 EMAIL_TIMEOUT = 10
@@ -119,12 +117,12 @@ EMAIL_TIMEOUT = 10
 SITE_URL = os.environ.get("SITE_URL", "http://127.0.0.1:8000")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "no-reply@quizfy.com")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "quizfyplatform@gmail.com")
 
 SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "")
 
 # Use a custom backend that sends through SendGrid API (HTTPS)
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "no-reply@quizfy.com")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "quizfyplatform@gmail.com")
 
 LOGGING = {
   "version": 1,
@@ -140,7 +138,8 @@ SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY", "")
 
 if SENDGRID_API_KEY:
     EMAIL_BACKEND = "quizz_app.email_backends.SendGridEmailBackend"
-    DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "no-reply@quizfy.com")
+    DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "quizfyplatform@gmail.com")
 else:
     # local/dev fallback
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "quizfyplatform@gmail.com")
