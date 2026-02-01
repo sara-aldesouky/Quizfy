@@ -22,8 +22,8 @@
           <b>Code:</b> <code style="background: rgba(255,255,255,.06); padding: 2px 6px; border-radius: 4px;">{{ q.code }}</code>
         </p>
       </div>
-      <button class="btn secondary" onclick="showQR('{{ q.code }}', '/quiz/{{ q.code }}/qr/')" title="View QR Code">
-        📱 QR
+      <button class="btn secondary" onclick="showQR('{{ q.code }}', '/quiz/{{ q.code }}/qr/')" title="View QR Code" style="white-space: nowrap;">
+        📱 QR Code
       </button>
     </div>
 
@@ -45,7 +45,7 @@
 <div id="qrModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,.8); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
   <div style="background: var(--card0); border-radius: 18px; padding: 24px; text-align: center; max-width: 400px; width: 100%;">
     <h2 style="margin: 0 0 16px 0;">Quiz QR Code</h2>
-    <img id="qrImage" src="" alt="QR Code" style="max-width: 100%; border-radius: 10px; margin: 16px 0;">
+    <img id="qrImage" src="" alt="QR Code" style="max-width: 100%; border-radius: 10px; margin: 16px 0; border: 2px solid var(--border);">
     <p id="qrCode" style="font-size: 14px; margin: 12px 0; word-break: break-all;"></p>
     <button class="btn primary" onclick="closeQR()" style="width: 100%;">Close</button>
   </div>
