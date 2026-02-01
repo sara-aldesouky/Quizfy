@@ -110,8 +110,13 @@ LOGGING = {
 }
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "quizfyplatform@gmail.com")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
 EMAIL_TIMEOUT = 10
+
 # If you want password reset links to point to your Render domain
 # (helps when generating absolute URLs in emails)
 SITE_URL = os.environ.get("SITE_URL", "http://127.0.0.1:8000")
@@ -121,25 +126,7 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "quizfyplatform@gmail.com")
 
 SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "")
 
-# Use a custom backend that sends through SendGrid API (HTTPS)
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "quizfyplatform@gmail.com")
-
-LOGGING = {
-  "version": 1,
-  "disable_existing_loggers": False,
-  "handlers": {"console": {"class": "logging.StreamHandler"}},
-  "loggers": {
-    "django": {"handlers": ["console"], "level": "INFO"},
-    "django.request": {"handlers": ["console"], "level": "ERROR"},
-    "quizfy.mail": {"handlers": ["console"], "level": "INFO"},
-  },
-}
-SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY", "")
-
+# Use SendGrid if available, otherwise use Gmail SMTP
 if SENDGRID_API_KEY:
     EMAIL_BACKEND = "quizz_app.email_backends.SendGridEmailBackend"
-    DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "quizfyplatform@gmail.com")
-else:
-    # local/dev fallback
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
     DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "quizfyplatform@gmail.com")
