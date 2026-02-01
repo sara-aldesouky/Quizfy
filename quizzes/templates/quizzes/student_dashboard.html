@@ -1,47 +1,52 @@
 {% extends "base.html" %}
-{% block title %}Student Dashboard{% endblock %}
+{% block title %}Student Dashboard - Quizfy{% endblock %}
 
 {% block content %}
-<div class="row">
-  <div>
-    <h1>Welcome, {{ profile.first_name }} ✅</h1>
-    <p>
-      <b>ID:</b> {{ profile.university_id }} ||
-      <b>Major:</b> {{ profile.get_major_display }}
-    </p>
-  </div>
-  <div class="actions">
-    <a class="btn secondary" href="{% url 'change_password' %}">Change Password</a>
-    <a class="btn danger" href="{% url 'app_logout' %}">Logout</a>
+<div class="card" style="margin-bottom: 30px;">
+  <div class="row">
+    <div>
+      <h1>Welcome, {{ profile.first_name }} 👋</h1>
+      <p style="margin-top: 8px;">
+        <b>ID:</b> {{ profile.university_id }} &nbsp; | &nbsp;
+        <b>Major:</b> {{ profile.get_major_display }}
+      </p>
+    </div>
+    <div class="actions">
+      <a class="btn secondary" href="{% url 'change_password' %}">Change Password</a>
+      <a class="btn danger" href="{% url 'app_logout' %}">Logout</a>
+    </div>
   </div>
 </div>
 
-<div class="card">
+<div class="card" style="margin-bottom: 30px;">
   <h2>Enter Quiz Code</h2>
-  <form method="post">
+  <form method="post" style="display: flex; gap: 12px; margin-top: 16px;">
     {% csrf_token %}
-    {{ form.quiz_code }}
-    <button class="btn" type="submit">Start Quiz</button>
+    <input type="text" name="quiz_code" placeholder="Enter quiz code..." style="flex: 1; padding: 10px 14px; border: 1px solid rgba(255,255,255,.1); border-radius: 10px; background: rgba(0,0,0,.2); color: rgba(255,255,255,.9);">
+    <button class="btn primary" type="submit">Start Quiz</button>
   </form>
 </div>
 
-<h2 style="margin-top:18px;">My Quiz History</h2>
+<h2 style="margin-top: 30px; margin-bottom: 20px;">My Quiz History</h2>
 
 {% if not submissions %}
-  <p>No submissions yet.</p>
+  <div class="card">
+    <p style="text-align: center; color: rgba(255,255,255,.52);">No submissions yet. Take a quiz to get started!</p>
+  </div>
 {% endif %}
 
 {% for s in submissions %}
   <div class="card">
-    <h3>{{ s.quiz.title }}</h3>
-    <p>
-      <b>Score:</b> {{ s.score }} / {{ s.total }}
-      &nbsp; | &nbsp;
-      <b>Date:</b> {{ s.submitted_at|date:"Y-m-d H:i" }}
-    </p>
-
-    <div class="actions">
-      <a class="btn secondary" href="{% url 'student_submission_detail' s.id %}">
+    <div style="display: flex; justify-content: space-between; align-items: start; gap: 12px;">
+      <div style="flex: 1;">
+        <h3 style="margin: 0 0 10px 0; color: var(--text);">{{ s.quiz.title }}</h3>
+        <p style="margin: 8px 0; font-size: 0.9rem;">
+          <b>Score:</b> {{ s.score }} / {{ s.total }}
+          <span style="margin: 0 12px;">•</span>
+          <b>Date:</b> {{ s.submitted_at|date:"M d, Y H:i" }}
+        </p>
+      </div>
+      <a class="btn secondary" href="{% url 'student_submission_detail' s.id %}" style="white-space: nowrap;">
         View Answers
       </a>
     </div>

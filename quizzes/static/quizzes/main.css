@@ -1,6 +1,5 @@
 /* =========================================
-   Quizfy — NEW Modern SaaS Dark UI (2026)
-   No template changes required
+   Quizfy — Modern SaaS UI with Dark/Light Mode
    ========================================= */
 
 /* ---------- Theme tokens ---------- */
@@ -37,6 +36,19 @@
   --gap: 14px;
 }
 
+/* Light mode overrides */
+[data-theme="light"] {
+  --bg0: #f8f9fa;
+  --bg1: #ffffff;
+  --card0: rgba(255, 255, 255, 0.95);
+  --card1: rgba(249, 250, 251, 0.9);
+  --border: rgba(0, 0, 0, 0.1);
+  --border2: rgba(0, 0, 0, 0.08);
+  --text: rgba(0, 0, 0, 0.92);
+  --muted: rgba(0, 0, 0, 0.6);
+  --muted2: rgba(0, 0, 0, 0.52);
+}
+
 /* ---------- Global reset ---------- */
 *{ box-sizing:border-box; min-width:0; }
 html,body{ height:100%; }
@@ -45,13 +57,18 @@ body{
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   color: var(--text);
 
-  /* New “clean modern” lighting (no ugly green bands) */
+  /* Dark mode gradients */
   background:
     radial-gradient(900px 560px at 16% 0%, rgba(59,130,246,.18) 0%, transparent 70%),
     radial-gradient(860px 560px at 86% 0%, rgba(124,58,237,.12) 0%, transparent 72%),
     radial-gradient(680px 520px at 55% 120%, rgba(255,255,255,.05) 0%, transparent 75%),
     linear-gradient(180deg, var(--bg0) 0%, var(--bg1) 100%);
   background-attachment: fixed;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+[data-theme="light"] body {
+  background: linear-gradient(180deg, var(--bg0) 0%, var(--bg1) 100%);
 }
 
 /* Subtle noise so gradients feel “premium” not flat */
@@ -122,6 +139,38 @@ nav a:hover{
   color: var(--text);
   background: rgba(255,255,255,.06);
 }
+
+.theme-toggle{
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 7px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--text);
+  transition: all .2s ease;
+  margin-left: 8px;
+}
+
+.theme-toggle:hover{
+  background: rgba(255,255,255,.08);
+  border-color: var(--primary);
+}
+
+.nav-link {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 650;
+  font-size: 14px;
+  padding: 7px 10px;
+  border-radius: 12px;
+  transition: background .15s ease, color .15s ease;
+}
+
+.nav-link:hover {
+  color: var(--text);
+  background: rgba(255,255,255,.06);
+}
 .nav-welcome{
   color: var(--muted);
   font-weight: 650;
@@ -139,7 +188,7 @@ h1{
 h2{
   margin: 18px 0 10px;
   font-size: 18px;
-  color: rgba(255,255,255,.78);
+  color: var(--text);
   font-weight: 750;
 }
 p{ color: var(--muted); line-height: 1.55; }
@@ -149,11 +198,19 @@ p{ color: var(--muted); line-height: 1.55; }
   background: linear-gradient(180deg, var(--card0) 0%, var(--card1) 100%);
   border: 1px solid var(--border2);
   border-radius: var(--radius);
-  padding: 18px;
+  padding: 22px;
   box-shadow: var(--shadow);
   overflow: hidden;
   backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
 }
+
+.card:hover {
+  border-color: var(--border);
+  box-shadow: var(--shadow2);
+  transform: translateY(-2px);
+}
+
 .card.compact{
   padding: 14px;
   border-radius: 16px;
