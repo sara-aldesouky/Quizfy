@@ -34,7 +34,7 @@ def home(request):
         if request.user.is_staff:
             return redirect("teacher_quizzes")
         return redirect("student_dashboard")
-    return render(request, "quizzes/home.html")
+    return render(request, "quizzes/landing.html")
 
 def student_required(view_func):
     return user_passes_test(

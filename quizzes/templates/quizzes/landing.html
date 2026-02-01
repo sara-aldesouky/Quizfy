@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizfy - Create Quizzes Effortlessly</title>
+    <link href="https://fonts.googleapis.com/css2?family=Trochi:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Trochi', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            color: rgba(255, 255, 255, 0.92);
+            background: 
+                radial-gradient(900px 560px at 16% 0%, rgba(59, 130, 246, 0.18) 0%, transparent 70%),
+                radial-gradient(860px 560px at 86% 0%, rgba(124, 58, 237, 0.12) 0%, transparent 72%),
+                radial-gradient(680px 520px at 55% 120%, rgba(255, 255, 255, 0.05) 0%, transparent 75%),
+                linear-gradient(180deg, #070a14 0%, #0b1224 100%);
+            background-attachment: fixed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Noise overlay */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.06;
+            mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.24'/%3E%3C/svg%3E");
+            z-index: 1;
+        }
+
+        .hero {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 800px;
+            padding: 0 20px;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+            line-height: 1.1;
+        }
+
+        .hero h1 .highlight {
+            color: #3b82f6;
+            font-style: italic;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.52);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 30px;
+            font-weight: 400;
+        }
+
+        .description {
+            font-size: 1.15rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 45px;
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        .cta-container {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 50px;
+        }
+
+        .cta-button {
+            padding: 14px 32px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Trochi', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .cta-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .cta-primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .cta-secondary {
+            background: transparent;
+            color: rgba(255, 255, 255, 0.92);
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .cta-secondary:hover {
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .refresh-icon {
+            display: inline-block;
+            margin-right: 8px;
+            animation: rotateRefresh 2s ease-in-out infinite;
+        }
+
+        @keyframes rotateRefresh {
+            0% {
+                transform: rotate(0deg);
+            }
+            50% {
+                transform: rotate(180deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .logo-section {
+            margin-bottom: 50px;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 15px;
+        }
+
+        .logo span {
+            color: #3b82f6;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 60px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.52);
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-value {
+            color: rgba(255, 255, 255, 0.92);
+            font-weight: 600;
+        }
+
+        @media (max-width: 640px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .description {
+                font-size: 1rem;
+            }
+
+            .stats {
+                gap: 20px;
+                margin-top: 40px;
+            }
+
+            .cta-container {
+                gap: 12px;
+            }
+
+            .cta-button {
+                padding: 12px 24px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <div class="logo-section">
+            <div class="logo">Quiz<span>fy</span></div>
+        </div>
+
+        <p class="subtitle">Empower Your Teaching</p>
+
+        <h1>
+            Create <span class="highlight">stunning</span> quizzes<br>
+            effortlessly
+        </h1>
+
+        <p class="description">
+            Turn your ideas into engaging assessments in seconds. 
+            Simplify quiz creation and focus on what matters—teaching.
+        </p>
+
+        <div class="cta-container">
+            <a href="{% url 'student_signup' %}" class="cta-button cta-primary">
+                Get Started
+            </a>
+            <a href="{% url 'teacher_signup' %}" class="cta-button cta-secondary">
+                I'm a Teacher
+            </a>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <span class="refresh-icon">🔄</span>
+                <span>Quick Setup</span>
+            </div>
+            <div class="stat-item">
+                <span class="refresh-icon">✨</span>
+                <span>Instant Results</span>
+            </div>
+            <div class="stat-item">
+                <span class="refresh-icon">🚀</span>
+                <span>Easy to Use</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
