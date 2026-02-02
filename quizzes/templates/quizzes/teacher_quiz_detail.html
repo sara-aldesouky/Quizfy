@@ -26,6 +26,32 @@
   </div>
 </div>
 
+<!-- Submission Statistics Graph -->
+<div class="card" style="margin-bottom: 20px;">
+  <h2 style="margin-top: 0; margin-bottom: 20px;">Submission Statistics</h2>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: center;">
+    <!-- Bar Chart -->
+    <div style="position: relative; height: 300px;">
+      <canvas id="submissionChart"></canvas>
+    </div>
+    
+    <!-- Stats Summary -->
+    <div>
+      <div style="padding: 15px; background: rgba(76, 175, 80, 0.1); border-radius: 8px; margin-bottom: 12px; border-left: 4px solid #4caf50;">
+        <p style="margin: 0 0 5px 0; color: var(--muted); font-size: 14px;">Submitted</p>
+        <p style="margin: 0; font-size: 28px; font-weight: bold; color: #4caf50;">{{ submitted_count }}</p>
+        <p style="margin: 5px 0 0 0; color: var(--muted); font-size: 12px;">{{ submitted_percentage|floatformat:1 }}% of {{ total_submissions }}</p>
+      </div>
+      
+      <div style="padding: 15px; background: rgba(244, 67, 54, 0.1); border-radius: 8px; border-left: 4px solid #f44336;">
+        <p style="margin: 0 0 5px 0; color: var(--muted); font-size: 14px;">Not Submitted</p>
+        <p style="margin: 0; font-size: 28px; font-weight: bold; color: #f44336;">{{ not_submitted_count }}</p>
+        <p style="margin: 5px 0 0 0; color: var(--muted); font-size: 12px;">{{ not_submitted_percentage|floatformat:1 }}% of {{ total_submissions }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="card">
   {% if questions %}
     {% for q in questions %}
@@ -89,6 +115,60 @@ function closeQR() {
 // Close modal on background click
 document.getElementById('qrModal').addEventListener('click', function(e) {
   if (e.target === this) closeQR();
+});
+</script>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+
+<script>
+// Create submission statistics bar chart
+document.addEventListener('DOMContentLoaded', function() {
+  const ctx = document.getElementById('submissionChart');
+  if (!ctx) return;
+  
+  const submitted = {{ submitted_count }};
+  const notSubmitted = {{ not_submitted_count }};
+  const total = {{ total_submissions }};
+  
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Submitted', 'Not Submitted'],
+      datasets: [{
+        label: 'Number of Students',
+        data: [submitted, notSubmitted],
+        backgroundColor: ['#4caf50', '#f44336'],
+        borderColor: ['#45a049', '#da190b'],
+        borderWidth: 1,
+        borderRadius: 8,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          max: Math.max(submitted, notSubmitted, 1),
+          grid: {
+            color: 'rgba(255,255,255,0.1)'
+          }
+        },
+        y: {
+          grid: {
+            display: false
+          }
+        }
+      }
+    }
+  });
 });
 </script>
 {% endblock %}

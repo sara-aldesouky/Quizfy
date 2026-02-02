@@ -816,11 +816,32 @@ def teacher_quiz_detail(request, quiz_id):
 
     quiz = get_object_or_404(Quiz, id=quiz_id, teacher=request.user)
     questions = quiz.questions.order_by("id")
+    
+    # Calculate submission statistics
+    total_submissions = quiz.submissions.count()
+    submitted_count = quiz.submissions.filter(is_submitted=True).count()
+    not_submitted_count = total_submissions - submitted_count
+    
+    # Calculate percentages for the graph
+    if total_submissions > 0:
+        submitted_percentage = (submitted_count / total_submissions) * 100
+        not_submitted_percentage = (not_submitted_count / total_submissions) * 100
+    else:
+        submitted_percentage = 0
+        not_submitted_percentage = 0
 
     return render(
         request,
         "quizzes/teacher_quiz_detail.html",
-        {"quiz": quiz, "questions": questions},
+        {
+            "quiz": quiz, 
+            "questions": questions,
+            "total_submissions": total_submissions,
+            "submitted_count": submitted_count,
+            "not_submitted_count": not_submitted_count,
+            "submitted_percentage": submitted_percentage,
+            "not_submitted_percentage": not_submitted_percentage,
+        },
     )
 
 
