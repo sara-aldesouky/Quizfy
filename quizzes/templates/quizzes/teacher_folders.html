@@ -46,6 +46,21 @@
   <div class="card">
     <h3>{{ q.title }}</h3>
     <p><b>Code:</b> {{ q.code }}</p>
+    <div class="quiz-analysis">
+      <div class="quiz-analysis-title">Graph analysis</div>
+      <div class="quiz-bar-chart" role="img" aria-label="Graph analysis showing students in quiz and submitted counts.">
+        <div class="quiz-bar">
+          <div class="quiz-bar-fill quiz-bar-assigned" style="height: {% widthratio q.assigned_count q.bar_max 100 %}%"></div>
+          <div class="quiz-bar-label">In Quiz</div>
+          <div class="quiz-bar-value">{{ q.assigned_count }}</div>
+        </div>
+        <div class="quiz-bar">
+          <div class="quiz-bar-fill quiz-bar-submitted" style="height: {% widthratio q.submitted_count q.bar_max 100 %}%"></div>
+          <div class="quiz-bar-label">Submitted</div>
+          <div class="quiz-bar-value">{{ q.submitted_count }}</div>
+        </div>
+      </div>
+    </div>
 
     <div class="actions">
       <a class="btn secondary" href="{% url 'create_question' q.id %}">Add Question</a>

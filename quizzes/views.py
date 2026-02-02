@@ -20,6 +20,7 @@ import json
 import difflib
 import re
 from django.db import transaction
+from django.db.models import Count, Q
 from django.utils import timezone
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from openpyxl.worksheet.table import Table, TableStyleInfo
@@ -474,7 +475,20 @@ def teacher_login(request):
 @staff_required
 def teacher_quizzes(request):
     folders = SubjectFolder.objects.filter(teacher=request.user).order_by("name")
-    ungrouped = Quiz.objects.filter(teacher=request.user, folder__isnull=True).order_by("-created_at")
+    ungrouped = (
+        Quiz.objects.filter(teacher=request.user, folder__isnull=True)
+        .annotate(
+            assigned_count=Count("attempt_permissions", distinct=True),
+            submitted_count=Count(
+                "submissions",
+                filter=Q(submissions__is_submitted=True),
+                distinct=True,
+            ),
+        )
+        .order_by("-created_at")
+    )
+    for quiz in ungrouped:
+        quiz.bar_max = max(1, quiz.assigned_count, quiz.submitted_count)
     return render(request, "quizzes/teacher_folders.html", {
         "folders": folders,
         "ungrouped": ungrouped,
@@ -497,7 +511,20 @@ def create_folder(request):
 @staff_required
 def folder_detail(request, folder_id):
     folder = get_object_or_404(SubjectFolder, id=folder_id, teacher=request.user)
-    quizzes = folder.quizzes.all().order_by("-created_at")
+    quizzes = (
+        folder.quizzes.all()
+        .annotate(
+            assigned_count=Count("attempt_permissions", distinct=True),
+            submitted_count=Count(
+                "submissions",
+                filter=Q(submissions__is_submitted=True),
+                distinct=True,
+            ),
+        )
+        .order_by("-created_at")
+    )
+    for quiz in quizzes:
+        quiz.bar_max = max(1, quiz.assigned_count, quiz.submitted_count)
     return render(request, "quizzes/folder_detail.html", {
         "folder": folder,
         "quizzes": quizzes,

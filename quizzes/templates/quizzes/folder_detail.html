@@ -55,6 +55,21 @@
           </a>
         </div>
       </div>
+      <div class="quiz-analysis">
+        <div class="quiz-analysis-title">Graph analysis</div>
+        <div class="quiz-bar-chart" role="img" aria-label="Graph analysis showing students in quiz and submitted counts.">
+          <div class="quiz-bar">
+            <div class="quiz-bar-fill quiz-bar-assigned" style="height: {% widthratio quiz.assigned_count quiz.bar_max 100 %}%"></div>
+            <div class="quiz-bar-label">In Quiz</div>
+            <div class="quiz-bar-value">{{ quiz.assigned_count }}</div>
+          </div>
+          <div class="quiz-bar">
+            <div class="quiz-bar-fill quiz-bar-submitted" style="height: {% widthratio quiz.submitted_count quiz.bar_max 100 %}%"></div>
+            <div class="quiz-bar-label">Submitted</div>
+            <div class="quiz-bar-value">{{ quiz.submitted_count }}</div>
+          </div>
+        </div>
+      </div>
     </div>
   {% endfor %}
 {% else %}
