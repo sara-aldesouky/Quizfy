@@ -531,6 +531,37 @@ def folder_detail(request, folder_id):
     })
 
 
+@staff_required
+def quiz_live_counts(request):
+    raw_ids = request.GET.get("quiz_ids", "")
+    quiz_ids = [int(qid) for qid in raw_ids.split(",") if qid.strip().isdigit()]
+    if not quiz_ids:
+        return JsonResponse({"quizzes": {}})
+
+    quizzes = (
+        Quiz.objects.filter(teacher=request.user, id__in=quiz_ids)
+        .annotate(
+            assigned_count=Count("attempt_permissions", distinct=True),
+            submitted_count=Count(
+                "submissions",
+                filter=Q(submissions__is_submitted=True),
+                distinct=True,
+            ),
+        )
+    )
+
+    payload = {}
+    for quiz in quizzes:
+        bar_max = max(1, quiz.assigned_count, quiz.submitted_count)
+        payload[str(quiz.id)] = {
+            "assigned_count": quiz.assigned_count,
+            "submitted_count": quiz.submitted_count,
+            "bar_max": bar_max,
+        }
+
+    return JsonResponse({"quizzes": payload})
+
+
 
 @staff_required
 def create_quiz(request):
