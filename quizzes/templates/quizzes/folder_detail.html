@@ -55,18 +55,18 @@
           </a>
         </div>
       </div>
-      <div class="quiz-analysis">
+      <div class="quiz-analysis" data-quiz-id="{{ quiz.id }}">
         <div class="quiz-analysis-title">Graph analysis</div>
         <div class="quiz-bar-chart" role="img" aria-label="Graph analysis showing students in quiz and submitted counts.">
           <div class="quiz-bar">
-            <div class="quiz-bar-fill quiz-bar-assigned" style="height: {% widthratio quiz.assigned_count quiz.bar_max 100 %}%"></div>
+            <div class="quiz-bar-fill quiz-bar-assigned" data-bar="assigned" style="height: {% widthratio quiz.assigned_count quiz.bar_max 100 %}%"></div>
             <div class="quiz-bar-label">In Quiz</div>
-            <div class="quiz-bar-value">{{ quiz.assigned_count }}</div>
+            <div class="quiz-bar-value" data-value="assigned">{{ quiz.assigned_count }}</div>
           </div>
           <div class="quiz-bar">
-            <div class="quiz-bar-fill quiz-bar-submitted" style="height: {% widthratio quiz.submitted_count quiz.bar_max 100 %}%"></div>
+            <div class="quiz-bar-fill quiz-bar-submitted" data-bar="submitted" style="height: {% widthratio quiz.submitted_count quiz.bar_max 100 %}%"></div>
             <div class="quiz-bar-label">Submitted</div>
-            <div class="quiz-bar-value">{{ quiz.submitted_count }}</div>
+            <div class="quiz-bar-value" data-value="submitted">{{ quiz.submitted_count }}</div>
           </div>
         </div>
       </div>
@@ -107,6 +107,53 @@ function closeQR() {
 document.getElementById('qrModal').addEventListener('click', function(e) {
   if (e.target === this) closeQR();
 });
+</script>
+
+<script>
+  (function(){
+    const refreshIntervalMs = 10000;
+
+    function getQuizIds(){
+      return Array.from(document.querySelectorAll(".quiz-analysis[data-quiz-id]"))
+        .map((el) => el.dataset.quizId);
+    }
+
+    function updateQuizCards(payload){
+      Object.entries(payload).forEach(([quizId, data]) => {
+        const wrapper = document.querySelector(`.quiz-analysis[data-quiz-id="${quizId}"]`);
+        if (!wrapper) return;
+        const barMax = Math.max(1, data.bar_max || 1);
+        const assigned = Number(data.assigned_count || 0);
+        const submitted = Number(data.submitted_count || 0);
+
+        const assignedFill = wrapper.querySelector('[data-bar="assigned"]');
+        const submittedFill = wrapper.querySelector('[data-bar="submitted"]');
+        const assignedValue = wrapper.querySelector('[data-value="assigned"]');
+        const submittedValue = wrapper.querySelector('[data-value="submitted"]');
+
+        if (assignedFill) assignedFill.style.height = `${(assigned / barMax) * 100}%`;
+        if (submittedFill) submittedFill.style.height = `${(submitted / barMax) * 100}%`;
+        if (assignedValue) assignedValue.textContent = assigned;
+        if (submittedValue) submittedValue.textContent = submitted;
+      });
+    }
+
+    async function refreshCounts(){
+      const quizIds = getQuizIds();
+      if (!quizIds.length) return;
+      try {
+        const response = await fetch(`{% url 'quiz_live_counts' %}?quiz_ids=${quizIds.join(",")}`);
+        if (!response.ok) return;
+        const data = await response.json();
+        updateQuizCards(data.quizzes || {});
+      } catch (error) {
+        console.warn("Live quiz counts unavailable", error);
+      }
+    }
+
+    refreshCounts();
+    setInterval(refreshCounts, refreshIntervalMs);
+  })();
 </script>
 
 {% endblock %}
