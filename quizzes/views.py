@@ -1268,10 +1268,31 @@ Be specific and actionable. Use the actual question content to identify patterns
             'error': True,
             'message': 'OpenAI library not installed. Run: pip install openai'
         }
-    except Exception as e:
+    except openai.RateLimitError:
         return {
             'error': True,
-            'message': f'AI Analysis failed: {str(e)}'
+            'message': '⚠️ OpenAI API quota exceeded. Please check your OpenAI billing at platform.openai.com or wait until your quota resets.'
+        }
+    except openai.AuthenticationError:
+        return {
+            'error': True,
+            'message': '⚠️ Invalid OpenAI API key. Please check your OPENAI_API_KEY in settings.'
+        }
+    except openai.APIConnectionError:
+        return {
+            'error': True,
+            'message': '⚠️ Could not connect to OpenAI. Please check your internet connection.'
+        }
+    except Exception as e:
+        error_msg = str(e)
+        if 'insufficient_quota' in error_msg or '429' in error_msg:
+            return {
+                'error': True,
+                'message': '⚠️ OpenAI API quota exceeded. Please add credits at platform.openai.com/account/billing or use a different API key.'
+            }
+        return {
+            'error': True,
+            'message': f'AI Analysis failed: {error_msg}'
         }
 
 
