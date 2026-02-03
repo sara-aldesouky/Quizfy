@@ -5,9 +5,9 @@ from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import user_passes_test
 from django.urls import reverse
-from .models import Quiz,Question,Submission,Answer,StudentProfile,SubjectFolder, QuizAttemptPermission
+from .models import Quiz,Question,Submission,Answer,StudentProfile,SubjectFolder, QuizAttemptPermission, FileSubmission
 from .forms import (
-    TeacherLoginForm,TeacherSignupForm,QuizForm,QuestionForm,EnterQuizForm, StudentSignupForm, StudentLoginForm,FolderForm,MoveQuizForm,QuizSettingsForm,ChangePasswordForm
+    TeacherLoginForm,TeacherSignupForm,QuizForm,QuestionForm,EnterQuizForm, StudentSignupForm, StudentLoginForm,FolderForm,MoveQuizForm,QuizSettingsForm,ChangePasswordForm,TrueFalseQuestionForm,FileUploadSubmissionForm
 )
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import HttpResponse
@@ -339,12 +339,14 @@ def take_quiz(request, quiz_code):
 
     if not submission:
         sp = request.user.student_profile
+        # For file upload quizzes, total is 0 (manual grading)
+        total_questions = 0 if quiz.quiz_type == 'file_upload' else questions.count()
         submission = Submission.objects.create(
             quiz=quiz,
             student_user=request.user,
             student_name=f"{sp.first_name} {sp.second_name} {sp.third_name}",
             score=0,
-            total=questions.count(),
+            total=total_questions,
             started_at=timezone.now(),
             is_submitted=False,
             attempt_no=attempts_used + 1,
@@ -389,6 +391,42 @@ def _finalize_submission(request, quiz, submission, questions=None):
         from django.contrib import messages
         messages.error(request, "Quiz was closed by the teacher.")
         return redirect("student_dashboard")
+
+    # Handle file upload quiz type
+    if quiz.quiz_type == 'file_upload':
+        uploaded_file = request.FILES.get('file')
+        if uploaded_file:
+            # Validate file
+            max_size = 10 * 1024 * 1024  # 10MB
+            allowed_extensions = ['pdf', 'jpg', 'jpeg', 'png']
+            ext = uploaded_file.name.split('.')[-1].lower()
+            
+            if uploaded_file.size > max_size:
+                messages.error(request, "File size must be under 10MB")
+                return redirect("take_quiz", quiz_code=quiz.code)
+            
+            if ext not in allowed_extensions:
+                messages.error(request, "Only PDF, JPG, and PNG files are allowed")
+                return redirect("take_quiz", quiz_code=quiz.code)
+            
+            # Save file submission
+            FileSubmission.objects.create(
+                submission=submission,
+                file=uploaded_file,
+                file_name=uploaded_file.name
+            )
+            
+            submission.score = 0  # Will be graded manually
+            submission.total = 0
+            submission.is_submitted = True
+            submission.submitted_at = timezone.now()
+            submission.save()
+            
+            messages.success(request, "Your file has been submitted successfully!")
+            return redirect("quiz_result", quiz_code=quiz.code, submission_id=submission.id)
+        else:
+            messages.error(request, "Please upload a file")
+            return redirect("take_quiz", quiz_code=quiz.code)
 
     # If questions not provided, load them
     if questions is None:
@@ -642,14 +680,34 @@ def create_quiz(request):
 @staff_required
 def create_question(request, quiz_id):
     quiz = get_object_or_404(Quiz, id=quiz_id, teacher=request.user)
-    form = QuestionForm(request.POST or None, request.FILES or None)
+    
+    # File upload quizzes don't need questions
+    if quiz.quiz_type == 'file_upload':
+        return render(request, "quizzes/create_question.html", {"quiz": quiz, "form": None})
+    
+    # Choose the correct form based on quiz type
+    if quiz.quiz_type == 'true_false':
+        FormClass = TrueFalseQuestionForm
+    else:
+        FormClass = QuestionForm
+    
+    form = FormClass(request.POST or None, request.FILES or None)
 
     if request.method == "POST" and form.is_valid():
         q = form.save(commit=False)
         q.quiz = quiz
+        # Set question_type based on quiz type
+        if quiz.quiz_type == 'true_false':
+            q.question_type = 'true_false'
+            q.option1 = 'True'
+            q.option2 = 'False'
+            q.option3 = ''
+            q.option4 = ''
+        else:
+            q.question_type = 'multiple_choice'
         q.save()
         messages.success(request, "Question added.")
-        return redirect("teacher_quizzes")
+        return redirect("teacher_quiz_detail", quiz_id=quiz.id)
 
     return render(request, "quizzes/create_question.html", {"quiz": quiz, "form": form})
 

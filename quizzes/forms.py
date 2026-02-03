@@ -44,19 +44,22 @@ class TeacherSignupForm(forms.ModelForm):
 class QuizForm(forms.ModelForm):
     class Meta:
         model = Quiz
-        fields = ["title", "folder"]  # ✅ folder exists in Quiz model
+        fields = ["title", "quiz_type", "folder"]
 
     def __init__(self, *args, **kwargs):
         teacher = kwargs.pop("teacher", None)
         super().__init__(*args, **kwargs)
 
         self.fields["title"].widget.attrs.update({"placeholder": "Quiz title"})
+        self.fields["quiz_type"].widget.attrs.update({"class": "quiz-type-select"})
 
         # If you want teacher-specific folders only:
         if teacher:
             self.fields["folder"].queryset = teacher.folders.all()
 
+
 class QuestionForm(forms.ModelForm):
+    """Form for Multiple Choice questions (4 options)"""
     class Meta:
         model = Question
         fields = [
@@ -71,6 +74,62 @@ class QuestionForm(forms.ModelForm):
         widgets = {
             "text": forms.Textarea(attrs={"rows": 3}),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["correct_option"].choices = [
+            (1, 'Option 1'), (2, 'Option 2'), (3, 'Option 3'), (4, 'Option 4')
+        ]
+
+
+class TrueFalseQuestionForm(forms.ModelForm):
+    """Form for True/False questions"""
+    class Meta:
+        model = Question
+        fields = ["text", "image", "correct_option"]
+        widgets = {
+            "text": forms.Textarea(attrs={"rows": 3, "placeholder": "Enter your True/False question"}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["correct_option"].choices = [
+            (1, 'True'), (2, 'False')
+        ]
+        self.fields["correct_option"].label = "Correct Answer"
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.question_type = 'true_false'
+        instance.option1 = 'True'
+        instance.option2 = 'False'
+        instance.option3 = ''
+        instance.option4 = ''
+        if commit:
+            instance.save()
+        return instance
+
+
+class FileUploadSubmissionForm(forms.Form):
+    """Form for students to upload files (PDF/images)"""
+    file = forms.FileField(
+        label="Upload your file",
+        help_text="Accepted formats: PDF, JPG, PNG (Max 10MB)",
+        widget=forms.FileInput(attrs={"accept": ".pdf,.jpg,.jpeg,.png"})
+    )
+    
+    def clean_file(self):
+        file = self.cleaned_data.get('file')
+        if file:
+            # Check file size (10MB max)
+            if file.size > 10 * 1024 * 1024:
+                raise forms.ValidationError("File size must be under 10MB")
+            
+            # Check file extension
+            ext = file.name.split('.')[-1].lower()
+            if ext not in ['pdf', 'jpg', 'jpeg', 'png']:
+                raise forms.ValidationError("Only PDF, JPG, and PNG files are allowed")
+        return file
 
 
 class EnterQuizForm(forms.Form):

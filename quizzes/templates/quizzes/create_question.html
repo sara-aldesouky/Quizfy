@@ -2,10 +2,168 @@
 {% block title %}Add Question{% endblock %}
 {% block content %}
 <h1>Add Question</h1>
-<p><b>Quiz:</b>{{quiz.title}} ({{quiz.code}})</p>
-<form method="post" enctype="multipart/form-data" class="card">
+<p><b>Quiz:</b> {{ quiz.title }} ({{ quiz.code }})</p>
+<p style="color: var(--muted); margin-bottom: 16px;">
+  <span class="quiz-type-badge {% if quiz.quiz_type == 'multiple_choice' %}mc{% elif quiz.quiz_type == 'true_false' %}tf{% else %}fu{% endif %}">
+    {% if quiz.quiz_type == 'multiple_choice' %}📝 Multiple Choice
+    {% elif quiz.quiz_type == 'true_false' %}✓✗ True/False
+    {% else %}📄 File Upload{% endif %}
+  </span>
+</p>
+
+{% if quiz.quiz_type == 'file_upload' %}
+  <div class="card">
+    <div class="info-box">
+      <p>📄 <b>File Upload Quiz</b></p>
+      <p style="color: var(--muted); margin-top: 8px;">
+        This quiz type doesn't require questions. Students will upload their files (PDF or photos) directly.
+      </p>
+      <p style="color: var(--muted); margin-top: 8px;">
+        You can add instructions for students by editing the quiz settings.
+      </p>
+    </div>
+    <div class="actions" style="margin-top: 16px;">
+      <a class="btn" href="{% url 'teacher_quiz_detail' quiz.id %}">← Back to Quiz</a>
+    </div>
+  </div>
+{% else %}
+  <form method="post" enctype="multipart/form-data" class="card">
     {% csrf_token %}
-    {{form.as_p}}
-    <button class="btn" type="submit">Add</button>
-</form>
+    
+    <div class="field">
+      <label for="id_text">Question Text</label>
+      {{ form.text }}
+    </div>
+    
+    <div class="field">
+      <label for="id_image">Question Image (optional)</label>
+      {{ form.image }}
+    </div>
+    
+    {% if quiz.quiz_type == 'multiple_choice' %}
+      <div class="options-grid">
+        <div class="field">
+          <label for="id_option1">Option 1</label>
+          {{ form.option1 }}
+        </div>
+        <div class="field">
+          <label for="id_option2">Option 2</label>
+          {{ form.option2 }}
+        </div>
+        <div class="field">
+          <label for="id_option3">Option 3</label>
+          {{ form.option3 }}
+        </div>
+        <div class="field">
+          <label for="id_option4">Option 4</label>
+          {{ form.option4 }}
+        </div>
+      </div>
+      
+      <div class="field">
+        <label for="id_correct_option">Correct Answer</label>
+        {{ form.correct_option }}
+      </div>
+    {% else %}
+      <!-- True/False -->
+      <div class="field">
+        <label>Correct Answer</label>
+        <div class="tf-options">
+          <label class="tf-option">
+            <input type="radio" name="correct_option" value="1" {% if form.correct_option.value == 1 or form.correct_option.value == '1' %}checked{% endif %}>
+            <span class="tf-label true">✓ True</span>
+          </label>
+          <label class="tf-option">
+            <input type="radio" name="correct_option" value="2" {% if form.correct_option.value == 2 or form.correct_option.value == '2' %}checked{% endif %}>
+            <span class="tf-label false">✗ False</span>
+          </label>
+        </div>
+      </div>
+    {% endif %}
+    
+    <div class="actions">
+      <button class="btn primary" type="submit">Add Question</button>
+      <a class="btn secondary" href="{% url 'teacher_quiz_detail' quiz.id %}">Cancel</a>
+    </div>
+  </form>
+{% endif %}
+
+<style>
+.quiz-type-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.quiz-type-badge.mc { background: rgba(37, 99, 235, 0.15); color: #60a5fa; }
+.quiz-type-badge.tf { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+.quiz-type-badge.fu { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+
+.info-box {
+  padding: 16px;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 8px;
+  border-left: 4px solid #3b82f6;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tf-options {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.tf-option {
+  flex: 1;
+  cursor: pointer;
+}
+
+.tf-option input {
+  display: none;
+}
+
+.tf-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  border: 2px solid var(--border);
+}
+
+.tf-label.true {
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.tf-label.false {
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.tf-option input:checked + .tf-label.true {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+  color: #10b981;
+}
+
+.tf-option input:checked + .tf-label.false {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+</style>
 {% endblock %}

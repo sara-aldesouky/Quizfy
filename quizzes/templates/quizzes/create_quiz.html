@@ -13,14 +13,103 @@
   </div>
 
   <div class="field">
+    <label>Quiz Type</label>
+    <div class="quiz-type-cards">
+      <label class="quiz-type-card" data-type="multiple_choice">
+        <input type="radio" name="quiz_type" value="multiple_choice" {% if form.quiz_type.value == 'multiple_choice' or not form.quiz_type.value %}checked{% endif %}>
+        <div class="card-icon">📝</div>
+        <div class="card-title">Multiple Choice</div>
+        <div class="card-desc">4 options per question, auto-graded</div>
+      </label>
+      
+      <label class="quiz-type-card" data-type="true_false">
+        <input type="radio" name="quiz_type" value="true_false" {% if form.quiz_type.value == 'true_false' %}checked{% endif %}>
+        <div class="card-icon">✓✗</div>
+        <div class="card-title">True / False</div>
+        <div class="card-desc">Simple True/False questions, auto-graded</div>
+      </label>
+      
+      <label class="quiz-type-card" data-type="file_upload">
+        <input type="radio" name="quiz_type" value="file_upload" {% if form.quiz_type.value == 'file_upload' %}checked{% endif %}>
+        <div class="card-icon">📄</div>
+        <div class="card-title">File Upload</div>
+        <div class="card-desc">Students upload PDF or photo, manual grading</div>
+      </label>
+    </div>
+  </div>
+
+  <div class="field">
     <label>Folder (optional)</label>
     {{ form.folder }}
     <small>You can leave this empty to keep the quiz ungrouped.</small>
   </div>
 
   <div class="actions">
-    <button class="btn" type="submit">Create Quiz</button>
+    <button class="btn primary" type="submit">Create Quiz</button>
     <a class="btn secondary" href="{% url 'teacher_quizzes' %}">Cancel</a>
   </div>
 </form>
+
+<style>
+.quiz-type-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.quiz-type-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 16px;
+  background: var(--card1, rgba(255,255,255,0.03));
+  border: 2px solid var(--border, rgba(255,255,255,0.1));
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.quiz-type-card:hover {
+  border-color: var(--accent, #2563eb);
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.quiz-type-card:has(input:checked) {
+  border-color: var(--accent, #2563eb);
+  background: rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.quiz-type-card input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.quiz-type-card .card-icon {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.quiz-type-card .card-title {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.quiz-type-card .card-desc {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+@media (max-width: 600px) {
+  .quiz-type-cards {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
 {% endblock %}

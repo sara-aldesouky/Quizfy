@@ -15,10 +15,20 @@ numeric_only=RegexValidator(
 
 def question_image_upload_path(instance, filename):
     return f'quiz_images/quiz_{instance.quiz.id}/{filename}'
+
+def file_submission_upload_path(instance, filename):
+    return f'file_submissions/quiz_{instance.submission.quiz.id}/{instance.submission.student_user.id if instance.submission.student_user else "anon"}/{filename}'
     
 class Quiz(models.Model):
+    QUIZ_TYPE_CHOICES = [
+        ('multiple_choice', 'Multiple Choice'),
+        ('true_false', 'True / False'),
+        ('file_upload', 'File Upload (PDF/Photo)'),
+    ]
+    
     title = models.CharField(max_length=60)
     code = models.CharField(max_length=40, unique=True, blank=True, null=True)
+    quiz_type = models.CharField(max_length=20, choices=QUIZ_TYPE_CHOICES, default='multiple_choice')
     folder = models.ForeignKey(
     "SubjectFolder",
     on_delete=models.SET_NULL,
@@ -78,16 +88,24 @@ class Quiz(models.Model):
     def __str__(self):
         return f"{self.title} - {self.code}"
 class Question(models.Model):
+    QUESTION_TYPE_CHOICES = [
+        ('multiple_choice', 'Multiple Choice (4 options)'),
+        ('true_false', 'True / False'),
+    ]
+    
     quiz=models.ForeignKey(Quiz,on_delete=models.CASCADE,related_name='questions')
+    question_type=models.CharField(max_length=20, choices=QUESTION_TYPE_CHOICES, default='multiple_choice')
     text=models.TextField(blank=True)
     image=models.ImageField(upload_to=question_image_upload_path, blank=True , null=True)
-    option1=models.CharField(max_length=60)
-    option2=models.CharField(max_length=60)
-    option3=models.CharField(max_length=60)
-    option4=models.CharField(max_length=60)
+    # Multiple choice options (blank for true/false)
+    option1=models.CharField(max_length=60, blank=True, default='')
+    option2=models.CharField(max_length=60, blank=True, default='')
+    option3=models.CharField(max_length=60, blank=True, default='')
+    option4=models.CharField(max_length=60, blank=True, default='')
+    # For multiple choice: 1-4, for true/false: 1=True, 2=False
     correct_option=models.IntegerField(choices=[
-        (1,'Option 1'),(2,'Option 2'),(3,'Option 3'),(4,'Option 4')
-    ])
+        (1,'Option 1 / True'),(2,'Option 2 / False'),(3,'Option 3'),(4,'Option 4')
+    ], default=1)
     def option_text(self,number):
         return {
             1:self.option1,
@@ -184,7 +202,18 @@ class QuizAttemptPermission(models.Model):
 
     class Meta:
         unique_together = ("quiz", "student_user")
+
+
+class FileSubmission(models.Model):
+    """Stores uploaded files for file_upload type quizzes"""
+    submission = models.ForeignKey(Submission, on_delete=models.CASCADE, related_name="file_submissions")
+    file = models.FileField(upload_to=file_submission_upload_path)
+    file_name = models.CharField(max_length=255)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
     
-
-
-# Create your models here.
+    # Optional: teacher can add comments/grade
+    teacher_comment = models.TextField(blank=True, null=True)
+    grade = models.CharField(max_length=20, blank=True, null=True)  # e.g., "A", "B", "85%"
+    
+    def __str__(self):
+        return f"{self.file_name} - {self.submission.student_name}"
