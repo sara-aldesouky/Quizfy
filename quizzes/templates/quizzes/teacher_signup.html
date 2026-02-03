@@ -1,14 +1,363 @@
 {% extends "base.html" %}
 {% block title %}Teacher Signup{% endblock %}
 {% block content %}
-<h1>Teacher Signup</h1>
-<form method="post" class="card">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button class="btn" type="submit">Create Account</button>
-</form>
-<p style="margin-top:12px">
-    Already have an account?
-    <a href="{% url 'teacher_login'%}">Login</a>
-</p>
+
+<style>
+  /* Teacher Signup Page Styles */
+  .signup-container {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 24px 16px;
+  }
+
+  .signup-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .signup-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    display: inline-block;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .signup-header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 0 0 8px 0;
+    background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .signup-header p {
+    color: var(--muted);
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  .signup-card {
+    background: var(--card0);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  }
+
+  [data-theme="light"] .signup-card {
+    background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
+    border-color: rgba(139, 92, 246, 0.15);
+    box-shadow: 0 8px 40px rgba(139, 92, 246, 0.12);
+  }
+
+  .form-section {
+    margin-bottom: 24px;
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  [data-theme="light"] .section-title {
+    color: #7c3aed;
+    border-bottom-color: rgba(139, 92, 246, 0.15);
+  }
+
+  .section-icon {
+    font-size: 18px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-field.half-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .form-field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .form-field input,
+  .form-field select {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: var(--card1);
+    color: var(--text);
+    font-size: 15px;
+    font-family: inherit;
+    transition: all 0.2s ease;
+  }
+
+  [data-theme="light"] .form-field input,
+  [data-theme="light"] .form-field select {
+    background: #ffffff;
+    border-color: rgba(139, 92, 246, 0.2);
+  }
+
+  .form-field input:focus,
+  .form-field select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+  }
+
+  .form-field input::placeholder {
+    color: var(--muted);
+    opacity: 0.7;
+  }
+
+  /* Error states */
+  .form-errors {
+    margin-bottom: 20px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    font-size: 14px;
+    color: #ef4444;
+  }
+
+  .field-error {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #ef4444;
+  }
+
+  .field-error ul {
+    margin: 0;
+    padding-left: 16px;
+  }
+
+  .input-error input,
+  .input-error select {
+    border-color: rgba(239, 68, 68, 0.5) !important;
+  }
+
+  /* Submit button */
+  .submit-btn {
+    width: 100%;
+    padding: 16px 24px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: inherit;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(139, 92, 246, 0.45);
+  }
+
+  .submit-btn:active {
+    transform: translateY(0);
+  }
+
+  /* Footer link */
+  .signup-footer {
+    text-align: center;
+    margin-top: 24px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .signup-footer a {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .signup-footer a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  /* Password hint */
+  .password-hint {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Features list */
+  .features-teaser {
+    background: rgba(139, 92, 246, 0.08);
+    border: 1px solid rgba(139, 92, 246, 0.15);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+
+  [data-theme="light"] .features-teaser {
+    background: rgba(139, 92, 246, 0.05);
+  }
+
+  .features-teaser h4 {
+    margin: 0 0 12px 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  .features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .features-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .features-list li span {
+    font-size: 16px;
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 600px) {
+    .signup-container {
+      padding: 16px 12px;
+    }
+
+    .signup-header h1 {
+      font-size: 1.6rem;
+    }
+
+    .signup-card {
+      padding: 20px 16px;
+      border-radius: 16px;
+    }
+
+    .form-field.half-row {
+      grid-template-columns: 1fr;
+    }
+
+    .submit-btn {
+      padding: 14px 20px;
+      font-size: 15px;
+    }
+  }
+</style>
+
+<div class="signup-container">
+  <div class="signup-header">
+    <div class="signup-icon">👨‍🏫</div>
+    <h1>Teacher Signup</h1>
+    <p>Create quizzes and track student progress</p>
+  </div>
+
+  <div class="signup-card">
+    <div class="features-teaser">
+      <h4>✨ What you'll get:</h4>
+      <ul class="features-list">
+        <li><span>📝</span> Create unlimited quizzes</li>
+        <li><span>📊</span> Real-time analytics & insights</li>
+        <li><span>📱</span> QR codes for easy sharing</li>
+        <li><span>🎨</span> Beautiful, modern interface</li>
+      </ul>
+    </div>
+
+    <form method="post" autocomplete="off" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="form-errors">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <!-- Account Credentials Section -->
+      <div class="form-section">
+        <div class="section-title">
+          <span class="section-icon">🔐</span>
+          Account Credentials
+        </div>
+        <div class="form-grid">
+          <div class="form-field {% if form.username.errors %}input-error{% endif %}">
+            <label for="id_username">Username</label>
+            {{ form.username }}
+            {% if form.username.errors %}<div class="field-error">{{ form.username.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-field {% if form.email.errors %}input-error{% endif %}">
+            <label for="id_email">Email Address</label>
+            {{ form.email }}
+            {% if form.email.errors %}<div class="field-error">{{ form.email.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-field {% if form.password1.errors %}input-error{% endif %}">
+            <label for="id_password1">Password</label>
+            {{ form.password1 }}
+            <div class="password-hint">At least 8 characters</div>
+            {% if form.password1.errors %}<div class="field-error">{{ form.password1.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-field {% if form.password2.errors %}input-error{% endif %}">
+            <label for="id_password2">Confirm Password</label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}<div class="field-error">{{ form.password2.errors }}</div>{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn">
+        🚀 Create Teacher Account
+      </button>
+    </form>
+  </div>
+
+  <p class="signup-footer">
+    Already have an account? <a href="{% url 'teacher_login' %}">Sign in here</a>
+  </p>
+</div>
+
 {% endblock %}

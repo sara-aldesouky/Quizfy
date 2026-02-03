@@ -359,6 +359,42 @@
             padding: 12px;
             background: rgba(139, 92, 246, 0.15);
             border-radius: 12px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .feature-card:nth-child(1) .feature-icon { animation-delay: 0s; }
+        .feature-card:nth-child(2) .feature-icon { animation-delay: 0.3s; }
+        .feature-card:nth-child(3) .feature-icon { animation-delay: 0.6s; }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        /* Animated emojis in nav and hero */
+        .nav-link span,
+        .stat-item span:first-child,
+        .subtitle span {
+            display: inline-block;
+            animation: wiggle 2s ease-in-out infinite;
+        }
+
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+
+        /* Float animation for CTAs */
+        .cta-primary span,
+        .cta-secondary span {
+            display: inline-block;
+            animation: float 2.5s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
         }
 
         .feature-card h3 {
@@ -459,9 +495,9 @@
                 </a>
             </div>
             <div class="nav-links">
-                <a href="{% url 'teacher_login' %}" class="nav-link">👨‍🏫 Teacher</a>
-                <a href="{% url 'student_login' %}" class="nav-link">👨‍🎓 Student</a>
-                <a href="{% url 'student_signup' %}" class="cta-btn">✨ Sign Up</a>
+                <a href="{% url 'teacher_login' %}" class="nav-link"><span>👨‍🏫</span> Teacher</a>
+                <a href="{% url 'student_login' %}" class="nav-link"><span>👨‍🎓</span> Student</a>
+                <a href="{% url 'student_signup' %}" class="cta-btn"><span>✨</span> Sign Up</a>
                 <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
                     <span class="theme-icon">🌙</span>
                 </button>
@@ -470,7 +506,7 @@
     </header>
 
     <div class="hero">
-        <p class="subtitle">✨ Empower Your Teaching</p>
+        <p class="subtitle"><span>✨</span> Empower Your Teaching</p>
 
         <h1>
             Create <span class="highlight">stunning</span> quizzes<br>
@@ -483,8 +519,8 @@
         </p>
 
         <div class="cta-container">
-            <a href="{% url 'student_signup' %}" class="cta-primary">🚀 Get Started Free</a>
-            <a href="{% url 'teacher_signup' %}" class="cta-secondary">👨‍🏫 I'm a Teacher</a>
+            <a href="{% url 'student_signup' %}" class="cta-primary"><span>🚀</span> Get Started Free</a>
+            <a href="{% url 'teacher_signup' %}" class="cta-secondary"><span>👨‍🏫</span> I'm a Teacher</a>
         </div>
 
         <div class="stats">
