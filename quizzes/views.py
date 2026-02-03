@@ -432,7 +432,6 @@ def quiz_result(request, quiz_code, submission_id):
     # ✅ safe student display
     student_name = submission.student_name or ""
     university_id = ""
-    section = ""
 
     if submission.student_user_id:
         try:
@@ -441,7 +440,6 @@ def quiz_result(request, quiz_code, submission_id):
             if sp:
                 student_name = f"{sp.first_name} {sp.second_name} {sp.third_name}".strip() or student_name
                 university_id = sp.university_id or ""
-                section = sp.section or ""
             else:
                 # fallback to username if no profile
                 student_name = u.username or student_name
@@ -453,7 +451,6 @@ def quiz_result(request, quiz_code, submission_id):
         "submission": submission,
         "student_name": student_name,
         "university_id": university_id,
-        "section": section,
     }
     return render(request, "quizzes/quiz_result.html", context)
 
