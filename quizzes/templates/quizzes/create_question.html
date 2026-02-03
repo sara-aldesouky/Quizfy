@@ -3,108 +3,108 @@
 {% block content %}
 <h1>Add Question</h1>
 <p><b>Quiz:</b> {{ quiz.title }} ({{ quiz.code }})</p>
-<p style="color: var(--muted); margin-bottom: 16px;">
-  <span class="quiz-type-badge {% if quiz.quiz_type == 'multiple_choice' %}mc{% elif quiz.quiz_type == 'true_false' %}tf{% else %}fu{% endif %}">
-    {% if quiz.quiz_type == 'multiple_choice' %}📝 Multiple Choice
-    {% elif quiz.quiz_type == 'true_false' %}✓✗ True/False
-    {% else %}📄 File Upload{% endif %}
-  </span>
-</p>
 
-{% if quiz.quiz_type == 'file_upload' %}
-  <div class="card">
-    <div class="info-box">
-      <p>📄 <b>File Upload Quiz</b></p>
-      <p style="color: var(--muted); margin-top: 8px;">
-        This quiz type doesn't require questions. Students will upload their files (PDF or photos) directly.
-      </p>
-      <p style="color: var(--muted); margin-top: 8px;">
-        You can add instructions for students by editing the quiz settings.
-      </p>
-    </div>
-    <div class="actions" style="margin-top: 16px;">
-      <a class="btn" href="{% url 'teacher_quiz_detail' quiz.id %}">← Back to Quiz</a>
-    </div>
+<!-- Question Type Selector -->
+<div class="card" style="margin-bottom: 16px;">
+  <label style="font-weight: 600; margin-bottom: 12px; display: block;">Select Question Type</label>
+  <div class="question-type-tabs">
+    <a href="?type=multiple_choice" class="q-type-tab {% if selected_question_type == 'multiple_choice' %}active{% endif %}">
+      📝 Multiple Choice
+    </a>
+    <a href="?type=true_false" class="q-type-tab {% if selected_question_type == 'true_false' %}active{% endif %}">
+      ✓✗ True/False
+    </a>
   </div>
-{% else %}
-  <form method="post" enctype="multipart/form-data" class="card">
-    {% csrf_token %}
+</div>
+
+<form method="post" enctype="multipart/form-data" class="card">
+  {% csrf_token %}
+  <input type="hidden" name="question_type" value="{{ selected_question_type }}">
+  
+  <div class="field">
+    <label for="id_text">Question Text</label>
+    {{ form.text }}
+  </div>
+  
+  <div class="field">
+    <label for="id_image">Question Image (optional)</label>
+    {{ form.image }}
+  </div>
+  
+  {% if selected_question_type == 'multiple_choice' %}
+    <div class="options-grid">
+      <div class="field">
+        <label for="id_option1">Option 1</label>
+        {{ form.option1 }}
+      </div>
+      <div class="field">
+        <label for="id_option2">Option 2</label>
+        {{ form.option2 }}
+      </div>
+      <div class="field">
+        <label for="id_option3">Option 3</label>
+        {{ form.option3 }}
+      </div>
+      <div class="field">
+        <label for="id_option4">Option 4</label>
+        {{ form.option4 }}
+      </div>
+    </div>
     
     <div class="field">
-      <label for="id_text">Question Text</label>
-      {{ form.text }}
+      <label for="id_correct_option">Correct Answer</label>
+      {{ form.correct_option }}
     </div>
-    
+  {% else %}
+    <!-- True/False -->
     <div class="field">
-      <label for="id_image">Question Image (optional)</label>
-      {{ form.image }}
+      <label>Correct Answer</label>
+      <div class="tf-options">
+        <label class="tf-option">
+          <input type="radio" name="correct_option" value="1" {% if form.correct_option.value == 1 or form.correct_option.value == '1' %}checked{% endif %}>
+          <span class="tf-label true">✓ True</span>
+        </label>
+        <label class="tf-option">
+          <input type="radio" name="correct_option" value="2" {% if form.correct_option.value == 2 or form.correct_option.value == '2' %}checked{% endif %}>
+          <span class="tf-label false">✗ False</span>
+        </label>
+      </div>
     </div>
-    
-    {% if quiz.quiz_type == 'multiple_choice' %}
-      <div class="options-grid">
-        <div class="field">
-          <label for="id_option1">Option 1</label>
-          {{ form.option1 }}
-        </div>
-        <div class="field">
-          <label for="id_option2">Option 2</label>
-          {{ form.option2 }}
-        </div>
-        <div class="field">
-          <label for="id_option3">Option 3</label>
-          {{ form.option3 }}
-        </div>
-        <div class="field">
-          <label for="id_option4">Option 4</label>
-          {{ form.option4 }}
-        </div>
-      </div>
-      
-      <div class="field">
-        <label for="id_correct_option">Correct Answer</label>
-        {{ form.correct_option }}
-      </div>
-    {% else %}
-      <!-- True/False -->
-      <div class="field">
-        <label>Correct Answer</label>
-        <div class="tf-options">
-          <label class="tf-option">
-            <input type="radio" name="correct_option" value="1" {% if form.correct_option.value == 1 or form.correct_option.value == '1' %}checked{% endif %}>
-            <span class="tf-label true">✓ True</span>
-          </label>
-          <label class="tf-option">
-            <input type="radio" name="correct_option" value="2" {% if form.correct_option.value == 2 or form.correct_option.value == '2' %}checked{% endif %}>
-            <span class="tf-label false">✗ False</span>
-          </label>
-        </div>
-      </div>
-    {% endif %}
-    
-    <div class="actions">
-      <button class="btn primary" type="submit">Add Question</button>
-      <a class="btn secondary" href="{% url 'teacher_quiz_detail' quiz.id %}">Cancel</a>
-    </div>
-  </form>
-{% endif %}
+  {% endif %}
+  
+  <div class="actions">
+    <button class="btn primary" type="submit">Add Question</button>
+    <a class="btn secondary" href="{% url 'teacher_quiz_detail' quiz.id %}">Cancel</a>
+  </div>
+</form>
 
 <style>
-.quiz-type-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 500;
+.question-type-tabs {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
-.quiz-type-badge.mc { background: rgba(37, 99, 235, 0.15); color: #60a5fa; }
-.quiz-type-badge.tf { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-.quiz-type-badge.fu { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
 
-.info-box {
-  padding: 16px;
-  background: rgba(59, 130, 246, 0.1);
+.q-type-tab {
+  padding: 10px 18px;
   border-radius: 8px;
-  border-left: 4px solid #3b82f6;
+  background: var(--card1, rgba(255,255,255,0.03));
+  border: 2px solid var(--border, rgba(255,255,255,0.1));
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.q-type-tab:hover {
+  border-color: var(--accent, #2563eb);
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.q-type-tab.active {
+  border-color: var(--accent, #2563eb);
+  background: rgba(37, 99, 235, 0.15);
+  color: #60a5fa;
 }
 
 .options-grid {

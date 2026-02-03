@@ -515,11 +515,15 @@ def quiz_result(request, quiz_code, submission_id):
         except User.DoesNotExist:
             pass
 
+    # Get answers for the submission
+    answers = submission.answers.select_related('question').order_by('id')
+
     context = {
         "quiz": quiz,
         "submission": submission,
         "student_name": student_name,
         "university_id": university_id,
+        "answers": answers,
     }
     return render(request, "quizzes/quiz_result.html", context)
 
@@ -681,12 +685,13 @@ def create_quiz(request):
 def create_question(request, quiz_id):
     quiz = get_object_or_404(Quiz, id=quiz_id, teacher=request.user)
     
-    # File upload quizzes don't need questions
-    if quiz.quiz_type == 'file_upload':
-        return render(request, "quizzes/create_question.html", {"quiz": quiz, "form": None})
+    # Get question type from request (default based on quiz type or multiple_choice)
+    question_type = request.GET.get('type') or request.POST.get('question_type') or quiz.quiz_type
+    if question_type == 'file_upload':
+        question_type = 'multiple_choice'  # File upload quizzes can still have questions of other types
     
-    # Choose the correct form based on quiz type
-    if quiz.quiz_type == 'true_false':
+    # Choose the correct form based on selected question type
+    if question_type == 'true_false':
         FormClass = TrueFalseQuestionForm
     else:
         FormClass = QuestionForm
@@ -696,8 +701,9 @@ def create_question(request, quiz_id):
     if request.method == "POST" and form.is_valid():
         q = form.save(commit=False)
         q.quiz = quiz
-        # Set question_type based on quiz type
-        if quiz.quiz_type == 'true_false':
+        # Set question_type based on selected type
+        selected_type = request.POST.get('question_type', 'multiple_choice')
+        if selected_type == 'true_false':
             q.question_type = 'true_false'
             q.option1 = 'True'
             q.option2 = 'False'
@@ -709,7 +715,11 @@ def create_question(request, quiz_id):
         messages.success(request, "Question added.")
         return redirect("teacher_quiz_detail", quiz_id=quiz.id)
 
-    return render(request, "quizzes/create_question.html", {"quiz": quiz, "form": form})
+    return render(request, "quizzes/create_question.html", {
+        "quiz": quiz, 
+        "form": form,
+        "selected_question_type": question_type,
+    })
 
 
 @staff_required

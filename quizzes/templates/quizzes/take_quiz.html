@@ -51,43 +51,8 @@
     <button id="submitBtn" class="btn primary" type="submit" style="width: 100%; padding: 14px; font-size: 16px; margin-top: 20px;">Submit File</button>
   </form>
 
-{% elif quiz.quiz_type == 'true_false' %}
-  <!-- TRUE/FALSE QUIZ -->
-  <form id="quizForm" method="post">
-    {% csrf_token %}
-
-    {% for q in questions %}
-      <div class="card" style="margin-bottom: 14px;">
-        <p style="margin: 0 0 12px 0; font-weight: 700; font-size: 15px;"><b>Q{{ forloop.counter }}.</b> {{ q.text }}</p>
-
-        {% if q.image %}
-          <img src="{{ q.image.url }}" style="max-width: 100%; border-radius: 10px; margin: 10px 0;">
-        {% endif %}
-
-        <div class="tf-answer-options">
-          <label class="tf-answer-option">
-            <input type="radio" name="question_{{ q.id }}" value="1" required>
-            <span class="tf-answer true">✓ True</span>
-          </label>
-          <label class="tf-answer-option">
-            <input type="radio" name="question_{{ q.id }}" value="2">
-            <span class="tf-answer false">✗ False</span>
-          </label>
-        </div>
-      </div>
-    {% empty %}
-      <div class="card">
-        <p style="color: var(--muted);">No questions have been added to this quiz yet.</p>
-      </div>
-    {% endfor %}
-
-    {% if questions %}
-      <button id="submitBtn" class="btn primary" type="submit" style="width: 100%; padding: 14px; font-size: 16px; margin-top: 20px;">Submit Quiz</button>
-    {% endif %}
-  </form>
-
 {% else %}
-  <!-- MULTIPLE CHOICE QUIZ (default) -->
+  <!-- MIXED QUESTION TYPES (Multiple Choice & True/False) -->
   <form id="quizForm" method="post">
     {% csrf_token %}
 
@@ -99,24 +64,39 @@
           <img src="{{ q.image.url }}" style="max-width: 100%; border-radius: 10px; margin: 10px 0;">
         {% endif %}
 
-        <div style="margin-top: 12px;">
-          <label style="display: block; padding: 8px 0; margin: 0; cursor: pointer;">
-            <input type="radio" name="question_{{ q.id }}" value="1" style="margin-right: 8px; cursor: pointer;" required> 
-            <span>{{ q.option1 }}</span>
-          </label>
-          <label style="display: block; padding: 8px 0; margin: 0; cursor: pointer;">
-            <input type="radio" name="question_{{ q.id }}" value="2" style="margin-right: 8px; cursor: pointer;"> 
-            <span>{{ q.option2 }}</span>
-          </label>
-          <label style="display: block; padding: 8px 0; margin: 0; cursor: pointer;">
-            <input type="radio" name="question_{{ q.id }}" value="3" style="margin-right: 8px; cursor: pointer;"> 
-            <span>{{ q.option3 }}</span>
-          </label>
-          <label style="display: block; padding: 8px 0; margin: 0; cursor: pointer;">
-            <input type="radio" name="question_{{ q.id }}" value="4" style="margin-right: 8px; cursor: pointer;"> 
-            <span>{{ q.option4 }}</span>
-          </label>
-        </div>
+        {% if q.question_type == 'true_false' %}
+          <!-- TRUE/FALSE QUESTION -->
+          <div class="tf-answer-options">
+            <label class="tf-answer-option">
+              <input type="radio" name="question_{{ q.id }}" value="1" required>
+              <span class="tf-answer true">✓ True</span>
+            </label>
+            <label class="tf-answer-option">
+              <input type="radio" name="question_{{ q.id }}" value="2">
+              <span class="tf-answer false">✗ False</span>
+            </label>
+          </div>
+        {% else %}
+          <!-- MULTIPLE CHOICE QUESTION (default) -->
+          <div style="margin-top: 12px;">
+            <label style="display: block; padding: 8px 0; margin: 0; cursor: pointer;">
+              <input type="radio" name="question_{{ q.id }}" value="1" style="margin-right: 8px; cursor: pointer;" required> 
+              <span>{{ q.option1 }}</span>
+            </label>
+            <label style="display: block; padding: 8px 0; margin: 0; cursor: pointer;">
+              <input type="radio" name="question_{{ q.id }}" value="2" style="margin-right: 8px; cursor: pointer;"> 
+              <span>{{ q.option2 }}</span>
+            </label>
+            <label style="display: block; padding: 8px 0; margin: 0; cursor: pointer;">
+              <input type="radio" name="question_{{ q.id }}" value="3" style="margin-right: 8px; cursor: pointer;"> 
+              <span>{{ q.option3 }}</span>
+            </label>
+            <label style="display: block; padding: 8px 0; margin: 0; cursor: pointer;">
+              <input type="radio" name="question_{{ q.id }}" value="4" style="margin-right: 8px; cursor: pointer;"> 
+              <span>{{ q.option4 }}</span>
+            </label>
+          </div>
+        {% endif %}
       </div>
     {% empty %}
       <div class="card">
