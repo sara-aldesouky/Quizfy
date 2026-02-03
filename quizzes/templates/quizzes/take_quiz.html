@@ -52,8 +52,8 @@
   </form>
 
 {% else %}
-  <!-- MIXED QUESTION TYPES (Multiple Choice & True/False) -->
-  <form id="quizForm" method="post">
+  <!-- MIXED QUESTION TYPES (Multiple Choice, True/False & File Upload) -->
+  <form id="quizForm" method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
     {% for q in questions %}
@@ -75,6 +75,21 @@
               <input type="radio" name="question_{{ q.id }}" value="2">
               <span class="tf-answer false">✗ False</span>
             </label>
+          </div>
+        {% elif q.question_type == 'file_upload' %}
+          <!-- FILE UPLOAD QUESTION -->
+          <div class="file-upload-question" style="margin-top: 12px;">
+            <div class="upload-area-small" onclick="document.getElementById('file_{{ q.id }}').click()">
+              <input type="file" name="file_{{ q.id }}" id="file_{{ q.id }}" accept=".pdf,.jpg,.jpeg,.png" style="display: none;" onchange="previewQuestionFile(this, {{ q.id }})">
+              <div class="upload-content-small" id="upload_content_{{ q.id }}">
+                <span class="upload-icon-small">📁</span>
+                <span>Click to upload file (PDF, JPG, PNG)</span>
+              </div>
+              <div class="file-preview-small" id="preview_{{ q.id }}" style="display: none;">
+                <span class="file-name-small" id="filename_{{ q.id }}"></span>
+                <button type="button" class="remove-file-small" onclick="event.stopPropagation(); removeQuestionFile({{ q.id }})">✕</button>
+              </div>
+            </div>
           </div>
         {% else %}
           <!-- MULTIPLE CHOICE QUESTION (default) -->
@@ -239,6 +254,58 @@
     cursor: pointer;
     font-size: 12px;
   }
+
+  /* Per-question file upload styles */
+  .upload-area-small {
+    border: 2px dashed var(--border, rgba(255,255,255,0.15));
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.02);
+  }
+  
+  .upload-area-small:hover {
+    border-color: var(--accent);
+    background: rgba(37, 99, 235, 0.05);
+  }
+  
+  .upload-content-small {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--muted);
+  }
+  
+  .upload-icon-small {
+    font-size: 20px;
+  }
+  
+  .file-preview-small {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: 6px;
+  }
+  
+  .file-name-small {
+    font-weight: 500;
+    color: var(--accent);
+    flex: 1;
+  }
+  
+  .remove-file-small {
+    background: rgba(239, 68, 68, 0.2);
+    border: none;
+    color: #ef4444;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 11px;
+  }
 </style>
 
 <script>
@@ -326,6 +393,29 @@
     if (fileInput) fileInput.value = '';
     if (uploadContent) uploadContent.style.display = 'block';
     if (filePreview) filePreview.style.display = 'none';
+  };
+
+  // Per-question file upload handlers
+  window.previewQuestionFile = function(input, questionId) {
+    const content = document.getElementById('upload_content_' + questionId);
+    const preview = document.getElementById('preview_' + questionId);
+    const filename = document.getElementById('filename_' + questionId);
+    
+    if (input.files.length > 0) {
+      content.style.display = 'none';
+      preview.style.display = 'flex';
+      filename.textContent = input.files[0].name;
+    }
+  };
+  
+  window.removeQuestionFile = function(questionId) {
+    const input = document.getElementById('file_' + questionId);
+    const content = document.getElementById('upload_content_' + questionId);
+    const preview = document.getElementById('preview_' + questionId);
+    
+    input.value = '';
+    content.style.display = 'flex';
+    preview.style.display = 'none';
   };
 
   // -----------------------------

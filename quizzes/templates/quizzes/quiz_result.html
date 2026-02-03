@@ -84,12 +84,14 @@
     <div style="display:flex;flex-direction:column;gap:12px;">
       {% for a in answers %}
         <div style="border-radius:16px;padding:14px;border:1px solid rgba(255,255,255,.08);background:rgba(15,23,42,.70);
-                    box-shadow:0 0 0 1px {% if a.is_correct %}rgba(34,197,94,.18){% else %}rgba(239,68,68,.18){% endif %} inset;">
+                    box-shadow:0 0 0 1px {% if a.question.question_type == 'file_upload' %}rgba(37,99,235,.18){% elif a.is_correct %}rgba(34,197,94,.18){% else %}rgba(239,68,68,.18){% endif %} inset;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
             <div style="font-weight:800;font-size:12px;letter-spacing:.6px;text-transform:uppercase;opacity:.85;">
               Q{{ forloop.counter }}
             </div>
-            {% if a.is_correct %}
+            {% if a.question.question_type == 'file_upload' %}
+              <span style="padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800;border:1px solid rgba(255,255,255,.10);background:rgba(37,99,235,.14);">📄 Uploaded</span>
+            {% elif a.is_correct %}
               <span style="padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800;border:1px solid rgba(255,255,255,.10);background:rgba(34,197,94,.14);">Correct</span>
             {% else %}
               <span style="padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800;border:1px solid rgba(255,255,255,.10);background:rgba(239,68,68,.14);">Wrong</span>
@@ -100,29 +102,53 @@
             {{ a.question.text }}
           </div>
 
-          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;">
+          {% if a.question.question_type == 'file_upload' %}
+            <!-- Show file upload info -->
             <div style="border-radius:14px;padding:12px;background:rgba(17,24,39,.55);border:1px solid rgba(255,255,255,.06);">
-              <div style="font-size:12px;opacity:.75;margin-bottom:6px;">Your answer</div>
-              <div style="font-weight:700;font-size:14px;line-height:1.35;">
-                {% if a.question.question_type == 'true_false' %}
-                  {% if a.selected == 1 %}✓ True{% elif a.selected == 2 %}✗ False{% else %}—{% endif %}
-                {% else %}
-                  {{ a.question|option_text:a.selected|default:"—" }}
+              <div style="font-size:12px;opacity:.75;margin-bottom:6px;">Your submission</div>
+              {% for fs in file_submissions %}
+                {% if fs.question_id == a.question_id %}
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span>📎</span>
+                    <span style="font-weight:600;">{{ fs.file_name }}</span>
+                    {% if fs.grade %}
+                      <span style="margin-left:auto;padding:4px 8px;border-radius:6px;background:rgba(34,197,94,.14);font-size:12px;font-weight:700;">
+                        {{ fs.grade }}
+                      </span>
+                    {% else %}
+                      <span style="margin-left:auto;font-size:12px;opacity:.65;">Pending review</span>
+                    {% endif %}
+                  </div>
                 {% endif %}
-              </div>
+              {% empty %}
+                <span style="opacity:.65;">No file uploaded</span>
+              {% endfor %}
             </div>
+          {% else %}
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;">
+              <div style="border-radius:14px;padding:12px;background:rgba(17,24,39,.55);border:1px solid rgba(255,255,255,.06);">
+                <div style="font-size:12px;opacity:.75;margin-bottom:6px;">Your answer</div>
+                <div style="font-weight:700;font-size:14px;line-height:1.35;">
+                  {% if a.question.question_type == 'true_false' %}
+                    {% if a.selected == 1 %}✓ True{% elif a.selected == 2 %}✗ False{% else %}—{% endif %}
+                  {% else %}
+                    {{ a.question|option_text:a.selected|default:"—" }}
+                  {% endif %}
+                </div>
+              </div>
 
-            <div style="border-radius:14px;padding:12px;background:rgba(17,24,39,.55);border:1px solid rgba(255,255,255,.06);">
-              <div style="font-size:12px;opacity:.75;margin-bottom:6px;">Correct answer</div>
-              <div style="font-weight:700;font-size:14px;line-height:1.35;">
-                {% if a.question.question_type == 'true_false' %}
-                  {% if a.question.correct_option == 1 %}✓ True{% else %}✗ False{% endif %}
-                {% else %}
-                  {{ a.question|option_text:a.question.correct_option }}
-                {% endif %}
+              <div style="border-radius:14px;padding:12px;background:rgba(17,24,39,.55);border:1px solid rgba(255,255,255,.06);">
+                <div style="font-size:12px;opacity:.75;margin-bottom:6px;">Correct answer</div>
+                <div style="font-weight:700;font-size:14px;line-height:1.35;">
+                  {% if a.question.question_type == 'true_false' %}
+                    {% if a.question.correct_option == 1 %}✓ True{% else %}✗ False{% endif %}
+                  {% else %}
+                    {{ a.question|option_text:a.question.correct_option }}
+                  {% endif %}
+                </div>
               </div>
             </div>
-          </div>
+          {% endif %}
         </div>
       {% empty %}
         <div class="card">

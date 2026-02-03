@@ -91,6 +91,7 @@ class Question(models.Model):
     QUESTION_TYPE_CHOICES = [
         ('multiple_choice', 'Multiple Choice (4 options)'),
         ('true_false', 'True / False'),
+        ('file_upload', 'File Upload (Student uploads file)'),
     ]
     
     quiz=models.ForeignKey(Quiz,on_delete=models.CASCADE,related_name='questions')
@@ -205,8 +206,9 @@ class QuizAttemptPermission(models.Model):
 
 
 class FileSubmission(models.Model):
-    """Stores uploaded files for file_upload type quizzes"""
+    """Stores uploaded files for file_upload type quizzes or file upload questions"""
     submission = models.ForeignKey(Submission, on_delete=models.CASCADE, related_name="file_submissions")
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True, blank=True, related_name="file_answers")
     file = models.FileField(upload_to=file_submission_upload_path)
     file_name = models.CharField(max_length=255)
     uploaded_at = models.DateTimeField(auto_now_add=True)

@@ -14,6 +14,9 @@
     <a href="?type=true_false" class="q-type-tab {% if selected_question_type == 'true_false' %}active{% endif %}">
       ✓✗ True/False
     </a>
+    <a href="?type=file_upload" class="q-type-tab {% if selected_question_type == 'file_upload' %}active{% endif %}">
+      📄 File Upload
+    </a>
   </div>
 </div>
 
@@ -24,6 +27,9 @@
   <div class="field">
     <label for="id_text">Question Text</label>
     {{ form.text }}
+    {% if selected_question_type == 'file_upload' %}
+      <small style="color: var(--muted);">Enter instructions for what the student should upload.</small>
+    {% endif %}
   </div>
   
   <div class="field">
@@ -55,7 +61,7 @@
       <label for="id_correct_option">Correct Answer</label>
       {{ form.correct_option }}
     </div>
-  {% else %}
+  {% elif selected_question_type == 'true_false' %}
     <!-- True/False -->
     <div class="field">
       <label>Correct Answer</label>
@@ -69,6 +75,15 @@
           <span class="tf-label false">✗ False</span>
         </label>
       </div>
+    </div>
+  {% else %}
+    <!-- File Upload - no options needed -->
+    <div class="info-box" style="margin: 16px 0;">
+      <p style="margin: 0;">📄 <b>File Upload Question</b></p>
+      <p style="color: var(--muted); margin: 8px 0 0;">
+        Students will upload a file (PDF, JPG, PNG) as their answer to this question.
+        You will grade their submissions manually.
+      </p>
     </div>
   {% endif %}
   

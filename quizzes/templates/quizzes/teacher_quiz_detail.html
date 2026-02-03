@@ -124,8 +124,8 @@
         <div class="question-header">
           <div class="question-number">Q{{ forloop.counter }}</div>
           <div class="question-text">{{ q.text|default:"(No text)" }}</div>
-          <div class="question-type-badge {% if q.question_type == 'true_false' %}tf{% else %}mc{% endif %}">
-            {% if q.question_type == 'true_false' %}T/F{% else %}MC{% endif %}
+          <div class="question-type-badge {% if q.question_type == 'true_false' %}tf{% elif q.question_type == 'file_upload' %}file{% else %}mc{% endif %}">
+            {% if q.question_type == 'true_false' %}T/F{% elif q.question_type == 'file_upload' %}📄{% else %}MC{% endif %}
           </div>
           <div class="question-actions">
             <a class="btn-icon" href="{% url 'edit_question' quiz.id q.id %}" title="Edit">✏️</a>
@@ -141,6 +141,8 @@
           {% if q.question_type == 'true_false' %}
             <span class="option {% if q.correct_option == 1 %}correct{% endif %}">✓ True</span>
             <span class="option {% if q.correct_option == 2 %}correct{% endif %}">✗ False</span>
+          {% elif q.question_type == 'file_upload' %}
+            <span class="option file-upload-info">📄 Student uploads file (PDF, JPG, PNG)</span>
           {% else %}
             <span class="option {% if q.correct_option == 1 %}correct{% endif %}">1) {{ q.option1 }}</span>
             <span class="option {% if q.correct_option == 2 %}correct{% endif %}">2) {{ q.option2 }}</span>
@@ -361,6 +363,17 @@
 .question-type-badge.tf {
   background: rgba(16, 185, 129, 0.15);
   color: #34d399;
+}
+
+.question-type-badge.file {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.file-upload-info {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--muted);
+  font-style: italic;
 }
 
 .question-actions {

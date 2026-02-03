@@ -382,13 +382,14 @@ def take_quiz(request, quiz_code):
 
 @transaction.atomic
 def _finalize_submission(request, quiz, submission, questions=None):
+    from django.contrib import messages  # Import at top of function
+    
     # If already submitted, go to result
     if submission.is_submitted:
         return redirect("quiz_result", quiz_code=quiz.code, submission_id=submission.id)
 
     # Teacher stopped it / due date passed mid-attempt
     if not quiz.can_start():
-        from django.contrib import messages
         messages.error(request, "Quiz was closed by the teacher.")
         return redirect("student_dashboard")
 
@@ -436,22 +437,57 @@ def _finalize_submission(request, quiz, submission, questions=None):
     submission.answers.all().delete()
 
     score = 0
-    total = questions.count()
+    total = 0  # Count non-file-upload questions
 
     for q in questions:
-        selected = request.POST.get(f"question_{q.id}")
-        selected_int = int(selected) if selected else None
+        if q.question_type == 'file_upload':
+            # Handle file upload question
+            uploaded_file = request.FILES.get(f"file_{q.id}")
+            if uploaded_file:
+                # Validate file
+                max_size = 10 * 1024 * 1024  # 10MB
+                allowed_extensions = ['pdf', 'jpg', 'jpeg', 'png']
+                ext = uploaded_file.name.split('.')[-1].lower()
+                
+                if uploaded_file.size > max_size:
+                    messages.error(request, f"File for Q{q.id} must be under 10MB")
+                    return redirect("take_quiz", quiz_code=quiz.code)
+                
+                if ext not in allowed_extensions:
+                    messages.error(request, f"Only PDF, JPG, and PNG files are allowed")
+                    return redirect("take_quiz", quiz_code=quiz.code)
+                
+                # Save file submission linked to the question
+                FileSubmission.objects.create(
+                    submission=submission,
+                    question=q,
+                    file=uploaded_file,
+                    file_name=uploaded_file.name
+                )
+            
+            # File upload questions are graded manually (don't count toward auto-score)
+            Answer.objects.create(
+                submission=submission,
+                question=q,
+                selected=None,
+                is_correct=False,  # Will be graded manually
+            )
+        else:
+            # Handle multiple choice / true-false
+            total += 1
+            selected = request.POST.get(f"question_{q.id}")
+            selected_int = int(selected) if selected else None
 
-        is_correct = (selected_int == q.correct_option)
-        if is_correct:
-            score += 1
+            is_correct = (selected_int == q.correct_option)
+            if is_correct:
+                score += 1
 
-        Answer.objects.create(
-            submission=submission,
-            question=q,
-            selected=selected_int,
-            is_correct=is_correct,
-        )
+            Answer.objects.create(
+                submission=submission,
+                question=q,
+                selected=selected_int,
+                is_correct=is_correct,
+            )
 
     submission.score = score
     submission.total = total
@@ -517,6 +553,9 @@ def quiz_result(request, quiz_code, submission_id):
 
     # Get answers for the submission
     answers = submission.answers.select_related('question').order_by('id')
+    
+    # Get file submissions
+    file_submissions = submission.file_submissions.select_related('question').all()
 
     context = {
         "quiz": quiz,
@@ -524,6 +563,7 @@ def quiz_result(request, quiz_code, submission_id):
         "student_name": student_name,
         "university_id": university_id,
         "answers": answers,
+        "file_submissions": file_submissions,
     }
     return render(request, "quizzes/quiz_result.html", context)
 
@@ -718,13 +758,13 @@ def create_question(request, quiz_id):
     quiz = get_object_or_404(Quiz, id=quiz_id, teacher=request.user)
     
     # Get question type from request (default based on quiz type or multiple_choice)
-    question_type = request.GET.get('type') or request.POST.get('question_type') or quiz.quiz_type
-    if question_type == 'file_upload':
-        question_type = 'multiple_choice'  # File upload quizzes can still have questions of other types
+    question_type = request.GET.get('type') or request.POST.get('question_type') or 'multiple_choice'
     
     # Choose the correct form based on selected question type
     if question_type == 'true_false':
         FormClass = TrueFalseQuestionForm
+    elif question_type == 'file_upload':
+        FormClass = TrueFalseQuestionForm  # Use simpler form - no options needed
     else:
         FormClass = QuestionForm
     
@@ -741,6 +781,13 @@ def create_question(request, quiz_id):
             q.option2 = 'False'
             q.option3 = ''
             q.option4 = ''
+        elif selected_type == 'file_upload':
+            q.question_type = 'file_upload'
+            q.option1 = ''
+            q.option2 = ''
+            q.option3 = ''
+            q.option4 = ''
+            q.correct_option = 0  # No correct option for file upload
         else:
             q.question_type = 'multiple_choice'
         q.save()
