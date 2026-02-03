@@ -17,19 +17,19 @@
 {% endif %}
 
 {% for f in folders %}
-  <div class="card">
-    <h3>{{ f.name }}</h3>
-    <p><b>Quizzes:</b> {{ f.quizzes.count }}</p>
-
-    <div class="actions">
-      <a class="btn secondary" href="{% url 'folder_detail' f.id %}">Open</a>
-
-    
-
-      <!-- ✅ NEW Export Boxes -->
-      <a class="btn secondary" href="{% url 'export_folder_boxes_excel' f.id %}">
-        Export Excel 
-      </a>
+  <div class="card folder-card">
+    <div class="folder-header">
+      <div class="folder-info">
+        <h3 style="margin: 0;">{{ f.name }}</h3>
+        <p style="margin: 6px 0 0; color: var(--muted); font-size: 14px;">
+          {{ f.quizzes.count }} quiz{{ f.quizzes.count|pluralize:"zes" }}
+        </p>
+      </div>
+      <div class="folder-actions">
+        <a class="btn primary" href="{% url 'folder_detail' f.id %}">Open</a>
+        <a class="btn secondary" href="{% url 'export_folder_boxes_excel' f.id %}">📥 Export</a>
+        <a class="btn danger" href="{% url 'delete_folder' f.id %}" title="Delete Folder">🗑️</a>
+      </div>
     </div>
   </div>
 {% endfor %}
@@ -43,33 +43,58 @@
 {% endif %}
 
 {% for q in ungrouped %}
-  <div class="card">
-    <h3>{{ q.title }}</h3>
-    <p><b>Code:</b> {{ q.code }}</p>
-    <div class="quiz-analysis" data-quiz-id="{{ q.id }}">
-      <div class="quiz-analysis-title">Graph analysis</div>
-      <div class="quiz-bar-chart" role="img" aria-label="Graph analysis showing students in quiz and submitted counts.">
-        <div class="quiz-bar">
-          <div class="quiz-bar-fill quiz-bar-assigned" data-bar="assigned" style="height: {% widthratio q.assigned_count q.bar_max 100 %}%"></div>
-          <div class="quiz-bar-label">In Quiz</div>
-          <div class="quiz-bar-value" data-value="assigned">{{ q.assigned_count }}</div>
-        </div>
-        <div class="quiz-bar">
-          <div class="quiz-bar-fill quiz-bar-submitted" data-bar="submitted" style="height: {% widthratio q.submitted_count q.bar_max 100 %}%"></div>
-          <div class="quiz-bar-label">Submitted</div>
-          <div class="quiz-bar-value" data-value="submitted">{{ q.submitted_count }}</div>
-        </div>
+  <div class="card quiz-card">
+    <div class="quiz-card-header">
+      <div class="quiz-info">
+        <h3 style="margin: 0;">{{ q.title }}</h3>
+        <p style="margin: 6px 0 0; color: var(--muted); font-size: 14px;">
+          Code: <b>{{ q.code }}</b> · {{ q.submitted_count }}/{{ q.assigned_count }} submitted
+        </p>
       </div>
-    </div>
-
-    <div class="actions">
-      <a class="btn secondary" href="{% url 'create_question' q.id %}">Add Question</a>
-      <a class="btn secondary" href="{% url 'quiz_submissions' q.id %}">Submissions</a>
-      <a class="btn secondary" href="{% url 'move_quiz' q.id %}">Move</a>
-      <a class="btn danger" href="{% url 'delete_quiz' q.id %}">Delete</a>
+      <div class="quiz-actions">
+        <a class="btn primary" href="{% url 'teacher_quiz_detail' q.id %}">Open</a>
+        <a class="btn secondary" href="{% url 'move_quiz' q.id %}">Move</a>
+        <a class="btn danger" href="{% url 'delete_quiz' q.id %}">🗑️</a>
+      </div>
     </div>
   </div>
 {% endfor %}
+
+<style>
+.folder-card, .quiz-card {
+  margin-bottom: 12px;
+}
+
+.folder-header, .quiz-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.folder-info, .quiz-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.folder-actions, .quiz-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .folder-header, .quiz-card-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .folder-actions, .quiz-actions {
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+}
+</style>
 
 <!-- ✅ Teacher Help Bot Widget (place ONCE, outside loops) -->
 <div id="helpbot" class="helpbot">
@@ -163,53 +188,6 @@
         input.focus();
       }
     });
-  })();
-</script>
-
-<script>
-  (function(){
-    const refreshIntervalMs = 10000;
-
-    function getQuizIds(){
-      return Array.from(document.querySelectorAll(".quiz-analysis[data-quiz-id]"))
-        .map((el) => el.dataset.quizId);
-    }
-
-    function updateQuizCards(payload){
-      Object.entries(payload).forEach(([quizId, data]) => {
-        const wrapper = document.querySelector(`.quiz-analysis[data-quiz-id="${quizId}"]`);
-        if (!wrapper) return;
-        const barMax = Math.max(1, data.bar_max || 1);
-        const assigned = Number(data.assigned_count || 0);
-        const submitted = Number(data.submitted_count || 0);
-
-        const assignedFill = wrapper.querySelector('[data-bar="assigned"]');
-        const submittedFill = wrapper.querySelector('[data-bar="submitted"]');
-        const assignedValue = wrapper.querySelector('[data-value="assigned"]');
-        const submittedValue = wrapper.querySelector('[data-value="submitted"]');
-
-        if (assignedFill) assignedFill.style.height = `${(assigned / barMax) * 100}%`;
-        if (submittedFill) submittedFill.style.height = `${(submitted / barMax) * 100}%`;
-        if (assignedValue) assignedValue.textContent = assigned;
-        if (submittedValue) submittedValue.textContent = submitted;
-      });
-    }
-
-    async function refreshCounts(){
-      const quizIds = getQuizIds();
-      if (!quizIds.length) return;
-      try {
-        const response = await fetch(`{% url 'quiz_live_counts' %}?quiz_ids=${quizIds.join(",")}`);
-        if (!response.ok) return;
-        const data = await response.json();
-        updateQuizCards(data.quizzes || {});
-      } catch (error) {
-        console.warn("Live quiz counts unavailable", error);
-      }
-    }
-
-    refreshCounts();
-    setInterval(refreshCounts, refreshIntervalMs);
   })();
 </script>
 

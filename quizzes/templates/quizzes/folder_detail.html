@@ -7,67 +7,33 @@
   <div>
     <h1 style="margin:0;">{{ folder.name }}</h1>
     <p style="margin:6px 0 0; color:var(--muted);">
-      Quizzes in this folder
+      {{ quizzes|length }} quiz{{ quizzes|length|pluralize:"zes" }} in this folder
     </p>
   </div>
 
-  <div class="actions" style="margin-left:auto;">
+  <div class="actions" style="margin-left:auto; gap: 8px;">
     <a class="btn" href="{% url 'teacher_quizzes' %}">← Back</a>
-
-    <a class="btn primary" href="{% url 'create_quiz' %}">+ Create Quiz</a>
-
-    
+    <a class="btn primary" href="{% url 'create_quiz' %}?folder={{ folder.id }}">+ Create Quiz</a>
+    <a class="btn danger" href="{% url 'delete_folder' folder.id %}" title="Delete Folder">🗑️ Delete Folder</a>
   </div>
 </div>
 
 {% if quizzes %}
   {% for quiz in quizzes %}
-    <div class="card compact">
-      <div class="row">
-        <div>
+    <div class="card compact quiz-card">
+      <div class="quiz-card-header">
+        <div class="quiz-info">
           <h2 style="margin:0; font-size:18px; color:var(--text);">
             {{ quiz.title }}
           </h2>
-          <p style="margin:6px 0 0; color:var(--muted);">
+          <p style="margin:6px 0 0; color:var(--muted); font-size: 13px;">
             Code: <b>{{ quiz.code }}</b>
-            {% if quiz.created_at %} · Created: {{ quiz.created_at|date:"M d, Y" }}{% endif %}
+            {% if quiz.created_at %} · {{ quiz.created_at|date:"M d, Y" }}{% endif %}
+            · {{ quiz.submitted_count }}/{{ quiz.assigned_count }} submitted
           </p>
         </div>
-
-        <div class="actions" style="margin:0;">
-          <button class="btn secondary" onclick="showQR('{{ quiz.code }}', '/quiz/{{ quiz.code }}/qr/')" title="View QR Code" style="white-space: nowrap;">📱 QR</button>
-          <a class="btn" href="{% url 'teacher_quiz_detail' quiz.id %}">Open</a>
-
-          <a class="btn" href="{% url 'create_question' quiz.id %}">+ Add Q</a>
-
-          <a class="btn" href="{% url 'quiz_submissions' quiz.id %}">Submissions</a>
-
-          <a class="btn" href="{% url 'export_submissions_excel' quiz.id %}">
-            Export Quiz Excel
-          </a>
-
-          <a class="btn" href="{% url 'move_quiz' quiz.id %}">
-            Move
-          </a>
-
-          <a class="btn danger" href="{% url 'delete_quiz' quiz.id %}">
-            Delete
-          </a>
-        </div>
-      </div>
-      <div class="quiz-analysis" data-quiz-id="{{ quiz.id }}">
-        <div class="quiz-analysis-title">Graph analysis</div>
-        <div class="quiz-bar-chart" role="img" aria-label="Graph analysis showing students in quiz and submitted counts.">
-          <div class="quiz-bar">
-            <div class="quiz-bar-fill quiz-bar-assigned" data-bar="assigned" style="height: {% widthratio quiz.assigned_count quiz.bar_max 100 %}%"></div>
-            <div class="quiz-bar-label">In Quiz</div>
-            <div class="quiz-bar-value" data-value="assigned">{{ quiz.assigned_count }}</div>
-          </div>
-          <div class="quiz-bar">
-            <div class="quiz-bar-fill quiz-bar-submitted" data-bar="submitted" style="height: {% widthratio quiz.submitted_count quiz.bar_max 100 %}%"></div>
-            <div class="quiz-bar-label">Submitted</div>
-            <div class="quiz-bar-value" data-value="submitted">{{ quiz.submitted_count }}</div>
-          </div>
+        <div class="quiz-actions">
+          <a class="btn primary" href="{% url 'teacher_quiz_detail' quiz.id %}">Open</a>
         </div>
       </div>
     </div>
@@ -80,80 +46,39 @@
   </div>
 {% endif %}
 
-<!-- QR Code Modal -->
-<div id="qrModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,.8); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
-  <div style="background: var(--card0); border-radius: 18px; padding: 24px; text-align: center; max-width: 400px; width: 100%;">
-    <h2 style="margin: 0 0 16px 0;">Quiz QR Code</h2>
-    <img id="qrImage" src="" alt="QR Code" style="max-width: 100%; border-radius: 10px; margin: 16px 0; border: 2px solid var(--border);">
-    <p id="qrCode" style="font-size: 14px; margin: 12px 0; word-break: break-all;"></p>
-    <button class="btn primary" onclick="closeQR()" style="width: 100%;">Close</button>
-  </div>
-</div>
-
-<script>
-function showQR(code, qrUrl) {
-  const img = document.getElementById('qrImage');
-  img.src = qrUrl;
-  img.alt = `QR Code for ${code}`;
-  document.getElementById('qrCode').textContent = 'Quiz Code: ' + code;
-  document.getElementById('qrModal').style.display = 'flex';
+<style>
+.quiz-card {
+  margin-bottom: 12px;
 }
 
-function closeQR() {
-  document.getElementById('qrModal').style.display = 'none';
+.quiz-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
-// Close modal on background click
-document.getElementById('qrModal').addEventListener('click', function(e) {
-  if (e.target === this) closeQR();
-});
-</script>
+.quiz-info {
+  flex: 1;
+  min-width: 0;
+}
 
-<script>
-  (function(){
-    const refreshIntervalMs = 10000;
+.quiz-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
 
-    function getQuizIds(){
-      return Array.from(document.querySelectorAll(".quiz-analysis[data-quiz-id]"))
-        .map((el) => el.dataset.quizId);
-    }
-
-    function updateQuizCards(payload){
-      Object.entries(payload).forEach(([quizId, data]) => {
-        const wrapper = document.querySelector(`.quiz-analysis[data-quiz-id="${quizId}"]`);
-        if (!wrapper) return;
-        const barMax = Math.max(1, data.bar_max || 1);
-        const assigned = Number(data.assigned_count || 0);
-        const submitted = Number(data.submitted_count || 0);
-
-        const assignedFill = wrapper.querySelector('[data-bar="assigned"]');
-        const submittedFill = wrapper.querySelector('[data-bar="submitted"]');
-        const assignedValue = wrapper.querySelector('[data-value="assigned"]');
-        const submittedValue = wrapper.querySelector('[data-value="submitted"]');
-
-        if (assignedFill) assignedFill.style.height = `${(assigned / barMax) * 100}%`;
-        if (submittedFill) submittedFill.style.height = `${(submitted / barMax) * 100}%`;
-        if (assignedValue) assignedValue.textContent = assigned;
-        if (submittedValue) submittedValue.textContent = submitted;
-      });
-    }
-
-    async function refreshCounts(){
-      const quizIds = getQuizIds();
-      if (!quizIds.length) return;
-      try {
-        const response = await fetch(`{% url 'quiz_live_counts' %}?quiz_ids=${quizIds.join(",")}`);
-        if (!response.ok) return;
-        const data = await response.json();
-        updateQuizCards(data.quizzes || {});
-      } catch (error) {
-        console.warn("Live quiz counts unavailable", error);
-      }
-    }
-
-    refreshCounts();
-    setInterval(refreshCounts, refreshIntervalMs);
-  })();
-</script>
+@media (max-width: 600px) {
+  .quiz-card-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .quiz-actions {
+    margin-top: 12px;
+  }
+}
+</style>
 
 {% endblock %}

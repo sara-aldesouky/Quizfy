@@ -601,6 +601,38 @@ def create_folder(request):
         return redirect("teacher_quizzes")
     return render(request, "quizzes/create_folder.html", {"form": form})
 
+
+@staff_required
+def delete_folder(request, folder_id):
+    """Delete a subject folder with options to delete or move quizzes"""
+    folder = get_object_or_404(SubjectFolder, id=folder_id, teacher=request.user)
+    
+    if request.method == "POST":
+        action = request.POST.get("action")
+        
+        if action == "delete_all":
+            # Delete all quizzes in the folder
+            folder.quizzes.all().delete()
+            folder.delete()
+            messages.success(request, f"Folder '{folder.name}' and all its quizzes have been deleted.")
+        elif action == "move_ungrouped":
+            # Move quizzes to ungrouped (set folder to None)
+            folder.quizzes.all().update(folder=None)
+            folder.delete()
+            messages.success(request, f"Folder '{folder.name}' deleted. Quizzes moved to ungrouped.")
+        else:
+            messages.error(request, "Invalid action.")
+            return redirect("folder_detail", folder_id=folder_id)
+        
+        return redirect("teacher_quizzes")
+    
+    quiz_count = folder.quizzes.count()
+    return render(request, "quizzes/delete_folder.html", {
+        "folder": folder,
+        "quiz_count": quiz_count,
+    })
+
+
 @staff_required
 def folder_detail(request, folder_id):
     folder = get_object_or_404(SubjectFolder, id=folder_id, teacher=request.user)

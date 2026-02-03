@@ -53,6 +53,7 @@ urlpatterns = [
     # Folders + exports (per folder)
     path("teacher/folders/create/", views.create_folder, name="create_folder"),
     path("teacher/folders/<int:folder_id>/", views.folder_detail, name="folder_detail"),
+    path("teacher/folders/<int:folder_id>/delete/", views.delete_folder, name="delete_folder"),
     
 
     path(

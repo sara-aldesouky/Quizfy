@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Delete Folder{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+  <h1 style="margin-bottom: 8px;">Delete Folder</h1>
+  <p style="color: var(--muted); margin-bottom: 24px;">
+    You are about to delete the folder <b>"{{ folder.name }}"</b>
+  </p>
+
+  {% if quiz_count > 0 %}
+    <div class="card" style="margin-bottom: 20px; border-left: 4px solid #f59e0b; background: rgba(245, 158, 11, 0.05);">
+      <p style="margin: 0; font-weight: 600; color: #f59e0b;">
+        ⚠️ This folder contains {{ quiz_count }} quiz{{ quiz_count|pluralize:"zes" }}
+      </p>
+      <p style="margin: 8px 0 0; color: var(--muted); font-size: 14px;">
+        Choose what to do with the quizzes before deleting the folder.
+      </p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <!-- Option 1: Move to Ungrouped -->
+      <form method="post" class="delete-option-card">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="move_ungrouped">
+        <div class="option-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">📁</div>
+        <div class="option-content">
+          <h3 style="margin: 0 0 6px;">Move Quizzes to Ungrouped</h3>
+          <p style="margin: 0; color: var(--muted); font-size: 14px;">
+            The folder will be deleted, but all quizzes will be preserved and moved to the ungrouped section.
+          </p>
+        </div>
+        <button type="submit" class="btn primary">Move & Delete</button>
+      </form>
+
+      <!-- Option 2: Delete Everything -->
+      <form method="post" class="delete-option-card danger">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="delete_all">
+        <div class="option-icon" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">🗑️</div>
+        <div class="option-content">
+          <h3 style="margin: 0 0 6px;">Delete Everything</h3>
+          <p style="margin: 0; color: var(--muted); font-size: 14px;">
+            Permanently delete the folder AND all {{ quiz_count }} quiz{{ quiz_count|pluralize:"zes" }} inside. This cannot be undone.
+          </p>
+        </div>
+        <button type="submit" class="btn danger" onclick="return confirm('Are you sure? This will permanently delete all quizzes and their submissions.')">Delete All</button>
+      </form>
+    </div>
+  {% else %}
+    <div class="card" style="margin-bottom: 20px;">
+      <p style="margin: 0; color: var(--muted);">
+        This folder is empty. You can safely delete it.
+      </p>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="delete_all">
+      <button type="submit" class="btn danger" style="width: 100%;">Delete Empty Folder</button>
+    </form>
+  {% endif %}
+
+  <div style="margin-top: 20px;">
+    <a class="btn secondary" href="{% url 'folder_detail' folder.id %}">← Cancel</a>
+  </div>
+</div>
+
+<style>
+.delete-option-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: var(--card1);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  transition: all 0.2s ease;
+}
+
+.delete-option-card:hover {
+  border-color: var(--accent);
+}
+
+.delete-option-card.danger:hover {
+  border-color: #ef4444;
+}
+
+.option-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.option-content {
+  flex: 1;
+}
+
+.delete-option-card button {
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .delete-option-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .delete-option-card button {
+    width: 100%;
+  }
+}
+</style>
+{% endblock %}

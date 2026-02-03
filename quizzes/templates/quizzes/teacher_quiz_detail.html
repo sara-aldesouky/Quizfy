@@ -2,27 +2,86 @@
 {% block title %}{{ quiz.title }}{% endblock %}
 
 {% block content %}
-<div class="row" style="align-items:flex-end; gap:14px; margin-bottom:14px;">
-  <div>
-    <h1 style="margin:0;">{{ quiz.title }}</h1>
-    <p style="margin:6px 0 0; color: var(--muted);">Code: <b>{{ quiz.code }}</b></p>
+<div class="quiz-detail-header">
+  <div class="quiz-title-section">
+    <div class="quiz-status-badge {% if quiz.is_active %}active{% else %}stopped{% endif %}">
+      {% if quiz.is_active %}● Live{% else %}● Stopped{% endif %}
+    </div>
+    <h1 style="margin: 8px 0 0;">{{ quiz.title }}</h1>
+    <p class="quiz-code-display">
+      <span class="code-label">Quiz Code:</span>
+      <span class="code-value">{{ quiz.code }}</span>
+      <button class="copy-btn" onclick="copyCode('{{ quiz.code }}')" title="Copy code">📋</button>
+    </p>
   </div>
+</div>
 
-  <div class="actions" style="margin-left:auto; align-items:center; margin-top:0;">
-    <button class="btn secondary" onclick="showQR('{{ quiz.code }}', '/quiz/{{ quiz.code }}/qr/')" title="View QR Code" style="white-space: nowrap;">📱 QR Code</button>
-    <a class="btn primary" href="{% url 'create_question' quiz.id %}">+ Add Question</a>
-    <a class="btn" href="{% url 'quiz_submissions' quiz.id %}">Submissions</a>
+<!-- Action Panel -->
+<div class="action-panel">
+  <div class="action-panel-header">
+    <h3 style="margin: 0; font-size: 14px; font-weight: 600;">Quick Actions</h3>
+  </div>
+  <div class="action-grid">
+    <!-- QR Code -->
+    <button class="action-card" onclick="showQR('{{ quiz.code }}', '/quiz/{{ quiz.code }}/qr/')">
+      <div class="action-icon qr">📱</div>
+      <div class="action-label">QR Code</div>
+      <div class="action-desc">Share quiz via QR</div>
+    </button>
 
+    <!-- Add Question -->
+    <a class="action-card" href="{% url 'create_question' quiz.id %}">
+      <div class="action-icon add">➕</div>
+      <div class="action-label">Add Question</div>
+      <div class="action-desc">Create new question</div>
+    </a>
+
+    <!-- Submissions -->
+    <a class="action-card" href="{% url 'quiz_submissions' quiz.id %}">
+      <div class="action-icon submissions">📊</div>
+      <div class="action-label">Submissions</div>
+      <div class="action-desc">View student answers</div>
+    </a>
+
+    <!-- Export -->
+    <a class="action-card" href="{% url 'export_submissions_excel' quiz.id %}">
+      <div class="action-icon export">📥</div>
+      <div class="action-label">Export Excel</div>
+      <div class="action-desc">Download results</div>
+    </a>
+
+    <!-- Settings -->
+    <a class="action-card" href="{% url 'edit_quiz_settings' quiz.id %}">
+      <div class="action-icon settings">⚙️</div>
+      <div class="action-label">Settings</div>
+      <div class="action-desc">Timer, due date, etc.</div>
+    </a>
+
+    <!-- Toggle Status -->
     <form method="post" action="{% url 'toggle_quiz_active' quiz.id %}" style="margin:0;">
       {% csrf_token %}
-      {% if quiz.is_active %}
-        <button class="btn danger" type="submit">Stop Quiz</button>
-      {% else %}
-        <button class="btn primary" type="submit">Re-open Quiz</button>
-      {% endif %}
+      <button type="submit" class="action-card {% if quiz.is_active %}danger{% else %}success{% endif %}">
+        <div class="action-icon {% if quiz.is_active %}stop{% else %}start{% endif %}">
+          {% if quiz.is_active %}⏹️{% else %}▶️{% endif %}
+        </div>
+        <div class="action-label">{% if quiz.is_active %}Stop Quiz{% else %}Start Quiz{% endif %}</div>
+        <div class="action-desc">{% if quiz.is_active %}Close for students{% else %}Open for students{% endif %}</div>
+      </button>
     </form>
 
-    <a class="btn" href="{% url 'edit_quiz_settings' quiz.id %}">Settings</a>
+    <!-- Move Quiz -->
+    <a class="action-card" href="{% url 'move_quiz' quiz.id %}">
+      <div class="action-icon move">📁</div>
+      <div class="action-label">Move Quiz</div>
+      <div class="action-desc">Change folder</div>
+    </a>
+
+    <!-- Delete Quiz -->
+    <a class="action-card delete" href="{% url 'delete_quiz' quiz.id %}">
+      <div class="action-icon delete">🗑️</div>
+      <div class="action-label">Delete Quiz</div>
+      <div class="action-desc">Remove permanently</div>
+    </a>
   </div>
 </div>
 
@@ -52,32 +111,43 @@
   </div>
 </div>
 
+<!-- Questions Section -->
 <div class="card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <h2 style="margin: 0;">Questions ({{ questions|length }})</h2>
+    <a class="btn primary" href="{% url 'create_question' quiz.id %}">+ Add Question</a>
+  </div>
+  
   {% if questions %}
     {% for q in questions %}
-      <div class="qbox">
-        <div class="row">
-          <div class="qtext">
-            Q{{ forloop.counter }}. {{ q.text|default:"(No text)" }}
+      <div class="question-item">
+        <div class="question-header">
+          <div class="question-number">Q{{ forloop.counter }}</div>
+          <div class="question-text">{{ q.text|default:"(No text)" }}</div>
+          <div class="question-type-badge {% if q.question_type == 'true_false' %}tf{% else %}mc{% endif %}">
+            {% if q.question_type == 'true_false' %}T/F{% else %}MC{% endif %}
           </div>
-
-          <div class="actions" style="margin:0;">
-            <a class="btn" href="{% url 'edit_question' quiz.id q.id %}">Edit</a>
-            <a class="btn danger" href="{% url 'delete_question' quiz.id q.id %}">Delete</a>
+          <div class="question-actions">
+            <a class="btn-icon" href="{% url 'edit_question' quiz.id q.id %}" title="Edit">✏️</a>
+            <a class="btn-icon danger" href="{% url 'delete_question' quiz.id q.id %}" title="Delete">🗑️</a>
           </div>
         </div>
 
         {% if q.image %}
-          <img class="qimg" src="{{ q.image.url }}" alt="Question image">
+          <img class="question-image" src="{{ q.image.url }}" alt="Question image">
         {% endif %}
 
-        <p style="margin:10px 0 0; color:var(--muted);">
-          1) {{ q.option1 }}<br>
-          2) {{ q.option2 }}<br>
-          3) {{ q.option3 }}<br>
-          4) {{ q.option4 }}<br>
-          <span class="ok">Correct:</span> Option {{ q.correct_option }}
-        </p>
+        <div class="question-options">
+          {% if q.question_type == 'true_false' %}
+            <span class="option {% if q.correct_option == 1 %}correct{% endif %}">✓ True</span>
+            <span class="option {% if q.correct_option == 2 %}correct{% endif %}">✗ False</span>
+          {% else %}
+            <span class="option {% if q.correct_option == 1 %}correct{% endif %}">1) {{ q.option1 }}</span>
+            <span class="option {% if q.correct_option == 2 %}correct{% endif %}">2) {{ q.option2 }}</span>
+            <span class="option {% if q.correct_option == 3 %}correct{% endif %}">3) {{ q.option3 }}</span>
+            <span class="option {% if q.correct_option == 4 %}correct{% endif %}">4) {{ q.option4 }}</span>
+          {% endif %}
+        </div>
       </div>
     {% endfor %}
   {% else %}
@@ -86,25 +156,383 @@
 </div>
 
 <div style="margin-top:14px;">
-  <a class="btn" href="{% url 'teacher_quizzes' %}">← Back</a>
+  <a class="btn" href="{% url 'teacher_quizzes' %}">← Back to Dashboard</a>
 </div>
 
 <!-- QR Code Modal -->
-<div id="qrModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,.8); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
-  <div style="background: var(--card0); border-radius: 18px; padding: 24px; text-align: center; max-width: 400px; width: 100%;">
-    <h2 style="margin: 0 0 16px 0;">Quiz QR Code</h2>
-    <img id="qrImage" src="" alt="QR Code" style="max-width: 100%; border-radius: 10px; margin: 16px 0; border: 2px solid var(--border);">
-    <p id="qrCode" style="font-size: 14px; margin: 12px 0; word-break: break-all;"></p>
-    <button class="btn primary" onclick="closeQR()" style="width: 100%;">Close</button>
+<div id="qrModal" class="modal-overlay">
+  <div class="modal-content qr-modal">
+    <div class="modal-header">
+      <h2 style="margin: 0;">Share Quiz</h2>
+      <button class="modal-close" onclick="closeQR()">✕</button>
+    </div>
+    <div class="qr-content">
+      <img id="qrImage" src="" alt="QR Code" class="qr-image">
+      <div class="qr-info">
+        <p class="qr-code-label">Quiz Code</p>
+        <p class="qr-code-value" id="qrCodeText">{{ quiz.code }}</p>
+        <button class="btn secondary" onclick="copyCode('{{ quiz.code }}')" style="width: 100%;">📋 Copy Code</button>
+      </div>
+    </div>
+    <div class="qr-instructions">
+      <p>Students can:</p>
+      <ul>
+        <li>Scan the QR code with their phone</li>
+        <li>Enter the code at <b>quizfy.com</b></li>
+        <li>Go directly to <b>/quiz/{{ quiz.code }}/</b></li>
+      </ul>
+    </div>
+    <button class="btn primary" onclick="closeQR()" style="width: 100%; margin-top: 16px;">Done</button>
   </div>
 </div>
 
+<style>
+/* Header Styles */
+.quiz-detail-header {
+  margin-bottom: 20px;
+}
+
+.quiz-status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.quiz-status-badge.active {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.quiz-status-badge.stopped {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.quiz-code-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+
+.code-value {
+  font-family: monospace;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--card1);
+  padding: 4px 12px;
+  border-radius: 6px;
+}
+
+.copy-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.copy-btn:hover {
+  opacity: 1;
+}
+
+/* Action Panel */
+.action-panel {
+  background: var(--card0);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.action-panel-header {
+  padding: 12px 16px;
+  background: var(--card1);
+  border-bottom: 1px solid var(--border);
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1px;
+  background: var(--border);
+}
+
+.action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 12px;
+  background: var(--card0);
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--text);
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.action-card:hover {
+  background: var(--card1);
+}
+
+.action-card.danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.action-card.success:hover {
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.action-card.delete:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.action-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.action-label {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.action-desc {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Question Styles */
+.question-item {
+  padding: 16px;
+  background: var(--card1);
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.question-item:last-child {
+  margin-bottom: 0;
+}
+
+.question-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.question-number {
+  background: var(--accent);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.question-text {
+  flex: 1;
+  font-weight: 500;
+}
+
+.question-type-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.question-type-badge.mc {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+.question-type-badge.tf {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.question-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-icon {
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--card0);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btn-icon:hover {
+  background: var(--card1);
+}
+
+.btn-icon.danger:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.question-image {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  margin: 12px 0;
+}
+
+.question-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.question-options .option {
+  padding: 6px 12px;
+  background: var(--card0);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.question-options .option.correct {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+  font-weight: 600;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.8);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-content {
+  background: var(--card0);
+  border-radius: 20px;
+  max-width: 420px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.modal-close:hover {
+  color: var(--text);
+}
+
+.qr-content {
+  padding: 24px;
+  text-align: center;
+}
+
+.qr-image {
+  width: 200px;
+  height: 200px;
+  border-radius: 12px;
+  border: 3px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.qr-info {
+  margin-bottom: 16px;
+}
+
+.qr-code-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 4px;
+}
+
+.qr-code-value {
+  font-family: monospace;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0 0 12px;
+  letter-spacing: 2px;
+}
+
+.qr-instructions {
+  padding: 0 24px 24px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.qr-instructions p {
+  margin: 0 0 8px;
+}
+
+.qr-instructions ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.qr-instructions li {
+  margin-bottom: 4px;
+}
+
+@media (max-width: 768px) {
+  .action-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .action-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .action-card {
+    padding: 16px 8px;
+  }
+}
+</style>
+
 <script>
+function copyCode(code) {
+  navigator.clipboard.writeText(code).then(() => {
+    alert('Quiz code copied!');
+  });
+}
+
 function showQR(code, qrUrl) {
   const img = document.getElementById('qrImage');
   img.src = qrUrl;
   img.alt = `QR Code for ${code}`;
-  document.getElementById('qrCode').textContent = 'Quiz Code: ' + code;
+  document.getElementById('qrCodeText').textContent = code;
   document.getElementById('qrModal').style.display = 'flex';
 }
 
