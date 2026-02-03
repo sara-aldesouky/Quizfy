@@ -14,6 +14,7 @@ urlpatterns = [
     # More specific quiz patterns first
     path("quiz/<str:quiz_code>/result/<int:submission_id>/", views.quiz_result, name="quiz_result"),
     path("quiz/<str:quiz_code>/qr/", views.quiz_qr_code, name="quiz_qr_code"),
+    path("quiz/<str:quiz_code>/join/", views.quiz_join, name="quiz_join"),
     path("quiz/<str:quiz_code>/scan/", views.quiz_scan_redirect, name="quiz_scan_redirect"),
     # Generic quiz pattern last
     path("quiz/<str:quiz_code>/", views.take_quiz, name="take_quiz"),

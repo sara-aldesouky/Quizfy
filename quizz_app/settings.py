@@ -120,8 +120,17 @@ if SENDGRID_API_KEY:
     EMAIL_BACKEND = "quizz_app.sendgrid_backend.SendgridBackend"
     SENDGRID_SANDBOX_MODE_IN_DEBUG = False
 else:
-    # Fallback to console if no SendGrid key configured
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    # Fallback to SMTP with Brevo/Sendinblue (free alternative)
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp-relay.brevo.com")
+    EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+    EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+    
+    # If no SMTP credentials, fallback to console
+    if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
+        EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # For password reset email domain
 SITE_URL = os.environ.get("SITE_URL", "http://127.0.0.1:8000")

@@ -69,10 +69,10 @@ def quiz_qr_code(request, quiz_code):
     quiz = get_object_or_404(Quiz, code=quiz_code.upper(), teacher=request.user)
     
     try:
-        # Build absolute URL for QR code (points to scan redirect endpoint)
+        # Build absolute URL for QR code (points to join page)
         protocol = "https" if request.is_secure() else "http"
         domain = request.get_host()
-        qr_data = f"{protocol}://{domain}/quiz/{quiz.code}/scan/"
+        qr_data = f"{protocol}://{domain}/quiz/{quiz.code}/join/"
         
         qr = qrcode.QRCode(version=1, box_size=10, border=2)
         qr.add_data(qr_data)
@@ -238,6 +238,37 @@ def edit_quiz_settings(request, quiz_id):
     return render(request, "quizzes/edit_quiz_settings.html", {
         "quiz": quiz,
         "form": form
+    })
+
+
+def quiz_join(request, quiz_code):
+    """
+    Join Quiz page - shown when QR code is scanned.
+    Pre-fills the quiz code and shows quiz info.
+    Redirects to login/signup if needed, then to quiz.
+    """
+    quiz = get_object_or_404(Quiz, code=quiz_code.upper())
+    
+    # Check if quiz is available
+    if not quiz.can_start():
+        messages.error(request, "This quiz is currently closed.")
+        return render(request, "quizzes/quiz_join.html", {
+            "quiz": quiz,
+            "quiz_code": quiz.code,
+            "is_closed": True,
+        })
+    
+    # If user is already logged in as a student, redirect to quiz
+    if request.user.is_authenticated:
+        if hasattr(request.user, "student_profile"):
+            return redirect('take_quiz', quiz_code=quiz.code)
+        elif request.user.is_staff:
+            messages.info(request, "You're logged in as a teacher. Students can join this quiz.")
+    
+    return render(request, "quizzes/quiz_join.html", {
+        "quiz": quiz,
+        "quiz_code": quiz.code,
+        "is_closed": False,
     })
 
 

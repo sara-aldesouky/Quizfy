@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Join Quiz - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 40px auto; text-align: center;">
+  
+  <div class="card" style="padding: 30px;">
+    <h1 style="margin: 0 0 10px 0; font-size: 28px;">📝 Join Quiz</h1>
+    <p style="color: var(--muted); margin: 0 0 25px 0;">You're about to join a quiz</p>
+    
+    <!-- Quiz Info Card -->
+    <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+      <h2 style="margin: 0 0 8px 0; font-size: 22px; color: var(--text);">{{ quiz.title }}</h2>
+      <p style="margin: 0; color: var(--muted); font-size: 14px;">
+        Quiz Code: <strong style="color: var(--primary); font-size: 18px; letter-spacing: 2px;">{{ quiz_code }}</strong>
+      </p>
+      {% if quiz.duration_minutes %}
+        <p style="margin: 10px 0 0 0; color: var(--muted); font-size: 13px;">⏱️ Duration: {{ quiz.duration_minutes }} minutes</p>
+      {% endif %}
+    </div>
+    
+    {% if is_closed %}
+      <!-- Quiz is closed -->
+      <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+        <p style="margin: 0; color: #ef4444; font-weight: 600;">🚫 This quiz is currently closed</p>
+        <p style="margin: 10px 0 0 0; color: var(--muted); font-size: 13px;">The teacher has closed this quiz or it has expired.</p>
+      </div>
+      <a href="{% url 'landing' %}" class="btn secondary" style="width: 100%; padding: 14px;">Go to Home</a>
+    
+    {% else %}
+      <!-- Quiz is open - show join options -->
+      <p style="color: var(--muted); font-size: 14px; margin-bottom: 20px;">
+        To take this quiz, you need to be logged in as a student.
+      </p>
+      
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        {% if user.is_authenticated and user.student_profile %}
+          <!-- Already logged in as student -->
+          <a href="{% url 'take_quiz' quiz_code %}" class="btn primary" style="width: 100%; padding: 16px; font-size: 16px;">
+            ✅ Start Quiz Now
+          </a>
+        {% else %}
+          <!-- Not logged in or not a student -->
+          <a href="{% url 'student_login' %}?next=/quiz/{{ quiz_code }}/" class="btn primary" style="width: 100%; padding: 16px; font-size: 16px;">
+            🔐 Login to Join
+          </a>
+          
+          <div style="display: flex; align-items: center; gap: 10px; margin: 5px 0;">
+            <hr style="flex: 1; border: none; border-top: 1px solid var(--border);">
+            <span style="color: var(--muted); font-size: 13px;">or</span>
+            <hr style="flex: 1; border: none; border-top: 1px solid var(--border);">
+          </div>
+          
+          <a href="{% url 'student_signup' %}?next=/quiz/{{ quiz_code }}/" class="btn secondary" style="width: 100%; padding: 14px;">
+            📝 Create Account
+          </a>
+        {% endif %}
+      </div>
+      
+      {% if user.is_authenticated and user.is_staff %}
+        <p style="margin-top: 20px; padding: 12px; background: rgba(255, 193, 7, 0.1); border-radius: 8px; color: var(--muted); font-size: 13px;">
+          ⚠️ You're logged in as a teacher. Students can scan this QR code to join the quiz.
+        </p>
+      {% endif %}
+    {% endif %}
+  </div>
+  
+  <p style="margin-top: 20px; color: var(--muted); font-size: 13px;">
+    <a href="{% url 'home' %}" style="color: var(--primary); text-decoration: none;">← Back to Home</a>
+  </p>
+</div>
+{% endblock %}
