@@ -1,0 +1,387 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Learning Analytics – {{ folder.name }}{% endblock %}
+
+{% block content %}
+<style>
+    .analytics-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .analytics-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+    }
+    
+    .analytics-header h1 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.8rem;
+    }
+    
+    .analytics-header .breadcrumb {
+        opacity: 0.9;
+        font-size: 0.9rem;
+    }
+    
+    .analytics-header .breadcrumb a {
+        color: white;
+        text-decoration: none;
+    }
+    
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        text-align: center;
+    }
+    
+    .stat-card .number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-card .label {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+    
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 2rem 0 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .section-title i {
+        color: #667eea;
+    }
+    
+    .difficult-questions {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+    
+    .question-item {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .question-item:last-child {
+        border-bottom: none;
+    }
+    
+    .question-text {
+        flex: 1;
+    }
+    
+    .question-text p {
+        margin: 0 0 0.25rem 0;
+        color: #1e293b;
+    }
+    
+    .question-text small {
+        color: #64748b;
+    }
+    
+    .error-badge {
+        background: linear-gradient(135deg, #f43f5e, #e11d48);
+        color: white;
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    
+    .error-badge.moderate {
+        background: linear-gradient(135deg, #fb923c, #f97316);
+    }
+    
+    .error-badge.low {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    }
+    
+    .students-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1rem;
+    }
+    
+    .student-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.25rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    
+    .student-card .name {
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+    
+    .student-card .stats {
+        color: #64748b;
+        font-size: 0.85rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .progress-bar {
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .progress-bar .fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.5s ease;
+    }
+    
+    .progress-bar .fill.excellent { background: linear-gradient(90deg, #10b981, #059669); }
+    .progress-bar .fill.good { background: linear-gradient(90deg, #3b82f6, #2563eb); }
+    .progress-bar .fill.average { background: linear-gradient(90deg, #f59e0b, #d97706); }
+    .progress-bar .fill.poor { background: linear-gradient(90deg, #ef4444, #dc2626); }
+    
+    .ai-section {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-top: 2rem;
+        color: white;
+    }
+    
+    .ai-section h3 {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 0 0 1.5rem 0;
+    }
+    
+    .ai-section h3 i {
+        color: #a78bfa;
+    }
+    
+    .ai-button {
+        background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .ai-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(167, 139, 250, 0.4);
+    }
+    
+    .ai-analysis-content {
+        background: rgba(255,255,255,0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+        line-height: 1.7;
+    }
+    
+    .ai-analysis-content h4 {
+        color: #a78bfa;
+        margin-top: 1.5rem;
+    }
+    
+    .ai-analysis-content h4:first-child {
+        margin-top: 0;
+    }
+    
+    .ai-error {
+        background: rgba(239, 68, 68, 0.2);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 8px;
+        padding: 1rem;
+        color: #fca5a5;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #64748b;
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: white;
+        opacity: 0.9;
+        text-decoration: none;
+        margin-bottom: 1rem;
+        transition: opacity 0.2s;
+    }
+    
+    .back-link:hover {
+        opacity: 1;
+    }
+</style>
+
+<div class="analytics-container">
+    <div class="analytics-header">
+        <a href="{% url 'folder_detail' folder.id %}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Folder
+        </a>
+        <h1><i class="fas fa-chart-line"></i> Learning Analytics</h1>
+        <div class="breadcrumb">
+            <a href="{% url 'teacher_quizzes' %}">Quizzes</a> → 
+            <a href="{% url 'folder_detail' folder.id %}">{{ folder.name }}</a> → 
+            Analytics
+        </div>
+    </div>
+    
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="number">{{ total_submissions }}</div>
+            <div class="label">Students Analyzed</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">{{ total_questions_analyzed }}</div>
+            <div class="label">Answer Attempts</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">{{ difficult_questions|length }}</div>
+            <div class="label">Difficult Questions</div>
+        </div>
+    </div>
+    
+    <!-- Most Difficult Questions -->
+    <h2 class="section-title">
+        <i class="fas fa-exclamation-triangle"></i> Most Difficult Questions
+    </h2>
+    
+    {% if difficult_questions %}
+    <div class="difficult-questions">
+        {% for q in difficult_questions %}
+        <div class="question-item">
+            <div class="question-text">
+                <p>{{ q.text }}{% if q.text|length >= 100 %}...{% endif %}</p>
+                <small><i class="fas fa-book"></i> {{ q.quiz_title }}</small>
+            </div>
+            <span class="error-badge {% if q.error_rate > 60 %}{% elif q.error_rate > 45 %}moderate{% else %}low{% endif %}">
+                {{ q.error_rate }}% error rate
+            </span>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="difficult-questions">
+        <div class="empty-state">
+            <i class="fas fa-check-circle"></i>
+            <p>No significantly difficult questions found.<br>Students are performing well overall!</p>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Student Performance -->
+    <h2 class="section-title">
+        <i class="fas fa-users"></i> Student Performance Overview
+    </h2>
+    
+    {% if students %}
+    <div class="students-grid">
+        {% for student in students %}
+        <div class="student-card">
+            <div class="name">{{ student.name }}</div>
+            <div class="stats">
+                {{ student.correct }}/{{ student.total_questions }} correct ({{ student.percentage }}%)
+            </div>
+            <div class="progress-bar">
+                <div class="fill {% if student.percentage >= 80 %}excellent{% elif student.percentage >= 60 %}good{% elif student.percentage >= 40 %}average{% else %}poor{% endif %}" 
+                     style="width: {{ student.percentage }}%"></div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="difficult-questions">
+        <div class="empty-state">
+            <i class="fas fa-user-graduate"></i>
+            <p>No student submissions yet.<br>Analytics will appear once students complete quizzes.</p>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- AI Analysis Section -->
+    <div class="ai-section">
+        <h3><i class="fas fa-brain"></i> AI-Powered Topic Analysis</h3>
+        <p style="opacity: 0.8; margin-bottom: 1.5rem;">
+            Let AI analyze the patterns in student responses to identify specific weak topics and provide actionable recommendations.
+        </p>
+        
+        {% if ai_analysis %}
+            {% if ai_analysis.error %}
+            <div class="ai-error">
+                <i class="fas fa-exclamation-circle"></i> {{ ai_analysis.message }}
+            </div>
+            {% else %}
+            <div class="ai-analysis-content">
+                {{ ai_analysis.analysis|linebreaks }}
+            </div>
+            {% endif %}
+        {% endif %}
+        
+        <form method="post" style="margin-top: 1rem;">
+            {% csrf_token %}
+            <button type="submit" name="analyze" class="ai-button">
+                <i class="fas fa-magic"></i> 
+                {% if ai_analysis %}Re-analyze with AI{% else %}Analyze with AI{% endif %}
+            </button>
+        </form>
+        
+        {% if not difficult_questions and not students %}
+        <p style="opacity: 0.6; margin-top: 1rem; font-size: 0.9rem;">
+            <i class="fas fa-info-circle"></i> Note: AI analysis requires quiz submission data to identify patterns.
+        </p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

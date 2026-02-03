@@ -50,7 +50,7 @@
           <div class="file-item">
             <span class="file-icon">📄</span>
             <span class="file-name">{{ fs.file_name }}</span>
-            <a href="{{ fs.file.url }}" target="_blank" class="btn secondary small">View</a>
+            <button type="button" class="btn secondary small" onclick="openFilePreview('{{ fs.file.url }}', '{{ fs.file_name }}')">👁️ View</button>
           </div>
           <div class="file-date">Uploaded {{ fs.uploaded_at|date:"M d, Y H:i" }}</div>
         </div>
@@ -61,7 +61,7 @@
             <div class="file-item corrected">
               <span class="file-icon">✅</span>
               <span class="file-name">{{ fs.teacher_file_name }}</span>
-              <a href="{{ fs.teacher_file.url }}" target="_blank" class="btn primary small">View Corrected</a>
+              <button type="button" class="btn primary small" onclick="openFilePreview('{{ fs.teacher_file.url }}', '{{ fs.teacher_file_name }}')">👁️ View Corrected</button>
             </div>
           </div>
         {% endif %}
@@ -554,4 +554,161 @@
   }
 }
 </style>
+
+<!-- File Preview Modal -->
+<div id="filePreviewModal" class="preview-modal" style="display: none;">
+  <div class="preview-modal-content">
+    <div class="preview-header">
+      <h3 id="previewFileName">File Preview</h3>
+      <div class="preview-actions">
+        <a id="previewDownload" href="#" download class="btn secondary small">📥 Download</a>
+        <a id="previewOpenNew" href="#" target="_blank" class="btn secondary small">🔗 Open in New Tab</a>
+        <button type="button" onclick="closeFilePreview()" class="btn danger small">✕ Close</button>
+      </div>
+    </div>
+    <div class="preview-body">
+      <iframe id="previewFrame" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+      <div id="previewImage" style="display: none; text-align: center; padding: 20px; overflow: auto;">
+        <img id="previewImg" src="" style="max-width: 100%; max-height: 80vh; border-radius: 8px;">
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Preview Modal Styles */
+.preview-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.preview-modal-content {
+  background: var(--card0);
+  border-radius: 16px;
+  width: 95%;
+  max-width: 1200px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--card1);
+}
+
+.preview-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 50%;
+}
+
+.preview-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.preview-body {
+  flex: 1;
+  overflow: hidden;
+  background: #1a1a1a;
+}
+
+@media (max-width: 768px) {
+  .preview-modal-content {
+    width: 100%;
+    height: 100vh;
+    border-radius: 0;
+  }
+  
+  .preview-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .preview-header h3 {
+    max-width: 100%;
+  }
+  
+  .preview-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}
+</style>
+
+<script>
+function openFilePreview(url, filename) {
+  const modal = document.getElementById('filePreviewModal');
+  const frame = document.getElementById('previewFrame');
+  const imageContainer = document.getElementById('previewImage');
+  const img = document.getElementById('previewImg');
+  const filenameEl = document.getElementById('previewFileName');
+  const downloadLink = document.getElementById('previewDownload');
+  const openNewLink = document.getElementById('previewOpenNew');
+  
+  filenameEl.textContent = filename;
+  downloadLink.href = url;
+  openNewLink.href = url;
+  
+  const ext = filename.split('.').pop().toLowerCase();
+  
+  if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+    // Show image preview
+    frame.style.display = 'none';
+    imageContainer.style.display = 'block';
+    img.src = url;
+  } else {
+    // Show PDF/other in iframe
+    frame.style.display = 'block';
+    imageContainer.style.display = 'none';
+    frame.src = url;
+  }
+  
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeFilePreview() {
+  const modal = document.getElementById('filePreviewModal');
+  const frame = document.getElementById('previewFrame');
+  
+  modal.style.display = 'none';
+  frame.src = '';
+  document.body.style.overflow = '';
+}
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeFilePreview();
+  }
+});
+
+// Close modal when clicking outside content
+document.getElementById('filePreviewModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeFilePreview();
+  }
+});
+</script>
 {% endblock %}

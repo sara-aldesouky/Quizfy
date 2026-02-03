@@ -135,5 +135,8 @@ else:
 # For password reset email domain
 SITE_URL = os.environ.get("SITE_URL", "http://127.0.0.1:8000")
 
+# OpenAI API Key for AI-powered learning analytics
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 DEFAULT_FROM_EMAIL = os.getenv("EMAIL_FROM_ADDRESS", "noreply@quizfy.com")

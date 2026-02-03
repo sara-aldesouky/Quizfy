@@ -10,3 +10,4 @@ qrcode[pil]
 openpyxl
 sendgrid>=3.5,<4.0
 sendgrid-django==4.2.0
+openai>=1.0.0

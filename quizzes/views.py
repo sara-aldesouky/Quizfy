@@ -697,6 +697,173 @@ def folder_detail(request, folder_id):
 
 
 @staff_required
+def folder_analytics(request, folder_id):
+    """AI-powered analytics to identify weak topics for students in a folder"""
+    folder = get_object_or_404(SubjectFolder, id=folder_id, teacher=request.user)
+    
+    # Get all quizzes in folder
+    quizzes = folder.quizzes.all()
+    
+    # Collect all wrong answers with question details
+    wrong_answers_data = []
+    question_stats = {}
+    student_performance = {}
+    
+    for quiz in quizzes:
+        submissions = Submission.objects.filter(quiz=quiz, is_submitted=True).select_related('student_user')
+        
+        for submission in submissions:
+            student_id = submission.student_user_id
+            if student_id not in student_performance:
+                student_name = submission.student_name
+                if submission.student_user and hasattr(submission.student_user, 'student_profile'):
+                    sp = submission.student_user.student_profile
+                    student_name = f"{sp.first_name} {sp.second_name}".strip()
+                student_performance[student_id] = {
+                    'name': student_name,
+                    'total_questions': 0,
+                    'correct': 0,
+                    'wrong_topics': [],
+                }
+            
+            answers = submission.answers.select_related('question').all()
+            for answer in answers:
+                q = answer.question
+                if q.question_type == 'file_upload':
+                    continue  # Skip file upload questions
+                
+                student_performance[student_id]['total_questions'] += 1
+                
+                # Track question stats
+                if q.id not in question_stats:
+                    question_stats[q.id] = {
+                        'text': q.text[:100],
+                        'quiz_title': quiz.title,
+                        'total_attempts': 0,
+                        'wrong_count': 0,
+                        'question_type': q.question_type,
+                    }
+                
+                question_stats[q.id]['total_attempts'] += 1
+                
+                if answer.is_correct:
+                    student_performance[student_id]['correct'] += 1
+                else:
+                    question_stats[q.id]['wrong_count'] += 1
+                    wrong_answers_data.append({
+                        'question': q.text,
+                        'quiz': quiz.title,
+                        'student': student_performance[student_id]['name'],
+                    })
+    
+    # Calculate difficulty rates
+    difficult_questions = []
+    for qid, stats in question_stats.items():
+        if stats['total_attempts'] > 0:
+            error_rate = (stats['wrong_count'] / stats['total_attempts']) * 100
+            stats['error_rate'] = round(error_rate, 1)
+            if error_rate > 30:  # More than 30% got it wrong
+                difficult_questions.append(stats)
+    
+    # Sort by error rate
+    difficult_questions.sort(key=lambda x: x['error_rate'], reverse=True)
+    
+    # Calculate student performance percentages
+    students_list = []
+    for sid, data in student_performance.items():
+        if data['total_questions'] > 0:
+            data['percentage'] = round((data['correct'] / data['total_questions']) * 100, 1)
+            students_list.append(data)
+    
+    # Sort by performance (lowest first = needs most help)
+    students_list.sort(key=lambda x: x['percentage'])
+    
+    # AI Analysis
+    ai_analysis = None
+    if request.method == 'POST' and 'analyze' in request.POST:
+        ai_analysis = _generate_ai_analysis(folder.name, difficult_questions, students_list, wrong_answers_data)
+    
+    return render(request, "quizzes/folder_analytics.html", {
+        "folder": folder,
+        "difficult_questions": difficult_questions[:15],  # Top 15 hardest
+        "students": students_list,
+        "total_submissions": sum(1 for s in students_list),
+        "total_questions_analyzed": sum(s['total_attempts'] for s in question_stats.values()),
+        "ai_analysis": ai_analysis,
+    })
+
+
+def _generate_ai_analysis(folder_name, difficult_questions, students, wrong_answers_data):
+    """Generate AI-powered analysis of weak topics"""
+    try:
+        import openai
+        from django.conf import settings
+        
+        api_key = getattr(settings, 'OPENAI_API_KEY', None)
+        if not api_key:
+            return {
+                'error': True,
+                'message': 'OpenAI API key not configured. Add OPENAI_API_KEY to your settings.'
+            }
+        
+        client = openai.OpenAI(api_key=api_key)
+        
+        # Prepare context for AI
+        difficult_q_text = "\n".join([
+            f"- Question: '{q['text']}' (from {q['quiz_title']}) - {q['error_rate']}% error rate"
+            for q in difficult_questions[:10]
+        ])
+        
+        struggling_students = [s for s in students if s['percentage'] < 60][:5]
+        student_text = "\n".join([
+            f"- {s['name']}: {s['percentage']}% correct ({s['correct']}/{s['total_questions']})"
+            for s in struggling_students
+        ])
+        
+        prompt = f"""You are an educational analyst. Analyze the following quiz performance data for the subject folder "{folder_name}".
+
+MOST DIFFICULT QUESTIONS (highest error rates):
+{difficult_q_text if difficult_q_text else "No significant difficulty patterns found."}
+
+STRUGGLING STUDENTS (below 60%):
+{student_text if student_text else "No students below 60% threshold."}
+
+Based on this data, provide:
+1. **Key Weak Topics**: Identify 3-5 specific topics/concepts students are struggling with based on the questions they got wrong.
+2. **Root Cause Analysis**: What underlying concepts might students be missing?
+3. **Recommendations**: Specific teaching strategies or resources to address these gaps.
+4. **Priority Actions**: What should the teacher focus on immediately?
+
+Be specific and actionable. Use the actual question content to identify patterns."""
+
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are an expert educational analyst who helps teachers identify learning gaps and improve student outcomes."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=1500,
+            temperature=0.7
+        )
+        
+        return {
+            'error': False,
+            'analysis': response.choices[0].message.content
+        }
+        
+    except ImportError:
+        return {
+            'error': True,
+            'message': 'OpenAI library not installed. Run: pip install openai'
+        }
+    except Exception as e:
+        return {
+            'error': True,
+            'message': f'AI Analysis failed: {str(e)}'
+        }
+
+
+@staff_required
 def quiz_live_counts(request):
     raw_ids = request.GET.get("quiz_ids", "")
     quiz_ids = [int(qid) for qid in raw_ids.split(",") if qid.strip().isdigit()]

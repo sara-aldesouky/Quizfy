@@ -13,6 +13,7 @@
 
   <div class="actions" style="margin-left:auto; gap: 8px;">
     <a class="btn" href="{% url 'teacher_quizzes' %}">← Back</a>
+    <a class="btn" href="{% url 'folder_analytics' folder.id %}" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">📊 Analytics</a>
     <a class="btn primary" href="{% url 'create_quiz' %}?folder={{ folder.id }}">+ Create Quiz</a>
     <a class="btn danger" href="{% url 'delete_folder' folder.id %}" title="Delete Folder">🗑️ Delete Folder</a>
   </div>
