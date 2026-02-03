@@ -4,11 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quizfy - Create Quizzes Effortlessly</title>
-    <link href="https://fonts.googleapis.com/css2?family=Trochi:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
-      const darkMode = localStorage.getItem('darkMode') === 'true';
-      if (darkMode) document.documentElement.setAttribute('data-theme', 'dark');
-      else document.documentElement.removeAttribute('data-theme');
+      // Load saved theme preference on page load
+      const savedTheme = localStorage.getItem('darkMode');
+      if (savedTheme === 'false') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        if (savedTheme === null) localStorage.setItem('darkMode', 'true');
+      }
     </script>
     <style>
         * {
@@ -25,32 +30,50 @@
             --bg0: #070a14;
             --bg1: #0b1224;
             --text: rgba(255, 255, 255, 0.92);
-            --muted: rgba(255, 255, 255, 0.52);
-            --primary: #3b82f6;
-            --primary2: #2563eb;
+            --muted: rgba(255, 255, 255, 0.60);
+            --primary: #8b5cf6;
+            --primary2: #7c3aed;
+            --accent: #a855f7;
             --border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(16, 23, 42, 0.74);
         }
 
         [data-theme="light"] {
-            --bg0: #f5f5f5;
+            --bg0: #faf8ff;
             --bg1: #ffffff;
-            --text: #1a1a1a;
-            --muted: #666666;
-            --primary: #3b82f6;
-            --primary2: #2563eb;
-            --border: #e0e0e0;
+            --text: #1e1033;
+            --muted: #5b4b73;
+            --primary: #8b5cf6;
+            --primary2: #7c3aed;
+            --accent: #a855f7;
+            --border: rgba(139, 92, 246, 0.15);
+            --card-bg: rgba(255, 255, 255, 0.95);
         }
 
         body {
-            font-family: 'Trochi', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
             color: var(--text);
-            background: linear-gradient(180deg, var(--bg0) 0%, var(--bg1) 100%);
+            background: 
+                radial-gradient(900px 560px at 16% 0%, rgba(139, 92, 246, 0.18) 0%, transparent 70%),
+                radial-gradient(860px 560px at 86% 0%, rgba(168, 85, 247, 0.12) 0%, transparent 72%),
+                radial-gradient(680px 520px at 55% 120%, rgba(192, 132, 252, 0.08) 0%, transparent 75%),
+                linear-gradient(180deg, var(--bg0) 0%, var(--bg1) 100%);
             background-attachment: fixed;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        [data-theme="light"] body {
+            background: 
+                radial-gradient(ellipse at 0% 0%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 100% 0%, rgba(168, 85, 247, 0.08) 0%, transparent 45%),
+                radial-gradient(ellipse at 50% 100%, rgba(192, 132, 252, 0.06) 0%, transparent 55%),
+                linear-gradient(180deg, #faf8ff 0%, #ffffff 40%, #f5f3ff 100%);
+            background-attachment: fixed;
         }
 
         body::before {
@@ -58,7 +81,7 @@
             position: fixed;
             inset: 0;
             pointer-events: none;
-            opacity: 0.06;
+            opacity: 0.04;
             mix-blend-mode: overlay;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.24'/%3E%3C/svg%3E");
             z-index: 0;
@@ -68,15 +91,22 @@
             position: sticky;
             top: 0;
             z-index: 50;
-            background: rgba(8, 12, 24, 0.72);
-            backdrop-filter: blur(14px);
+            background: rgba(8, 12, 24, 0.82);
+            backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        [data-theme="light"] header {
+            background: rgba(255, 255, 255, 0.88);
+            border-bottom: 1px solid rgba(139, 92, 246, 0.15);
+            box-shadow: 0 1px 3px rgba(139, 92, 246, 0.08);
         }
 
         .navbar-container {
             max-width: 1120px;
             margin: 0 auto;
-            padding: 12px 20px;
+            padding: 14px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -84,54 +114,80 @@
         }
 
         .nav-brand {
-            font-size: 1.4rem;
-            font-weight: 700;
+            font-size: 1.5rem;
+            font-weight: 800;
             letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .nav-brand a {
             color: inherit;
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--primary2) 100%);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2);
         }
 
         .nav-brand span {
-            color: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .nav-links {
             display: flex;
             align-items: center;
-            gap: 24px;
+            gap: 20px;
         }
 
         .nav-link {
-            color: var(--text);
+            color: var(--muted);
             text-decoration: none;
             font-size: 0.95rem;
-            transition: color 0.3s ease;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 10px;
+            transition: all 0.2s ease;
         }
 
         .nav-link:hover {
+            color: var(--text);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        [data-theme="light"] .nav-link:hover {
             color: var(--primary);
         }
 
         .cta-btn {
             padding: 10px 20px;
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary2) 100%);
             color: white;
             border: none;
-            border-radius: 8px;
-            font-family: 'Trochi', sans-serif;
+            border-radius: 12px;
+            font-family: inherit;
             font-weight: 600;
             cursor: pointer;
             text-decoration: none;
             display: inline-block;
             transition: all 0.3s ease;
             font-size: 0.95rem;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.35);
         }
 
         .cta-btn:hover {
-            background: var(--primary2);
+            box-shadow: 0 6px 25px rgba(139, 92, 246, 0.5);
             transform: translateY(-2px);
         }
 
@@ -139,54 +195,66 @@
             background: transparent;
             border: 1px solid var(--border);
             padding: 8px 12px;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 1rem;
             color: var(--text);
             transition: all 0.3s ease;
         }
 
+        [data-theme="light"] .theme-toggle {
+            background: #ffffff;
+            border-color: rgba(139, 92, 246, 0.2);
+        }
+
         .theme-toggle:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(139, 92, 246, 0.1);
+            border-color: var(--primary);
         }
 
         .hero {
             position: relative;
             z-index: 1;
             text-align: center;
-            max-width: 800px;
-            padding: 80px 20px;
+            max-width: 900px;
+            padding: 100px 20px;
             margin: auto;
         }
 
         .hero h1 {
-            font-size: clamp(2.5rem, 8vw, 4.5rem);
-            font-weight: 700;
-            margin-bottom: 10px;
-            letter-spacing: -0.5px;
+            font-size: clamp(2.8rem, 8vw, 4.5rem);
+            font-weight: 800;
+            margin-bottom: 16px;
+            letter-spacing: -1px;
             line-height: 1.1;
         }
 
         .hero h1 .highlight {
-            color: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             font-style: italic;
         }
 
         .subtitle {
-            font-size: 0.95rem;
-            color: var(--muted);
+            font-size: 0.9rem;
+            color: var(--primary);
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-bottom: 30px;
-            font-weight: 400;
+            letter-spacing: 2px;
+            margin-bottom: 24px;
+            font-weight: 600;
         }
 
         .description {
-            font-size: 1.15rem;
+            font-size: 1.2rem;
             color: var(--muted);
-            margin-bottom: 45px;
-            line-height: 1.6;
+            margin-bottom: 48px;
+            line-height: 1.7;
             font-weight: 400;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .cta-container {
@@ -194,54 +262,122 @@
             gap: 16px;
             justify-content: center;
             flex-wrap: wrap;
-            margin-bottom: 50px;
+            margin-bottom: 60px;
         }
 
         .cta-primary {
-            padding: 14px 32px;
+            padding: 16px 36px;
             font-size: 1rem;
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary2) 100%);
             color: white;
             border: none;
-            border-radius: 12px;
-            font-family: 'Trochi', sans-serif;
+            border-radius: 14px;
+            font-family: inherit;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
         }
 
         .cta-primary:hover {
-            background: var(--primary2);
-            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(139, 92, 246, 0.55);
+            transform: translateY(-3px);
         }
 
         .cta-secondary {
-            padding: 14px 32px;
+            padding: 16px 36px;
             font-size: 1rem;
             background: transparent;
             color: var(--text);
-            border: 1.5px solid var(--border);
-            border-radius: 12px;
-            font-family: 'Trochi', sans-serif;
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            font-family: inherit;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        [data-theme="light"] .cta-secondary {
+            background: #ffffff;
+            border-color: rgba(139, 92, 246, 0.25);
+            color: var(--primary);
         }
 
         .cta-secondary:hover {
             border-color: var(--primary);
-            background: rgba(59, 130, 246, 0.1);
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--primary);
+        }
+
+        [data-theme="light"] .cta-secondary:hover {
+            background: rgba(139, 92, 246, 0.08);
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            max-width: 1000px;
+            margin: 0 auto 80px;
+            padding: 0 20px;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 28px;
+            text-align: left;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="light"] .feature-card {
+            background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
+            border-color: rgba(139, 92, 246, 0.12);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.08);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(139, 92, 246, 0.3);
+            box-shadow: 0 12px 40px rgba(139, 92, 246, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 16px;
+            display: inline-block;
+            padding: 12px;
+            background: rgba(139, 92, 246, 0.15);
+            border-radius: 12px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .feature-card p {
+            color: var(--muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
         }
 
         .stats {
             display: flex;
             justify-content: center;
-            gap: 40px;
-            margin-top: 60px;
+            gap: 48px;
+            margin-top: 20px;
             font-size: 0.9rem;
             color: var(--muted);
         }
@@ -249,22 +385,22 @@
         .stat-item {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            padding: 12px 20px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        [data-theme="light"] .stat-item {
+            background: #ffffff;
+            border-color: rgba(139, 92, 246, 0.12);
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.06);
         }
 
         .stat-value {
             color: var(--text);
-            font-weight: 600;
-        }
-
-        .refresh-icon {
-            animation: rotateRefresh 2s ease-in-out infinite;
-        }
-
-        @keyframes rotateRefresh {
-            0% { transform: rotate(0deg); }
-            50% { transform: rotate(180deg); }
-            100% { transform: rotate(360deg); }
+            font-weight: 700;
         }
 
         @media (max-width: 768px) {
@@ -278,6 +414,7 @@
 
             .nav-link {
                 font-size: 0.85rem;
+                padding: 6px 10px;
             }
 
             .hero {
@@ -285,7 +422,7 @@
             }
 
             .hero h1 {
-                font-size: 2rem;
+                font-size: 2.2rem;
             }
 
             .description {
@@ -293,7 +430,7 @@
             }
 
             .stats {
-                gap: 20px;
+                gap: 16px;
                 flex-wrap: wrap;
             }
 
@@ -302,8 +439,12 @@
             }
 
             .cta-primary, .cta-secondary {
-                padding: 12px 24px;
-                font-size: 0.9rem;
+                padding: 14px 28px;
+                font-size: 0.95rem;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -311,63 +452,101 @@
 <body>
     <header>
         <nav class="navbar-container">
-            <div class="nav-brand">Quiz<span>fy</span></div>
+            <div class="nav-brand">
+                <a href="{% url 'landing' %}">
+                    <span class="brand-dot"></span>
+                    Quiz<span>fy</span>
+                </a>
+            </div>
             <div class="nav-links">
-                <a href="{% url 'teacher_login' %}" class="nav-link">Teacher Login</a>
-                <a href="{% url 'student_login' %}" class="nav-link">Student Login</a>
-                <a href="{% url 'student_signup' %}" class="cta-btn">Sign Up</a>
-                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">🌙</button>
+                <a href="{% url 'teacher_login' %}" class="nav-link">👨‍🏫 Teacher</a>
+                <a href="{% url 'student_login' %}" class="nav-link">👨‍🎓 Student</a>
+                <a href="{% url 'student_signup' %}" class="cta-btn">✨ Sign Up</a>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
+                    <span class="theme-icon">🌙</span>
+                </button>
             </div>
         </nav>
     </header>
 
     <div class="hero">
-        <p class="subtitle">Empower Your Teaching</p>
+        <p class="subtitle">✨ Empower Your Teaching</p>
 
         <h1>
             Create <span class="highlight">stunning</span> quizzes<br>
-            effortlessly
+            in seconds
         </h1>
 
         <p class="description">
-            Turn your ideas into engaging assessments in seconds. 
-            Simplify quiz creation and focus on what matters—teaching.
+            Transform your ideas into engaging assessments effortlessly. 
+            Focus on what matters most—teaching and inspiring students.
         </p>
 
         <div class="cta-container">
-            <a href="{% url 'student_signup' %}" class="cta-primary">Get Started as Student</a>
-            <a href="{% url 'teacher_signup' %}" class="cta-secondary">I'm a Teacher</a>
+            <a href="{% url 'student_signup' %}" class="cta-primary">🚀 Get Started Free</a>
+            <a href="{% url 'teacher_signup' %}" class="cta-secondary">👨‍🏫 I'm a Teacher</a>
         </div>
 
         <div class="stats">
             <div class="stat-item">
-                <span class="refresh-icon">🔄</span>
-                <span>Quick Setup</span>
+                <span>⚡</span>
+                <span class="stat-value">Quick Setup</span>
             </div>
             <div class="stat-item">
-                <span class="refresh-icon">✨</span>
-                <span>Instant Results</span>
+                <span>📊</span>
+                <span class="stat-value">Instant Results</span>
             </div>
             <div class="stat-item">
-                <span class="refresh-icon">🚀</span>
-                <span>Easy to Use</span>
+                <span>🎯</span>
+                <span class="stat-value">Easy to Use</span>
             </div>
+        </div>
+    </div>
+
+    <div class="features">
+        <div class="feature-card">
+            <div class="feature-icon">📝</div>
+            <h3>Multiple Question Types</h3>
+            <p>Create multiple choice, true/false, and file upload questions with ease.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>Real-time Analytics</h3>
+            <p>Track student performance with AI-powered insights and detailed reports.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🎨</div>
+            <h3>Beautiful Interface</h3>
+            <p>Modern, clean design with dark and light modes for comfortable use.</p>
         </div>
     </div>
 
     <script>
         function toggleTheme() {
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            if (isDark) {
-                document.documentElement.removeAttribute('data-theme');
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            if (currentTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'light');
                 localStorage.setItem('darkMode', 'false');
-                document.querySelector('.theme-toggle').textContent = '🌙';
+                updateThemeIcon('light');
             } else {
                 document.documentElement.setAttribute('data-theme', 'dark');
                 localStorage.setItem('darkMode', 'true');
-                document.querySelector('.theme-toggle').textContent = '☀️';
+                updateThemeIcon('dark');
             }
         }
+
+        function updateThemeIcon(theme) {
+            const icon = document.querySelector('.theme-icon');
+            if (icon) {
+                icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+            }
+        }
+
+        // Update icon on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            updateThemeIcon(currentTheme);
+        });
     </script>
 </body>
 </html>
