@@ -7,9 +7,15 @@
 <title>{% block title %}Quizfy - Create Quizzes Effortlessly{% endblock %}</title>
 <link rel="stylesheet" href="/static/quizzes/main.css">
 <script>
-  const darkMode = localStorage.getItem('darkMode') === 'true';
-  if (darkMode) document.documentElement.setAttribute('data-theme', 'dark');
-  else document.documentElement.removeAttribute('data-theme');
+  // Load saved theme preference on page load
+  const savedTheme = localStorage.getItem('darkMode');
+  // Default to dark mode if no preference is saved
+  if (savedTheme === 'false') {
+    document.documentElement.setAttribute('data-theme', 'light');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    if (savedTheme === null) localStorage.setItem('darkMode', 'true');
+  }
 </script>
 </head>
 <body>
@@ -75,17 +81,33 @@
 
 <script>
 function toggleTheme() {
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  if (isDark) {
-    document.documentElement.removeAttribute('data-theme');
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  if (currentTheme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'light');
     localStorage.setItem('darkMode', 'false');
-    document.querySelector('.theme-toggle').textContent = '🌙';
+    updateThemeIcon('light');
   } else {
     document.documentElement.setAttribute('data-theme', 'dark');
     localStorage.setItem('darkMode', 'true');
-    document.querySelector('.theme-toggle').textContent = '☀️';
+    updateThemeIcon('dark');
   }
 }
+
+function updateThemeIcon(theme) {
+  const btn = document.querySelector('.theme-toggle');
+  if (btn) {
+    const icon = btn.querySelector('.theme-icon');
+    if (icon) {
+      icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+    }
+  }
+}
+
+// Update icon on page load based on current theme
+document.addEventListener('DOMContentLoaded', function() {
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+  updateThemeIcon(currentTheme);
+});
 </script>
 <script>
 // Mobile menu toggle with smooth animations
