@@ -1198,6 +1198,11 @@ def performance_analytics_dashboard(request):
         messages.error(request, "Upload both the assessment PDF and the class results file.")
         return render(request, "quizzes/performance_analytics.html", context)
 
+    def upload_extension(upload):
+        if "." not in upload.name:
+            return ""
+        return upload.name.rsplit(".", 1)[-1].lower()
+
     if not pdf_file.name.lower().endswith(".pdf"):
         messages.error(request, "The assessment file must be a PDF.")
         return render(request, "quizzes/performance_analytics.html", context)
@@ -1235,6 +1240,14 @@ def performance_analytics_dashboard(request):
 
         config.validate_startup()
         vector_store.configure()
+        logger.info(
+            "analytics_submit_started user_id=%s pdf_ext=%s results_ext=%s pdf_size=%d results_size=%d",
+            request.user.id,
+            upload_extension(pdf_file),
+            upload_extension(excel_file),
+            getattr(pdf_file, "size", 0) or 0,
+            getattr(excel_file, "size", 0) or 0,
+        )
 
         pdf_id = store.new_id("pdf")
         excel_id = store.new_id("excel")
@@ -1244,15 +1257,32 @@ def performance_analytics_dashboard(request):
         extracted = PDFProcessor().extract_questions(pdf_path, pdf_id)
         if not extracted:
             raise ValueError("No questions could be extracted from the PDF.")
+        logger.info(
+            "analytics_pdf_extracted user_id=%s question_count=%d",
+            request.user.id,
+            len(extracted),
+        )
 
         classified = TopicClassifier().classify_batch(extracted, subject=None)
         vector_store.ingest_questions(classified)
         store.save_questions(pdf_id, classified)
+        logger.info(
+            "analytics_topics_classified user_id=%s question_count=%d",
+            request.user.id,
+            len(classified),
+        )
 
         results = ExcelProcessor().normalize_results(excel_path)
         if not results:
             raise ValueError("No student result rows could be read from the results file.")
         store.save_results(excel_id, results)
+        student_count = len({result.student_id for result in results})
+        logger.info(
+            "analytics_results_loaded user_id=%s row_count=%d student_count=%d",
+            request.user.id,
+            len(results),
+            student_count,
+        )
 
         analysis = PerformanceAnalyzer().analyze(
             AnalysisRequest(
@@ -1272,15 +1302,37 @@ def performance_analytics_dashboard(request):
             "excel_id": excel_id,
             "questions": len(classified),
             "results": len(results),
-            "students": len({result.student_id for result in results}),
+            "students": student_count,
         }
+        logger.info(
+            "analytics_submit_completed user_id=%s weak_topic_count=%d student_summary_count=%d",
+            request.user.id,
+            len(analysis.class_summary.weak_topics),
+            len(analysis.student_summaries),
+        )
         messages.success(request, "Class performance analysis completed.")
 
     except ValueError as exc:
+        logger.warning(
+            "analytics_submit_validation_failed user_id=%s failure_type=%s",
+            request.user.id,
+            exc.__class__.__name__,
+        )
         messages.error(request, str(exc))
-    except RuntimeError:
+    except RuntimeError as exc:
+        logger.error(
+            "analytics_submit_runtime_failed user_id=%s failure_type=%s",
+            request.user.id,
+            exc.__class__.__name__,
+        )
         messages.error(request, "Analytics is not fully configured on the backend yet.")
     except Exception as exc:
+        logger.error(
+            "analytics_submit_failed user_id=%s failure_type=%s status_code=%s",
+            request.user.id,
+            exc.__class__.__name__,
+            getattr(exc, "status_code", "none"),
+        )
         messages.error(request, safe_analytics_error_message(exc))
 
     return render(request, "quizzes/performance_analytics.html", context)

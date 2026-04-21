@@ -12,7 +12,7 @@
 </div>
 
 <section class="analytics-panel">
-  <form method="post" enctype="multipart/form-data" class="analytics-form">
+  <form id="analytics-form" method="post" action="{% url 'performance_analytics_dashboard' %}" enctype="multipart/form-data" class="analytics-form">
     {% csrf_token %}
     <div class="field-grid">
       <label class="field-card">
@@ -30,7 +30,10 @@
       <span>Use columns like <code>student_id</code>, <code>student_name</code>, <code>Q1</code>, <code>Q2</code>, <code>Q3</code>. Put <code>1</code> if correct and <code>0</code> if wrong or unanswered.</span>
     </div>
 
-    <button class="btn primary run-btn" type="submit">Run class analysis</button>
+    <div class="submit-row">
+      <button id="analytics-submit" class="btn primary run-btn" type="submit">Run class analysis</button>
+      <span id="analytics-processing" class="processing-note" hidden>Analyzing the class files. Keep this page open.</span>
+    </div>
   </form>
 </section>
 
@@ -200,6 +203,23 @@
 
 .run-btn {
   width: fit-content;
+}
+
+.submit-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.run-btn:disabled {
+  cursor: wait;
+  opacity: 0.74;
+}
+
+.processing-note {
+  color: var(--muted);
+  font-weight: 700;
 }
 
 .excel-guide {
@@ -377,4 +397,21 @@
   }
 }
 </style>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById("analytics-form");
+  const button = document.getElementById("analytics-submit");
+  const processingNote = document.getElementById("analytics-processing");
+
+  if (!form || !button || !processingNote) {
+    return;
+  }
+
+  form.addEventListener("submit", function () {
+    button.disabled = true;
+    button.textContent = "Analyzing...";
+    processingNote.hidden = false;
+  });
+});
+</script>
 {% endblock %}
