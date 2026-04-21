@@ -2107,7 +2107,7 @@ def export_submissions_excel(request, quiz_id):
         Submission.objects
         .filter(quiz=quiz, is_submitted=True)
         .select_related("student_user", "student_user__student_profile")
-        .prefetch_related("file_submissions__question")
+        .prefetch_related("answers__question", "file_submissions__question")
         .order_by("-submitted_at", "-id")
     )
 
@@ -2138,10 +2138,14 @@ def export_submissions_excel(request, quiz_id):
     thin = Side(style="thin", color="D1D5DB")
     border = Border(left=thin, right=thin, top=thin, bottom=thin)
 
+    # Get quiz questions so the export includes Q1, Q2, Q3... correctness columns.
+    questions = list(quiz.questions.all().order_by("id"))
+
     # Get file upload questions for this quiz
     file_upload_questions = list(quiz.questions.filter(question_type='file_upload').order_by('id'))
     num_file_cols = len(file_upload_questions)
-    total_cols = 6 + num_file_cols  # Base 6 cols + file grade cols
+    question_cols = len(questions)
+    total_cols = 6 + question_cols + num_file_cols  # Base cols + Q correctness cols + file grade cols
     end_col_letter = get_column_letter(total_cols) if total_cols > 0 else "F"
 
     # ---------------------------
@@ -2181,6 +2185,10 @@ def export_submissions_excel(request, quiz_id):
         "Percentage",
         "Submitted At",
     ]
+
+    # Add per-question correctness columns: 1 = correct, 0 = wrong/unanswered.
+    for i in range(1, len(questions) + 1):
+        headers.append(f"Q{i}")
     
     # Add file grade headers for each file upload question
     for i, q in enumerate(file_upload_questions, start=1):
@@ -2217,6 +2225,11 @@ def export_submissions_excel(request, quiz_id):
             pct,
             submitted_str,
         ]
+
+        # Add per-question correctness values for every question in order.
+        # 1 = correct, 0 = wrong or not answered.
+        answer_map = {a.question_id: (1 if a.is_correct else 0) for a in s.answers.all()}
+        row_data.extend(answer_map.get(q.id, 0) for q in questions)
         
         # Add file grades for each file upload question
         file_grades_map = {fs.question_id: fs.grade for fs in s.file_submissions.all() if fs.question_id}
@@ -2371,9 +2384,9 @@ def export_folder_boxes_excel(request, folder_id):
             total = int(s.total or 0)
             pct = (score / total) if total else 0
 
-            # per-question correctness: 1 correct, 0 wrong, "" missing
+            # per-question correctness: 1 correct, 0 wrong/unanswered
             ans_map = {a.question_id: (1 if a.is_correct else 0) for a in s.answers.all()}
-            per_q = [ans_map.get(qq.id, "") for qq in questions]
+            per_q = [ans_map.get(qq.id, 0) for qq in questions]
             
             # file grades for file upload questions
             file_grades_map = {fs.question_id: fs.grade for fs in s.file_submissions.all() if fs.question_id}
