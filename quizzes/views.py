@@ -2529,6 +2529,178 @@ def export_student_folder_excel(request, folder_id, student_id):
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
     wb.save(response)
     return response
+
+
+# =============================================================================
+# EXPORT 4: QUIZ PDF (Export quiz as PDF document)
+# =============================================================================
+
+@staff_required
+def export_quiz_pdf(request, quiz_id):
+    """
+    Export a quiz (with all its questions) as a PDF document.
+    
+    The PDF includes:
+    - Quiz title and metadata
+    - All questions in order
+    - Question images if present
+    - Answer options for multiple choice/true-false questions
+    """
+    from reportlab.lib.pagesizes import letter, A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Image, Table, TableStyle
+    from reportlab.lib import colors
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
+    from io import BytesIO
+    from datetime import datetime
+    
+    quiz = get_object_or_404(Quiz, id=quiz_id, teacher=request.user)
+    questions = quiz.questions.all().order_by("id")
+    
+    # Create PDF in memory
+    pdf_buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        pdf_buffer,
+        pagesize=letter,
+        rightMargin=0.75*inch,
+        leftMargin=0.75*inch,
+        topMargin=0.75*inch,
+        bottomMargin=0.75*inch
+    )
+    
+    # Get sample styles and create custom ones
+    styles = getSampleStyleSheet()
+    
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        textColor=colors.HexColor('#1F4E79'),
+        spaceAfter=6,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold'
+    )
+    
+    meta_style = ParagraphStyle(
+        'Meta',
+        parent=styles['Normal'],
+        fontSize=10,
+        textColor=colors.HexColor('#666666'),
+        spaceAfter=12,
+        alignment=TA_CENTER,
+        fontName='Helvetica'
+    )
+    
+    heading_style = ParagraphStyle(
+        'QuestionHeading',
+        parent=styles['Heading2'],
+        fontSize=14,
+        textColor=colors.HexColor('#1F4E79'),
+        spaceAfter=6,
+        spaceBefore=12,
+        fontName='Helvetica-Bold'
+    )
+    
+    option_style = ParagraphStyle(
+        'Option',
+        parent=styles['Normal'],
+        fontSize=11,
+        textColor=colors.HexColor('#333333'),
+        spaceAfter=4,
+        leftIndent=20,
+        fontName='Helvetica'
+    )
+    
+    normal_style = ParagraphStyle(
+        'Normal',
+        parent=styles['Normal'],
+        fontSize=11,
+        textColor=colors.HexColor('#333333'),
+        spaceAfter=8,
+        alignment=TA_JUSTIFY,
+        fontName='Helvetica'
+    )
+    
+    # Build story
+    story = []
+    
+    # Title
+    story.append(Paragraph(f"📝 {quiz.title}", title_style))
+    
+    # Metadata
+    quiz_type_display = dict(Quiz.QUIZ_TYPE_CHOICES).get(quiz.quiz_type, quiz.quiz_type)
+    meta_text = f"""
+    <b>Quiz Code:</b> {quiz.code} | <b>Type:</b> {quiz_type_display} | 
+    <b>Total Questions:</b> {questions.count()} | <b>Generated:</b> {datetime.now().strftime('%Y-%m-%d %H:%M')}<br/>
+    <b>Teacher:</b> {request.user.get_full_name() or request.user.username}
+    """
+    story.append(Paragraph(meta_text, meta_style))
+    
+    # Add horizontal line
+    story.append(Spacer(1, 0.2*inch))
+    
+    # Questions
+    for idx, question in enumerate(questions, 1):
+        # Question heading
+        story.append(Paragraph(f"Question {idx}", heading_style))
+        
+        # Question text
+        if question.text:
+            story.append(Paragraph(f"<b>{question.text}</b>", normal_style))
+        
+        # Question image if exists
+        if question.image:
+            try:
+                img_url = question.image.url
+                # Handle relative URLs (local dev) vs absolute URLs (production)
+                if not img_url.startswith('http'):
+                    img_url = request.build_absolute_uri(img_url)
+                
+                img = Image(img_url, width=4*inch, height=2*inch)
+                story.append(img)
+                story.append(Spacer(1, 0.2*inch))
+            except Exception as e:
+                logger.warning(f"Could not load image for question {question.id}: {e}")
+        
+        # Options based on question type
+        if question.question_type == 'multiple_choice':
+            options = json.loads(question.options) if isinstance(question.options, str) else question.options or []
+            if options:
+                story.append(Paragraph("<i>Options:</i>", option_style))
+                for i, option in enumerate(options, 1):
+                    story.append(Paragraph(f"{chr(96+i)}) {option}", option_style))
+        
+        elif question.question_type == 'true_false':
+            story.append(Paragraph("<i>Options:</i>", option_style))
+            story.append(Paragraph("a) True", option_style))
+            story.append(Paragraph("b) False", option_style))
+        
+        elif question.question_type == 'file_upload':
+            story.append(Paragraph(
+                "<i>Answer Type: File Upload (PDF, JPG, or PNG)</i>",
+                option_style
+            ))
+        
+        # Spacer between questions
+        story.append(Spacer(1, 0.3*inch))
+        
+        # Page break after every 3-4 questions
+        if (idx % 4 == 0) and (idx < questions.count()):
+            story.append(PageBreak())
+    
+    # Build PDF
+    doc.build(story)
+    
+    # Return as downloadable file
+    pdf_buffer.seek(0)
+    response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
+    filename = f"{quiz.code}_{quiz.title.replace(' ', '_')}.pdf"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    return response
+
+
 def quiz_status(request, quiz_code):
     quiz = get_object_or_404(Quiz, code=quiz_code)
     return JsonResponse({"active": bool(quiz.is_active)})

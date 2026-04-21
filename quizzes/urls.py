@@ -248,8 +248,13 @@ urlpatterns = [
         views.export_submissions_excel,
         name="export_submissions_excel"
     ),
-    
-    # Export folder "boxes" report (all quizzes in folder, per-question breakdown)
+
+    # Export quiz as PDF (all questions)
+    path(
+        "teacher/quizzes/<int:quiz_id>/export-pdf/",
+        views.export_quiz_pdf,
+        name="export_quiz_pdf"
+    ),
     path(
         "teacher/folders/<int:folder_id>/export-boxes/",
         views.export_folder_boxes_excel,

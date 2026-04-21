@@ -8,6 +8,7 @@ psycopg2-binary
 Pillow
 qrcode[pil]
 openpyxl
+reportlab
 sendgrid>=3.5,<4.0
 sendgrid-django==4.2.0
 openai>=1.0.0

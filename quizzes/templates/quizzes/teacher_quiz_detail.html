@@ -55,7 +55,12 @@
       <div class="action-desc">Download results</div>
     </a>
 
-    <!-- Settings -->
+    <!-- Export as PDF -->
+    <a class="action-card" href="{% url 'export_quiz_pdf' quiz.id %}">
+      <div class="action-icon export">📄</div>
+      <div class="action-label">Export PDF</div>
+      <div class="action-desc">Download quiz document</div>
+    </a>
     <a class="action-card" href="{% url 'edit_quiz_settings' quiz.id %}">
       <div class="action-icon settings">⚙️</div>
       <div class="action-label">Settings</div>
