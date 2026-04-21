@@ -40,6 +40,15 @@ def redact(value: Any) -> str:
     return text
 
 
+def redact_log_arg(value: Any) -> Any:
+    """Redact strings while preserving numeric args for logging formatters."""
+    if isinstance(value, str):
+        return redact(value)
+    if isinstance(value, (int, float, bool)) or value is None:
+        return value
+    return redact(value)
+
+
 def redact_headers(headers: dict[str, Any]) -> dict[str, str]:
     """Return headers with credential-bearing values redacted."""
     safe_headers = {}
@@ -57,8 +66,7 @@ class RedactingFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         record.msg = redact(record.msg)
         if isinstance(record.args, dict):
-            record.args = {key: redact(value) for key, value in record.args.items()}
+            record.args = {key: redact_log_arg(value) for key, value in record.args.items()}
         elif isinstance(record.args, tuple):
-            record.args = tuple(redact(value) for value in record.args)
+            record.args = tuple(redact_log_arg(value) for value in record.args)
         return True
-

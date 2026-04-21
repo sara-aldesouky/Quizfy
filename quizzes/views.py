@@ -1210,6 +1210,9 @@ def performance_analytics_dashboard(request):
         messages.error(request, "The results file must be Excel, CSV, or TSV.")
         return render(request, "quizzes/performance_analytics.html", context)
 
+    def is_openai_rate_limit_error(exc):
+        return exc.__class__.__name__ == "RateLimitError" or getattr(exc, "status_code", None) == 429
+
     try:
         from performance_analytics.config import config
         from performance_analytics.models import AnalysisRequest
@@ -1268,8 +1271,14 @@ def performance_analytics_dashboard(request):
         messages.error(request, "The uploaded files could not be processed. Check the file format and columns.")
     except RuntimeError:
         messages.error(request, "Analytics is not fully configured on the backend yet.")
-    except Exception:
-        messages.error(request, "Analysis failed. Please check the uploaded files and try again.")
+    except Exception as exc:
+        if is_openai_rate_limit_error(exc):
+            messages.error(
+                request,
+                "OpenAI rate limit or quota was reached. Please wait and try again, or check the backend OpenAI billing/rate limit settings.",
+            )
+        else:
+            messages.error(request, "Analysis failed. Please check the uploaded files and try again.")
 
     return render(request, "quizzes/performance_analytics.html", context)
 

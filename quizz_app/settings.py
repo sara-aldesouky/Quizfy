@@ -263,13 +263,13 @@ LOGGING = {
     },
     "root": {
         "handlers": ["console"],
-        "level": "DEBUG",
+        "level": os.getenv("LOG_LEVEL", "INFO"),
     },
     "loggers": {
         # General Django logging
         "django": {
             "handlers": ["console"],
-            "level": "DEBUG",
+            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
             "propagate": False,
         },
         # Log request errors at ERROR level only
@@ -281,7 +281,23 @@ LOGGING = {
         # Email debugging
         "django.core.mail": {
             "handlers": ["console"],
-            "level": "DEBUG",
+            "level": os.getenv("MAIL_LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+        # Keep HTTP client internals from dumping headers in production logs.
+        "httpx": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        "httpcore": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        "openai": {
+            "handlers": ["console"],
+            "level": "WARNING",
             "propagate": False,
         },
     },
