@@ -61,6 +61,14 @@
       <div class="action-label">Export PDF</div>
       <div class="action-desc">Download quiz document</div>
     </a>
+
+    <!-- Class Analytics -->
+    <a class="action-card" href="{% url 'performance_analytics_dashboard' %}">
+      <div class="action-icon submissions">📈</div>
+      <div class="action-label">Class Analytics</div>
+      <div class="action-desc">Analyze PDF + Excel results</div>
+    </a>
+
     <a class="action-card" href="{% url 'edit_quiz_settings' quiz.id %}">
       <div class="action-icon settings">⚙️</div>
       <div class="action-label">Settings</div>

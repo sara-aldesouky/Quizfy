@@ -116,6 +116,11 @@ urlpatterns = [
         views.performance_analytics_dashboard,
         name="performance_analytics_short",
     ),
+    path(
+        "a/",
+        views.performance_analytics_dashboard,
+        name="performance_analytics_tiny",
+    ),
     
     # Quiz detail view
     path(
