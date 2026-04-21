@@ -1191,6 +1191,8 @@ def performance_analytics_dashboard(request):
     if request.method != "POST":
         return render(request, "quizzes/performance_analytics.html", context)
 
+    logger.info("analytics_post_received user_id=%s", request.user.id)
+
     pdf_file = request.FILES.get("pdf_file")
     excel_file = request.FILES.get("excel_file")
 
