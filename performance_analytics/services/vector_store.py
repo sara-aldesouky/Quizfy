@@ -22,7 +22,11 @@ class QuestionVectorStore:
 
     def configure(self) -> None:
         """Initialize vector dependencies during application startup."""
-        self._setup_chroma()
+        try:
+            self._setup_chroma()
+        except Exception:
+            self._chroma_collection = None
+            self._openai_client = None
 
     def ingest_questions(self, questions: list[ClassifiedQuestion]) -> None:
         if not questions:
@@ -30,16 +34,6 @@ class QuestionVectorStore:
         documents = [self._document_text(question) for question in questions]
         metadatas = [self._metadata(question) for question in questions]
         ids = [question.question_id for question in questions]
-
-        self._ensure_configured()
-
-        embeddings = self._embed(documents)
-        self._chroma_collection.upsert(
-            ids=ids,
-            documents=documents,
-            embeddings=embeddings,
-            metadatas=metadatas,
-        )
 
         for question, document, metadata in zip(questions, documents, metadatas):
             self._local_records.append(
@@ -50,6 +44,21 @@ class QuestionVectorStore:
                     "tokens": Counter(self._tokens(document)),
                 }
             )
+
+        if not self._chroma_collection or not self._openai_client:
+            return
+
+        try:
+            embeddings = self._embed(documents)
+            self._chroma_collection.upsert(
+                ids=ids,
+                documents=documents,
+                embeddings=embeddings,
+                metadatas=metadatas,
+            )
+        except Exception:
+            self._chroma_collection = None
+            self._openai_client = None
 
     def retrieve_topic_evidence(
         self,
@@ -63,19 +72,24 @@ class QuestionVectorStore:
         if source_pdf_id:
             where["source_pdf"] = source_pdf_id
 
-        self._ensure_configured()
+        if self._chroma_collection and self._openai_client:
+            try:
+                result = self._chroma_collection.query(
+                    query_embeddings=self._embed([query]),
+                    n_results=limit,
+                    where=where,
+                )
+                documents = result.get("documents", [[]])[0]
+                metadatas = result.get("metadatas", [[]])[0]
+                return [
+                    {"document": document, "metadata": metadata}
+                    for document, metadata in zip(documents, metadatas)
+                ]
+            except Exception:
+                self._chroma_collection = None
+                self._openai_client = None
 
-        result = self._chroma_collection.query(
-            query_embeddings=self._embed([query]),
-            n_results=limit,
-            where=where,
-        )
-        documents = result.get("documents", [[]])[0]
-        metadatas = result.get("metadatas", [[]])[0]
-        return [
-            {"document": document, "metadata": metadata}
-            for document, metadata in zip(documents, metadatas)
-        ]
+        return self._retrieve_local(topic, subtopic, source_pdf_id=source_pdf_id, limit=limit)
 
     def _setup_chroma(self) -> None:
         if config.VECTOR_DB_TYPE != "chroma":
@@ -98,6 +112,31 @@ class QuestionVectorStore:
     def _ensure_configured(self) -> None:
         if not self._chroma_collection or not self._openai_client:
             raise RuntimeError("Vector RAG is not configured.")
+
+    def _retrieve_local(
+        self,
+        topic: str,
+        subtopic: str,
+        source_pdf_id: str | None = None,
+        limit: int = 5,
+    ) -> list[dict[str, Any]]:
+        query_tokens = Counter(self._tokens(f"{topic} {subtopic}"))
+        candidates = [
+            record
+            for record in self._local_records
+            if record["metadata"].get("topic") == topic
+            and record["metadata"].get("subtopic") == subtopic
+            and (not source_pdf_id or record["metadata"].get("source_pdf") == source_pdf_id)
+        ]
+        ranked = sorted(
+            candidates,
+            key=lambda record: self._cosine(query_tokens, record["tokens"]),
+            reverse=True,
+        )
+        return [
+            {"document": record["document"], "metadata": record["metadata"]}
+            for record in ranked[:limit]
+        ]
 
     def _embed(self, texts: list[str]) -> list[list[float]]:
         response = self._openai_client.embeddings.create(

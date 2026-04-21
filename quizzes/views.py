@@ -1210,6 +1210,19 @@ def performance_analytics_dashboard(request):
     def is_openai_rate_limit_error(exc):
         return exc.__class__.__name__ == "RateLimitError" or getattr(exc, "status_code", None) == 429
 
+    def safe_analytics_error_message(exc):
+        exc_name = exc.__class__.__name__
+        status_code = getattr(exc, "status_code", None)
+        if exc_name == "AuthenticationError" or status_code == 401:
+            return "OpenAI authentication failed. Check the backend OPENAI_API_KEY in Render."
+        if is_openai_rate_limit_error(exc):
+            return "OpenAI rate limit or quota was reached. Please wait and try again, or check the backend OpenAI billing/rate limit settings."
+        if exc_name == "BadRequestError" or status_code == 400:
+            return "OpenAI could not process this PDF content. Try a smaller or clearer assessment PDF."
+        if exc_name in {"APIConnectionError", "APITimeoutError", "TimeoutException"}:
+            return "Could not reach OpenAI from the backend. Please try again."
+        return "Analysis failed. Please check that the PDF has numbered questions and the Excel has student_id/student_name plus Q1, Q2, Q3 columns with 1 or 0 values."
+
     try:
         from performance_analytics.config import config
         from performance_analytics.models import AnalysisRequest
@@ -1229,18 +1242,23 @@ def performance_analytics_dashboard(request):
         excel_path = store.save_upload(excel_id, excel_file.name, excel_file.read())
 
         extracted = PDFProcessor().extract_questions(pdf_path, pdf_id)
+        if not extracted:
+            raise ValueError("No questions could be extracted from the PDF.")
+
         classified = TopicClassifier().classify_batch(extracted, subject=None)
         vector_store.ingest_questions(classified)
         store.save_questions(pdf_id, classified)
 
         results = ExcelProcessor().normalize_results(excel_path)
+        if not results:
+            raise ValueError("No student result rows could be read from the results file.")
         store.save_results(excel_id, results)
 
         analysis = PerformanceAnalyzer().analyze(
             AnalysisRequest(
                 pdf_id=pdf_id,
                 excel_id=excel_id,
-                min_students_affected=2,
+                min_students_affected=1,
                 confidence_threshold=0.65,
             ),
             classified,
@@ -1258,18 +1276,12 @@ def performance_analytics_dashboard(request):
         }
         messages.success(request, "Class performance analysis completed.")
 
-    except ValueError:
-        messages.error(request, "The uploaded files could not be processed. Check the file format and columns.")
+    except ValueError as exc:
+        messages.error(request, str(exc))
     except RuntimeError:
         messages.error(request, "Analytics is not fully configured on the backend yet.")
     except Exception as exc:
-        if is_openai_rate_limit_error(exc):
-            messages.error(
-                request,
-                "OpenAI rate limit or quota was reached. Please wait and try again, or check the backend OpenAI billing/rate limit settings.",
-            )
-        else:
-            messages.error(request, "Analysis failed. Please check the uploaded files and try again.")
+        messages.error(request, safe_analytics_error_message(exc))
 
     return render(request, "quizzes/performance_analytics.html", context)
 
