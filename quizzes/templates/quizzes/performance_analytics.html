@@ -34,6 +34,7 @@
       <button id="analytics-submit" class="btn primary run-btn" type="submit">Run class analysis</button>
       <span id="analytics-processing" class="processing-note" hidden>Analyzing the class files. Keep this page open.</span>
     </div>
+    <div id="analytics-client-error" class="client-error" hidden></div>
   </form>
 </section>
 
@@ -222,6 +223,16 @@
   font-weight: 700;
 }
 
+.client-error {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.12);
+  color: #fecaca;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 .excel-guide {
   display: flex;
   flex-wrap: wrap;
@@ -398,55 +409,129 @@
 }
 </style>
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+function attachAnalyticsUploadHandler() {
+  console.info("analytics upload script loaded");
+
   const form = document.getElementById("analytics-form");
   const button = document.getElementById("analytics-submit");
   const processingNote = document.getElementById("analytics-processing");
+  const clientError = document.getElementById("analytics-client-error");
 
-  if (!form || !button || !processingNote) {
+  console.info("analytics upload form lookup", {
+    formFound: Boolean(form),
+    buttonFound: Boolean(button),
+    processingFound: Boolean(processingNote)
+  });
+
+  if (!form || !button || !processingNote || form.dataset.analyticsHandlerAttached === "true") {
     return;
+  }
+
+  form.dataset.analyticsHandlerAttached = "true";
+  console.info("analytics upload submit handler attached", {
+    actionPath: new URL(form.getAttribute("action") || window.location.pathname, window.location.origin).pathname,
+    method: form.method.toUpperCase()
+  });
+
+  function showClientError(message) {
+    if (clientError) {
+      clientError.textContent = message;
+      clientError.hidden = false;
+    } else {
+      alert(message);
+    }
+  }
+
+  function clearClientError() {
+    if (clientError) {
+      clientError.textContent = "";
+      clientError.hidden = true;
+    }
+  }
+
+  function resetSubmitState() {
+    button.disabled = false;
+    button.textContent = "Run class analysis";
+    processingNote.hidden = true;
+  }
+
+  function csrfValue() {
+    const input = form.querySelector('input[name="csrfmiddlewaretoken"]');
+    return input ? input.value : "";
+  }
+
+  function replacePage(html) {
+    const parsed = new DOMParser().parseFromString(html, "text/html");
+    if (parsed.title) {
+      document.title = parsed.title;
+    }
+    document.body.innerHTML = parsed.body.innerHTML;
+    attachAnalyticsUploadHandler();
   }
 
   form.addEventListener("submit", async function (event) {
     event.preventDefault();
+    console.info("analytics upload submit event fired");
 
     const formUrl = new URL(form.getAttribute("action") || window.location.pathname, window.location.origin);
-    console.info("analytics upload submit started", {
+    const csrf = csrfValue();
+    const requestHeaders = csrf ? {"X-CSRFToken": csrf} : {};
+    clearClientError();
+
+    console.info("analytics upload fetch about to send", {
       targetPath: formUrl.pathname,
-      method: form.method.toUpperCase()
+      method: form.method.toUpperCase(),
+      csrfIncluded: Boolean(csrf)
     });
 
     button.disabled = true;
-    button.textContent = "Analyzing...";
+    button.textContent = "Analyzing files...";
     processingNote.hidden = false;
 
+    let response;
     try {
-      const response = await fetch(formUrl.toString(), {
+      response = await fetch(formUrl.toString(), {
         method: "POST",
         body: new FormData(form),
-        credentials: "same-origin"
+        credentials: "same-origin",
+        headers: requestHeaders
       });
-
-      console.info("analytics upload response received", {
-        status: response.status,
-        redirected: response.redirected,
-        finalPath: new URL(response.url).pathname
-      });
-
-      const html = await response.text();
-      document.open();
-      document.write(html);
-      document.close();
     } catch (error) {
-      console.error("analytics upload request failed", {
-        name: error && error.name ? error.name : "Error"
+      console.error("analytics upload fetch exception", {
+        name: error && error.name ? error.name : "Error",
+        message: error && error.message ? error.message : "No browser error message"
       });
-      button.disabled = false;
-      button.textContent = "Run class analysis";
-      processingNote.hidden = true;
-      alert("The upload request did not reach the analytics page. Please refresh and try again.");
+      resetSubmitState();
+      showClientError("The browser could not send the upload request. Please check your connection and try again.");
+      return;
+    }
+
+    console.info("analytics upload fetch response status", {
+      status: response.status,
+      ok: response.ok,
+      redirected: response.redirected,
+      finalPath: new URL(response.url).pathname
+    });
+
+    try {
+      const html = await response.text();
+      if (!response.ok) {
+        resetSubmitState();
+        showClientError("The analytics upload reached the server, but the server returned status " + response.status + ".");
+        return;
+      }
+      replacePage(html);
+    } catch (error) {
+      console.error("analytics upload response render failed", {
+        name: error && error.name ? error.name : "Error",
+        message: error && error.message ? error.message : "No browser error message"
+      });
+      resetSubmitState();
+      showClientError("The upload reached the server, but the browser could not display the response. Please refresh and try again.");
     }
   });
-});
+}
+
+document.addEventListener("DOMContentLoaded", attachAnalyticsUploadHandler);
 </script>
 {% endblock %}

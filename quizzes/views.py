@@ -1188,17 +1188,39 @@ def performance_analytics_dashboard(request):
         "upload_summary": None,
     }
 
-    if request.method != "POST":
+    def render_analytics_response():
+        logger.info(
+            "teacher_analytics_response_returned method=%s user_id=%s has_analysis=%s",
+            request.method,
+            request.user.id,
+            bool(context.get("analysis")),
+        )
         return render(request, "quizzes/performance_analytics.html", context)
 
-    logger.info("analytics_post_received user_id=%s", request.user.id)
+    logger.info(
+        "teacher_analytics_view_entered method=%s user_id=%s",
+        request.method,
+        request.user.id,
+    )
+
+    if request.method != "POST":
+        return render_analytics_response()
+
+    logger.info("teacher_analytics_csrf_passed user_id=%s", request.user.id)
+    logger.info("teacher_analytics_post_received user_id=%s", request.user.id)
 
     pdf_file = request.FILES.get("pdf_file")
     excel_file = request.FILES.get("excel_file")
+    logger.info(
+        "teacher_analytics_files_present user_id=%s pdf=%s excel=%s",
+        request.user.id,
+        bool(pdf_file),
+        bool(excel_file),
+    )
 
     if not pdf_file or not excel_file:
         messages.error(request, "Upload both the assessment PDF and the class results file.")
-        return render(request, "quizzes/performance_analytics.html", context)
+        return render_analytics_response()
 
     def upload_extension(upload):
         if "." not in upload.name:
@@ -1207,12 +1229,12 @@ def performance_analytics_dashboard(request):
 
     if not pdf_file.name.lower().endswith(".pdf"):
         messages.error(request, "The assessment file must be a PDF.")
-        return render(request, "quizzes/performance_analytics.html", context)
+        return render_analytics_response()
 
     allowed_results = (".xlsx", ".xls", ".csv", ".tsv")
     if not excel_file.name.lower().endswith(allowed_results):
         messages.error(request, "The results file must be Excel, CSV, or TSV.")
-        return render(request, "quizzes/performance_analytics.html", context)
+        return render_analytics_response()
 
     def is_openai_rate_limit_error(exc):
         return exc.__class__.__name__ == "RateLimitError" or getattr(exc, "status_code", None) == 429
@@ -1337,7 +1359,7 @@ def performance_analytics_dashboard(request):
         )
         messages.error(request, safe_analytics_error_message(exc))
 
-    return render(request, "quizzes/performance_analytics.html", context)
+    return render_analytics_response()
 
 
 @staff_required
