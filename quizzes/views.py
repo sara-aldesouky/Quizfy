@@ -2538,152 +2538,366 @@ def export_student_folder_excel(request, folder_id, student_id):
 @staff_required
 def export_quiz_pdf(request, quiz_id):
     """
-    Export a quiz (with all its questions) as a PDF document.
+    Export a quiz (with all its questions) as a professional PDF document.
+    Designed for educational systems with professional styling.
     
     The PDF includes:
-    - Quiz title and metadata
-    - All questions in order
-    - Question images if present
-    - Answer options for multiple choice/true-false questions
+    - Professional header with institution details
+    - Quiz metadata and instructions
+    - Numbered questions with clear formatting
+    - Options in organized tables
+    - Answer key (for teacher reference)
+    - Professional footer with page numbers
     """
-    from reportlab.lib.pagesizes import letter, A4
+    from reportlab.lib.pagesizes import letter
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import inch
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Image, Table, TableStyle
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, HRFlowable
     from reportlab.lib import colors
-    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY, TA_RIGHT
+    from reportlab.pdfgen import canvas
     from io import BytesIO
     from datetime import datetime
     
     quiz = get_object_or_404(Quiz, id=quiz_id, teacher=request.user)
     questions = quiz.questions.all().order_by("id")
     
-    # Create PDF in memory
+    # Create PDF in memory with custom page template
     pdf_buffer = BytesIO()
-    doc = SimpleDocTemplate(
+    
+    class QuizDocTemplate(SimpleDocTemplate):
+        """Custom document template with headers and footers"""
+        def __init__(self, *args, **kwargs):
+            self.quiz_code = kwargs.pop('quiz_code', '')
+            self.quiz_title = kwargs.pop('quiz_title', '')
+            super().__init__(*args, **kwargs)
+        
+        def build(self, flowables, onFirstPage=None, onLaterPages=None, canvasmaker=canvas.Canvas):
+            return super().build(
+                flowables,
+                onFirstPage=self._firstPageHeader,
+                onLaterPages=self._laterPageHeader,
+                canvasmaker=canvasmaker
+            )
+        
+        def _firstPageHeader(self, canvas, doc):
+            self._drawHeader(canvas, doc)
+        
+        def _laterPageHeader(self, canvas, doc):
+            self._drawHeader(canvas, doc)
+        
+        def _drawHeader(self, canvas, doc):
+            canvas.saveState()
+            # Header line
+            canvas.setLineWidth(2)
+            canvas.setStrokeColor(colors.HexColor('#1F4E79'))
+            canvas.line(0.5*inch, letter[1]-0.4*inch, letter[0]-0.5*inch, letter[1]-0.4*inch)
+            # Footer
+            canvas.setFont("Helvetica", 9)
+            canvas.setFillColor(colors.HexColor('#666666'))
+            canvas.drawString(0.75*inch, 0.4*inch, f"Quiz Code: {self.quiz_code}")
+            canvas.drawRightString(letter[0]-0.75*inch, 0.4*inch, f"Page {doc.page}")
+            canvas.restoreState()
+    
+    doc = QuizDocTemplate(
         pdf_buffer,
         pagesize=letter,
         rightMargin=0.75*inch,
         leftMargin=0.75*inch,
-        topMargin=0.75*inch,
-        bottomMargin=0.75*inch
+        topMargin=1*inch,
+        bottomMargin=0.75*inch,
+        quiz_code=quiz.code,
+        quiz_title=quiz.title
     )
     
-    # Get sample styles and create custom ones
+    # Define professional styles
     styles = getSampleStyleSheet()
     
-    title_style = ParagraphStyle(
-        'CustomTitle',
-        parent=styles['Heading1'],
-        fontSize=24,
+    # Institution header
+    institution_style = ParagraphStyle(
+        'Institution',
+        parent=styles['Normal'],
+        fontSize=11,
         textColor=colors.HexColor('#1F4E79'),
-        spaceAfter=6,
         alignment=TA_CENTER,
-        fontName='Helvetica-Bold'
+        fontName='Helvetica-Bold',
+        spaceAfter=2
     )
     
+    # Main title
+    title_style = ParagraphStyle(
+        'QuizTitle',
+        parent=styles['Heading1'],
+        fontSize=22,
+        textColor=colors.HexColor('#0F3460'),
+        spaceAfter=4,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold',
+        leading=26
+    )
+    
+    # Metadata header
     meta_style = ParagraphStyle(
-        'Meta',
+        'Metadata',
+        parent=styles['Normal'],
+        fontSize=9,
+        textColor=colors.HexColor('#555555'),
+        spaceAfter=10,
+        alignment=TA_CENTER,
+        fontName='Helvetica',
+        leading=12
+    )
+    
+    # Question number
+    question_num_style = ParagraphStyle(
+        'QuestionNum',
+        parent=styles['Heading2'],
+        fontSize=13,
+        textColor=colors.HexColor('#FFFFFF'),
+        fontName='Helvetica-Bold',
+        alignment=TA_CENTER
+    )
+    
+    # Question text
+    question_text_style = ParagraphStyle(
+        'QuestionText',
+        parent=styles['Normal'],
+        fontSize=12,
+        textColor=colors.HexColor('#1F1F1F'),
+        spaceAfter=8,
+        fontName='Helvetica-Bold',
+        leading=14
+    )
+    
+    # Option text in table
+    option_text_style = ParagraphStyle(
+        'OptionText',
+        parent=styles['Normal'],
+        fontSize=11,
+        textColor=colors.HexColor('#333333'),
+        fontName='Helvetica'
+    )
+    
+    # Answer key style
+    answer_style = ParagraphStyle(
+        'AnswerKey',
         parent=styles['Normal'],
         fontSize=10,
-        textColor=colors.HexColor('#666666'),
-        spaceAfter=12,
-        alignment=TA_CENTER,
-        fontName='Helvetica'
-    )
-    
-    heading_style = ParagraphStyle(
-        'QuestionHeading',
-        parent=styles['Heading2'],
-        fontSize=14,
-        textColor=colors.HexColor('#1F4E79'),
-        spaceAfter=6,
-        spaceBefore=12,
+        textColor=colors.HexColor('#0F6B2F'),
         fontName='Helvetica-Bold'
     )
     
-    option_style = ParagraphStyle(
-        'Option',
+    # Instruction style
+    instruction_style = ParagraphStyle(
+        'Instructions',
         parent=styles['Normal'],
-        fontSize=11,
-        textColor=colors.HexColor('#333333'),
-        spaceAfter=4,
-        leftIndent=20,
-        fontName='Helvetica'
-    )
-    
-    normal_style = ParagraphStyle(
-        'Normal',
-        parent=styles['Normal'],
-        fontSize=11,
-        textColor=colors.HexColor('#333333'),
-        spaceAfter=8,
-        alignment=TA_JUSTIFY,
-        fontName='Helvetica'
+        fontSize=9,
+        textColor=colors.HexColor('#555555'),
+        spaceAfter=12,
+        alignment=TA_LEFT,
+        fontName='Helvetica',
+        leftIndent=10,
+        leading=11
     )
     
     # Build story
     story = []
     
-    # Title
-    story.append(Paragraph(f"📝 {quiz.title}", title_style))
-    
-    # Metadata
-    quiz_type_display = dict(Quiz.QUIZ_TYPE_CHOICES).get(quiz.quiz_type, quiz.quiz_type)
-    meta_text = f"""
-    <b>Quiz Code:</b> {quiz.code} | <b>Type:</b> {quiz_type_display} | 
-    <b>Total Questions:</b> {questions.count()} | <b>Generated:</b> {datetime.now().strftime('%Y-%m-%d %H:%M')}<br/>
-    <b>Teacher:</b> {request.user.get_full_name() or request.user.username}
-    """
-    story.append(Paragraph(meta_text, meta_style))
-    
-    # Add horizontal line
+    # === COVER SECTION ===
+    story.append(Spacer(1, 0.3*inch))
+    story.append(Paragraph("QUIZFY ASSESSMENT SYSTEM", institution_style))
+    story.append(Spacer(1, 0.15*inch))
+    story.append(Paragraph(quiz.title, title_style))
     story.append(Spacer(1, 0.2*inch))
     
-    # Questions
+    # Metadata table
+    quiz_type_display = dict(Quiz.QUIZ_TYPE_CHOICES).get(quiz.quiz_type, quiz.quiz_type)
+    metadata = [
+        ["Quiz Code:", quiz.code],
+        ["Question Type:", quiz_type_display],
+        ["Total Questions:", str(questions.count())],
+        ["Duration:", f"{quiz.duration_minutes} minutes" if quiz.duration_minutes else "Unlimited"],
+        ["Instructor:", request.user.get_full_name() or request.user.username],
+        ["Generated:", datetime.now().strftime('%B %d, %Y at %I:%M %p')]
+    ]
+    
+    meta_table = Table(metadata, colWidths=[2.2*inch, 3*inch])
+    meta_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#E8F0F7')),
+        ('TEXTCOLOR', (0, 0), (0, -1), colors.HexColor('#1F4E79')),
+        ('TEXTCOLOR', (1, 0), (1, -1), colors.HexColor('#333333')),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+        ('LINEBEFORE', (1, 0), (1, -1), 1, colors.HexColor('#CCCCCC')),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#E0E0E0')),
+        ('ROWBACKGROUNDS', (0, 0), (-1, -1), [colors.white, colors.HexColor('#F8F8F8')])
+    ]))
+    story.append(meta_table)
+    story.append(Spacer(1, 0.3*inch))
+    
+    # Instructions section
+    story.append(Paragraph("INSTRUCTIONS FOR STUDENTS", institution_style))
+    story.append(Spacer(1, 0.1*inch))
+    story.append(Paragraph("• Answer all questions carefully and completely", instruction_style))
+    story.append(Paragraph("• Select the most appropriate option for each question", instruction_style))
+    story.append(Paragraph("• Show all work for written responses", instruction_style))
+    story.append(Paragraph("• Time management is important", instruction_style))
+    story.append(Spacer(1, 0.15*inch))
+    
+    story.append(PageBreak())
+    
+    # === QUESTIONS SECTION ===
+    question_count = 0
+    items_on_page = 0
+    
     for idx, question in enumerate(questions, 1):
-        # Question heading
-        story.append(Paragraph(f"Question {idx}", heading_style))
+        question_count += 1
+        
+        # Question header with number (colored background)
+        q_number_table = Table([["QUESTION " + str(idx)]], colWidths=[7.5*inch])
+        q_number_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#1F4E79')),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.white),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 12),
+            ('ALIGNMENT', (0, 0), (-1, -1), TA_CENTER),
+            ('PADDING', (0, 0), (-1, -1), 6)
+        ]))
+        story.append(q_number_table)
+        story.append(Spacer(1, 0.1*inch))
         
         # Question text
         if question.text:
-            story.append(Paragraph(f"<b>{question.text}</b>", normal_style))
-        
-        # Question image if exists - skip for PDF (may not be accessible on Render)
-        # Images can be missing in production due to ephemeral filesystem
+            story.append(Paragraph(question.text, question_text_style))
+        story.append(Spacer(1, 0.08*inch))
         
         # Options based on question type
         if question.question_type == 'multiple_choice':
-            # Get non-empty options from option1, option2, option3, option4
-            options = [
-                question.option1, 
-                question.option2, 
-                question.option3, 
-                question.option4
-            ]
-            options = [opt for opt in options if opt]  # Filter out empty options
+            options = [question.option1, question.option2, question.option3, question.option4]
+            options = [opt for opt in options if opt]
             if options:
-                story.append(Paragraph("<i>Options:</i>", option_style))
+                # Create options table
+                table_data = []
                 for i, option in enumerate(options, 1):
-                    story.append(Paragraph(f"{chr(96+i)}) {option}", option_style))
+                    letter_opt = chr(64+i)  # A, B, C, D
+                    table_data.append([
+                        f"{letter_opt}.",
+                        option,
+                        "✓" if question.correct_option == i else ""
+                    ])
+                
+                options_table = Table(table_data, colWidths=[0.4*inch, 5.5*inch, 0.6*inch])
+                options_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#FAFAFA')),
+                    ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#333333')),
+                    ('TEXTCOLOR', (2, 0), (2, -1), colors.HexColor('#0F6B2F')),
+                    ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+                    ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, -1), 10),
+                    ('ALIGNMENT', (0, 0), (0, -1), TA_CENTER),
+                    ('ALIGNMENT', (2, 0), (2, -1), TA_CENTER),
+                    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                    ('LEFTPADDING', (0, 0), (-1, -1), 8),
+                    ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+                    ('TOPPADDING', (0, 0), (-1, -1), 6),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                    ('LINEBELOW', (0, 0), (-1, -1), 0.5, colors.HexColor('#E0E0E0')),
+                ]))
+                story.append(options_table)
         
         elif question.question_type == 'true_false':
-            story.append(Paragraph("<i>Options:</i>", option_style))
-            story.append(Paragraph("a) True", option_style))
-            story.append(Paragraph("b) False", option_style))
+            # True/False options table
+            table_data = [
+                ["A.", "True", "✓" if question.correct_option == 1 else ""],
+                ["B.", "False", "✓" if question.correct_option == 2 else ""]
+            ]
+            tf_table = Table(table_data, colWidths=[0.4*inch, 5.5*inch, 0.6*inch])
+            tf_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#FAFAFA')),
+                ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#333333')),
+                ('TEXTCOLOR', (2, 0), (2, -1), colors.HexColor('#0F6B2F')),
+                ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+                ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, -1), 10),
+                ('ALIGNMENT', (0, 0), (0, -1), TA_CENTER),
+                ('ALIGNMENT', (2, 0), (2, -1), TA_CENTER),
+                ('LEFTPADDING', (0, 0), (-1, -1), 8),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+                ('TOPPADDING', (0, 0), (-1, -1), 6),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                ('LINEBELOW', (0, 0), (-1, -1), 0.5, colors.HexColor('#E0E0E0')),
+            ]))
+            story.append(tf_table)
         
         elif question.question_type == 'file_upload':
-            story.append(Paragraph(
-                "<i>Answer Type: File Upload (PDF, JPG, or PNG)</i>",
-                option_style
-            ))
+            upload_table = Table([["File Upload Question - Students submit PDF, JPG, or PNG"]], colWidths=[7.5*inch])
+            upload_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#FFF4E6')),
+                ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#E67E22')),
+                ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Oblique'),
+                ('FONTSIZE', (0, 0), (-1, -1), 10),
+                ('ALIGNMENT', (0, 0), (-1, -1), TA_CENTER),
+                ('PADDING', (0, 0), (-1, -1), 6),
+                ('BORDER', (0, 0), (-1, -1), 1, colors.HexColor('#E67E22'))
+            ]))
+            story.append(upload_table)
         
-        # Spacer between questions
-        story.append(Spacer(1, 0.3*inch))
+        story.append(Spacer(1, 0.25*inch))
+        items_on_page += 1
         
-        # Page break after every 3-4 questions
-        if (idx % 4 == 0) and (idx < questions.count()):
+        # Page break after 2-3 questions for readability
+        if (idx % 3 == 0) and (idx < questions.count()):
             story.append(PageBreak())
+            items_on_page = 0
+    
+    # === ANSWER KEY (LAST PAGE) ===
+    story.append(PageBreak())
+    story.append(Paragraph("ANSWER KEY (TEACHER REFERENCE)", institution_style))
+    story.append(Spacer(1, 0.2*inch))
+    
+    # Build answer key table
+    answer_data = [["Question", "Type", "Correct Answer"]]
+    for idx, question in enumerate(questions, 1):
+        if question.question_type == 'multiple_choice':
+            correct = chr(64 + question.correct_option)
+            answer = f"{correct}) {getattr(question, f'option{question.correct_option}', 'N/A')}"
+        elif question.question_type == 'true_false':
+            answer = "True" if question.correct_option == 1 else "False"
+        else:
+            answer = "Manual Review"
+        
+        answer_data.append([
+            str(idx),
+            question.get_question_type_display(),
+            answer
+        ])
+    
+    answer_table = Table(answer_data, colWidths=[0.8*inch, 2*inch, 4.7*inch])
+    answer_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1F4E79')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 11),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor('#333333')),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('ALIGNMENT', (0, 0), (0, -1), TA_CENTER),
+        ('ALIGNMENT', (1, 0), (1, -1), TA_CENTER),
+        ('ALIGNMENT', (2, 0), (2, -1), TA_LEFT),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#CCCCCC')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F8F8F8')])
+    ]))
+    story.append(answer_table)
+    story.append(Spacer(1, 0.3*inch))
+    story.append(Paragraph("This answer key is for instructor reference only.", meta_style))
     
     # Build PDF
     doc.build(story)
@@ -2691,7 +2905,7 @@ def export_quiz_pdf(request, quiz_id):
     # Return as downloadable file
     pdf_buffer.seek(0)
     response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
-    filename = f"{quiz.code}_{quiz.title.replace(' ', '_')}.pdf"
+    filename = f"{quiz.code}_{quiz.title.replace(' ', '_')}_Assessment.pdf"
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     
     return response
