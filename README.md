@@ -51,8 +51,8 @@ The system focuses on **real academic workflows**, including authentication, tim
 * Login required before accessing any quiz
 * CSRF protection enabled
 * Passwords securely hashed using Django’s authentication system
-* Sensitive configuration stored in environment variables (`.env`)
-* `.env.example` included to demonstrate required variables without exposing secrets
+* Sensitive configuration stored in backend environment variables
+* `.env.example` lists required variable names without real secret values
 
 ---
 
@@ -152,4 +152,3 @@ Quizfy was built with a strong focus on:
 **Sara Al-Desouky**
 Backend-focused Software Engineer
 GitHub: [https://github.com/sara-aldesouky](https://github.com/sara-aldesouky)
-

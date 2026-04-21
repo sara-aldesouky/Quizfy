@@ -74,7 +74,7 @@ STEP 4: Check Logs if Email Still Doesn't Work
    - [EMAIL] - These are our debug messages
    - SMTP Error - If authentication failed
    - Connection refused - If Gmail servers unreachable
-3. Check console output for full traceback
+3. Check sanitized backend logs for the exception type
 
 Expected successful log lines:
   [EMAIL] Attempting to send 1 message(s) via SMTP

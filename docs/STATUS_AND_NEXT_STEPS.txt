@@ -43,7 +43,7 @@ BASED ON THE DIAGNOSTIC:
 If EMAIL_HOST_PASSWORD_SET = false:
   → Environment variable is missing on Render
   → Go to Render Dashboard → Settings → Environment
-  → Add EMAIL_HOST_PASSWORD = your_app_password
+  → Add EMAIL_HOST_PASSWORD securely in the backend environment
   → Wait 5-10 minutes for redeploy
 
 If TEST_EMAIL_RESULT shows "Authentication failed":

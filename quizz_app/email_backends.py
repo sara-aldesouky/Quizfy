@@ -7,6 +7,8 @@ from django.core.mail import EmailMultiAlternatives
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, Email, To, Content
 
+from .safe_logging import redact
+
 logger = logging.getLogger(__name__)
 
 class SendGridEmailBackend(BaseEmailBackend):
@@ -17,7 +19,7 @@ class SendGridEmailBackend(BaseEmailBackend):
     def send_messages(self, email_messages):
         api_key = os.getenv("SENDGRID_API_KEY")
         if not api_key:
-            logger.error("SENDGRID_API_KEY is missing")
+            logger.error("Email provider API key is missing")
             return 0
 
         sent_count = 0
@@ -59,9 +61,12 @@ class SendGridEmailBackend(BaseEmailBackend):
                 if 200 <= resp.status_code < 300:
                     sent_count += 1
                 else:
-                    logger.error("SendGrid failed: status=%s body=%s", resp.status_code, resp.body)
+                    logger.error("SendGrid failed: status=%s", resp.status_code)
 
-            except Exception:
-                logger.exception("SendGrid exception while sending email")
+            except Exception as exc:
+                logger.error(
+                    "SendGrid exception while sending email: %s",
+                    redact(type(exc).__name__),
+                )
 
         return sent_count

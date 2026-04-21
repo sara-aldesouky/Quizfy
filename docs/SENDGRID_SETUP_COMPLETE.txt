@@ -30,7 +30,7 @@ STEP 2: GET API KEY
 4. Give it a name: "Quizfy"
 5. Click "Create & Edit"
 6. Copy the API Key (you'll only see it once!)
-   - It looks like: SG.xxxxxxxxxxxx_xxxxxxxxxxxxx
+   - Store the generated value only in the secure backend environment
 7. Save it somewhere safe (Notepad, password manager, etc.)
 
 STEP 3: CONFIGURE RENDER

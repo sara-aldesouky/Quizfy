@@ -250,9 +250,15 @@ LOGOUT_REDIRECT_URL = "/student/login/"
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "filters": {
+        "redact_secrets": {
+            "()": "quizz_app.safe_logging.RedactingFilter",
+        },
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+            "filters": ["redact_secrets"],
         },
     },
     "root": {

@@ -8,6 +8,7 @@ import django
 django.setup()
 
 from django.conf import settings
+from quizz_app.safe_logging import redact
 
 print("\n--- DJANGO EMAIL CONFIGURATION ---\n")
 
@@ -19,7 +20,7 @@ print("EMAIL_HOST_USER:", settings.EMAIL_HOST_USER)
 
 pwd = settings.EMAIL_HOST_PASSWORD
 if pwd:
-    print(f"EMAIL_HOST_PASSWORD: SET (length={len(pwd)} chars)")
+    print("EMAIL_HOST_PASSWORD: SET")
 else:
     print("EMAIL_HOST_PASSWORD: NOT SET / EMPTY")
     print("  -> Add this environment variable on Render!")
@@ -40,9 +41,6 @@ try:
     )
     print(f"SUCCESS: Email send returned {result}")
 except Exception as e:
-    print(f"ERROR: {type(e).__name__}: {e}")
-    import traceback
-    print("\nFull traceback:")
-    traceback.print_exc()
+    print(f"ERROR: {redact(type(e).__name__)}")
 
 print("\n" + "-"*50)

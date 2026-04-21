@@ -16,6 +16,13 @@ media/
 
 # Env secrets
 .env
+.env.*
+!.env.example
+
+# Runtime analytics data
+uploads/
+chroma_db/
+logs/
 
 # OS
 .DS_Store
