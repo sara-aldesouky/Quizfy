@@ -1427,7 +1427,7 @@ Be specific and actionable. Use the actual question content to identify patterns
             }
         return {
             'error': True,
-            'message': f'AI Analysis failed: {error_msg}'
+            'message': 'AI Analysis failed. Please try again later.'
         }
 
 
@@ -2554,13 +2554,33 @@ def export_quiz_pdf(request, quiz_id):
     from reportlab.lib.units import inch
     from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, HRFlowable
     from reportlab.lib import colors
-    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY, TA_RIGHT
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT
     from reportlab.pdfgen import canvas
     from io import BytesIO
     from datetime import datetime
+    from html import escape
+    import re
     
     quiz = get_object_or_404(Quiz, id=quiz_id, teacher=request.user)
     questions = quiz.questions.all().order_by("id")
+
+    def pdf_text(value, default=""):
+        """Escape user-authored content before putting it in ReportLab Paragraphs."""
+        if value is None:
+            return default
+        return escape(str(value), quote=False).replace("\n", "<br/>")
+
+    def plain_text(value, default=""):
+        """Return ASCII-safe plain text for ReportLab table cells and filenames."""
+        if value is None:
+            value = default
+        text = str(value)
+        return text.encode("ascii", "replace").decode("ascii")
+
+    def safe_filename(value):
+        text = plain_text(value, "quiz")
+        text = re.sub(r"[^A-Za-z0-9._-]+", "_", text).strip("._")
+        return text or "quiz"
     
     # Create PDF in memory with custom page template
     pdf_buffer = BytesIO()
@@ -2707,17 +2727,17 @@ def export_quiz_pdf(request, quiz_id):
     story.append(Spacer(1, 0.3*inch))
     story.append(Paragraph("QUIZFY ASSESSMENT SYSTEM", institution_style))
     story.append(Spacer(1, 0.15*inch))
-    story.append(Paragraph(quiz.title, title_style))
+    story.append(Paragraph(pdf_text(quiz.title, "Untitled Quiz"), title_style))
     story.append(Spacer(1, 0.2*inch))
     
     # Metadata table
     quiz_type_display = dict(Quiz.QUIZ_TYPE_CHOICES).get(quiz.quiz_type, quiz.quiz_type)
     metadata = [
-        ["Quiz Code:", quiz.code],
-        ["Question Type:", quiz_type_display],
+        ["Quiz Code:", plain_text(quiz.code)],
+        ["Question Type:", plain_text(quiz_type_display)],
         ["Total Questions:", str(questions.count())],
         ["Duration:", f"{quiz.duration_minutes} minutes" if quiz.duration_minutes else "Unlimited"],
-        ["Instructor:", request.user.get_full_name() or request.user.username],
+        ["Instructor:", plain_text(request.user.get_full_name() or request.user.username)],
         ["Generated:", datetime.now().strftime('%B %d, %Y at %I:%M %p')]
     ]
     
@@ -2742,10 +2762,10 @@ def export_quiz_pdf(request, quiz_id):
     # Instructions section
     story.append(Paragraph("INSTRUCTIONS FOR STUDENTS", institution_style))
     story.append(Spacer(1, 0.1*inch))
-    story.append(Paragraph("• Answer all questions carefully and completely", instruction_style))
-    story.append(Paragraph("• Select the most appropriate option for each question", instruction_style))
-    story.append(Paragraph("• Show all work for written responses", instruction_style))
-    story.append(Paragraph("• Time management is important", instruction_style))
+    story.append(Paragraph("- Answer all questions carefully and completely", instruction_style))
+    story.append(Paragraph("- Select the most appropriate option for each question", instruction_style))
+    story.append(Paragraph("- Show all work for written responses", instruction_style))
+    story.append(Paragraph("- Time management is important", instruction_style))
     story.append(Spacer(1, 0.15*inch))
     
     story.append(PageBreak())
@@ -2758,21 +2778,24 @@ def export_quiz_pdf(request, quiz_id):
         question_count += 1
         
         # Question header with number (colored background)
-        q_number_table = Table([["QUESTION " + str(idx)]], colWidths=[7.5*inch])
+        q_number_table = Table([["QUESTION " + str(idx)]], colWidths=[doc.width])
         q_number_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#1F4E79')),
             ('TEXTCOLOR', (0, 0), (-1, -1), colors.white),
             ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, -1), 12),
-            ('ALIGNMENT', (0, 0), (-1, -1), TA_CENTER),
-            ('PADDING', (0, 0), (-1, -1), 6)
+            ('ALIGNMENT', (0, 0), (-1, -1), 'CENTER'),
+            ('LEFTPADDING', (0, 0), (-1, -1), 6),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
         ]))
         story.append(q_number_table)
         story.append(Spacer(1, 0.1*inch))
         
         # Question text
         if question.text:
-            story.append(Paragraph(question.text, question_text_style))
+            story.append(Paragraph(pdf_text(question.text), question_text_style))
         story.append(Spacer(1, 0.08*inch))
         
         # Options based on question type
@@ -2786,11 +2809,11 @@ def export_quiz_pdf(request, quiz_id):
                     letter_opt = chr(64+i)  # A, B, C, D
                     table_data.append([
                         f"{letter_opt}.",
-                        option,
-                        "✓" if question.correct_option == i else ""
+                        Paragraph(pdf_text(option), option_text_style),
+                        "Correct" if question.correct_option == i else ""
                     ])
                 
-                options_table = Table(table_data, colWidths=[0.4*inch, 5.5*inch, 0.6*inch])
+                options_table = Table(table_data, colWidths=[0.4*inch, doc.width - 1.5*inch, 1.1*inch])
                 options_table.setStyle(TableStyle([
                     ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#FAFAFA')),
                     ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#333333')),
@@ -2798,8 +2821,8 @@ def export_quiz_pdf(request, quiz_id):
                     ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
                     ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
                     ('FONTSIZE', (0, 0), (-1, -1), 10),
-                    ('ALIGNMENT', (0, 0), (0, -1), TA_CENTER),
-                    ('ALIGNMENT', (2, 0), (2, -1), TA_CENTER),
+                    ('ALIGNMENT', (0, 0), (0, -1), 'CENTER'),
+                    ('ALIGNMENT', (2, 0), (2, -1), 'CENTER'),
                     ('VALIGN', (0, 0), (-1, -1), 'TOP'),
                     ('LEFTPADDING', (0, 0), (-1, -1), 8),
                     ('RIGHTPADDING', (0, 0), (-1, -1), 8),
@@ -2812,10 +2835,10 @@ def export_quiz_pdf(request, quiz_id):
         elif question.question_type == 'true_false':
             # True/False options table
             table_data = [
-                ["A.", "True", "✓" if question.correct_option == 1 else ""],
-                ["B.", "False", "✓" if question.correct_option == 2 else ""]
+                ["A.", "True", "Correct" if question.correct_option == 1 else ""],
+                ["B.", "False", "Correct" if question.correct_option == 2 else ""]
             ]
-            tf_table = Table(table_data, colWidths=[0.4*inch, 5.5*inch, 0.6*inch])
+            tf_table = Table(table_data, colWidths=[0.4*inch, doc.width - 1.5*inch, 1.1*inch])
             tf_table.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#FAFAFA')),
                 ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#333333')),
@@ -2823,8 +2846,8 @@ def export_quiz_pdf(request, quiz_id):
                 ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
                 ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
                 ('FONTSIZE', (0, 0), (-1, -1), 10),
-                ('ALIGNMENT', (0, 0), (0, -1), TA_CENTER),
-                ('ALIGNMENT', (2, 0), (2, -1), TA_CENTER),
+                ('ALIGNMENT', (0, 0), (0, -1), 'CENTER'),
+                ('ALIGNMENT', (2, 0), (2, -1), 'CENTER'),
                 ('LEFTPADDING', (0, 0), (-1, -1), 8),
                 ('RIGHTPADDING', (0, 0), (-1, -1), 8),
                 ('TOPPADDING', (0, 0), (-1, -1), 6),
@@ -2834,14 +2857,17 @@ def export_quiz_pdf(request, quiz_id):
             story.append(tf_table)
         
         elif question.question_type == 'file_upload':
-            upload_table = Table([["File Upload Question - Students submit PDF, JPG, or PNG"]], colWidths=[7.5*inch])
+            upload_table = Table([["File Upload Question - Students submit PDF, JPG, or PNG"]], colWidths=[doc.width])
             upload_table.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#FFF4E6')),
                 ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#E67E22')),
                 ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Oblique'),
                 ('FONTSIZE', (0, 0), (-1, -1), 10),
-                ('ALIGNMENT', (0, 0), (-1, -1), TA_CENTER),
-                ('PADDING', (0, 0), (-1, -1), 6),
+                ('ALIGNMENT', (0, 0), (-1, -1), 'CENTER'),
+                ('LEFTPADDING', (0, 0), (-1, -1), 6),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+                ('TOPPADDING', (0, 0), (-1, -1), 6),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
                 ('BORDER', (0, 0), (-1, -1), 1, colors.HexColor('#E67E22'))
             ]))
             story.append(upload_table)
@@ -2864,7 +2890,7 @@ def export_quiz_pdf(request, quiz_id):
     for idx, question in enumerate(questions, 1):
         if question.question_type == 'multiple_choice':
             correct = chr(64 + question.correct_option)
-            answer = f"{correct}) {getattr(question, f'option{question.correct_option}', 'N/A')}"
+            answer = f"{correct}) {plain_text(getattr(question, f'option{question.correct_option}', 'N/A'))}"
         elif question.question_type == 'true_false':
             answer = "True" if question.correct_option == 1 else "False"
         else:
@@ -2872,11 +2898,11 @@ def export_quiz_pdf(request, quiz_id):
         
         answer_data.append([
             str(idx),
-            question.get_question_type_display(),
-            answer
+            plain_text(question.get_question_type_display()),
+            plain_text(answer)
         ])
     
-    answer_table = Table(answer_data, colWidths=[0.8*inch, 2*inch, 4.7*inch])
+    answer_table = Table(answer_data, colWidths=[0.8*inch, 2*inch, doc.width - 2.8*inch])
     answer_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1F4E79')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
@@ -2884,9 +2910,9 @@ def export_quiz_pdf(request, quiz_id):
         ('FONTSIZE', (0, 0), (-1, 0), 11),
         ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor('#333333')),
         ('FONTSIZE', (0, 1), (-1, -1), 10),
-        ('ALIGNMENT', (0, 0), (0, -1), TA_CENTER),
-        ('ALIGNMENT', (1, 0), (1, -1), TA_CENTER),
-        ('ALIGNMENT', (2, 0), (2, -1), TA_LEFT),
+        ('ALIGNMENT', (0, 0), (0, -1), 'CENTER'),
+        ('ALIGNMENT', (1, 0), (1, -1), 'CENTER'),
+        ('ALIGNMENT', (2, 0), (2, -1), 'LEFT'),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('LEFTPADDING', (0, 0), (-1, -1), 8),
         ('RIGHTPADDING', (0, 0), (-1, -1), 8),
@@ -2905,7 +2931,7 @@ def export_quiz_pdf(request, quiz_id):
     # Return as downloadable file
     pdf_buffer.seek(0)
     response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
-    filename = f"{quiz.code}_{quiz.title.replace(' ', '_')}_Assessment.pdf"
+    filename = f"{safe_filename(quiz.code)}_{safe_filename(quiz.title)}_Assessment.pdf"
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     
     return response

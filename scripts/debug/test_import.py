@@ -4,6 +4,7 @@ import sys
 
 # Add the Django project to the path
 sys.path.insert(0, '.')
+from quizz_app.safe_logging import redact
 
 # Set Django settings
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'quizz_app.settings')
@@ -26,6 +27,4 @@ try:
     print("\n✅ All imports successful!")
     
 except Exception as e:
-    print(f"❌ Error: {e}")
-    import traceback
-    traceback.print_exc()
+    print(f"Error: {redact(type(e).__name__)}")

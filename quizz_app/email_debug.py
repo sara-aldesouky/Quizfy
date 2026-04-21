@@ -5,6 +5,8 @@ import logging
 from django.core.mail.backends.smtp import EmailBackend as SMTPEmailBackend
 from django.core.mail.backends.console import EmailBackend as ConsoleEmailBackend
 
+from .safe_logging import redact
+
 logger = logging.getLogger(__name__)
 
 
@@ -14,16 +16,16 @@ class DebugSMTPEmailBackend(SMTPEmailBackend):
     def send_messages(self, email_messages):
         logger.info(f"[EMAIL] Attempting to send {len(email_messages)} message(s) via SMTP")
         for msg in email_messages:
-            logger.info(f"[EMAIL] Subject: {msg.subject}")
-            logger.info(f"[EMAIL] From: {msg.from_email}")
-            logger.info(f"[EMAIL] To: {msg.to}")
+            logger.info("[EMAIL] Subject: %s", redact(msg.subject))
+            logger.info("[EMAIL] From: %s", redact(msg.from_email))
+            logger.info("[EMAIL] To: %s", redact(msg.to))
         
         try:
             result = super().send_messages(email_messages)
             logger.info(f"[EMAIL] Successfully sent {result} message(s)")
             return result
         except Exception as e:
-            logger.error(f"[EMAIL] SMTP Error: {type(e).__name__}: {e}")
+            logger.error("[EMAIL] SMTP Error: %s", redact(type(e).__name__))
             raise
 
 

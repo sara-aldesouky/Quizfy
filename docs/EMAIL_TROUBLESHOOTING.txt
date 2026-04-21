@@ -36,7 +36,7 @@ ISSUE #1: "Email Host Password not set" message in logs
   1. On Render, delete EMAIL_HOST_PASSWORD if it exists
   2. Click "+ Add Environment Variable"
   3. Name: EMAIL_HOST_PASSWORD
-  4. Value: abcdefghijklmnop (your 16-char app password)
+  4. Value: set the app password securely in the backend environment
   5. Click "Add"
   6. Wait 5-10 minutes for automatic redeploy
   7. In Render Shell, run: echo $EMAIL_HOST_PASSWORD
@@ -91,7 +91,7 @@ Gmail SMTP has been unreliable. Consider using SendGrid (free tier):
 2. Sign up (free account with 100 emails/day)
 3. Get your API Key from dashboard
 4. On Render, set these environment variables:
-   SENDGRID_API_KEY = your_api_key_from_sendgrid
+   SENDGRID_API_KEY should be set securely in the backend environment
    EMAIL_FROM_ADDRESS = noreply@yourdomain.com (or similar)
 
 5. Update Django settings to use SendGrid:

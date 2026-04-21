@@ -18,7 +18,7 @@ Brevo (formerly Sendinblue) offers 300 free emails/day.
    EMAIL_HOST = smtp-relay.brevo.com
    EMAIL_PORT = 587
    EMAIL_HOST_USER = your-brevo-login-email
-   EMAIL_HOST_PASSWORD = your-smtp-key-from-brevo
+   EMAIL_HOST_PASSWORD should be set securely in the backend environment.
    EMAIL_FROM_ADDRESS = your-verified-email@domain.com
    ```
 
@@ -35,7 +35,7 @@ SendGrid offers 100 free emails/day.
 4. **Important**: Verify a sender email in **Settings** → **Sender Authentication**
 5. In Render Dashboard, add these environment variables:
    ```
-   SENDGRID_API_KEY = SG.your-api-key-here
+   SENDGRID_API_KEY should be set securely in the backend environment.
    EMAIL_FROM_ADDRESS = your-verified-sender@domain.com
    ```
 

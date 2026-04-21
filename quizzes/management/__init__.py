@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.sites.models import Site
+from quizz_app.safe_logging import redact
 
 
 class Command(BaseCommand):
@@ -33,7 +34,7 @@ class Command(BaseCommand):
                 site = Site.objects.create(domain="localhost:8000", name="Local")
                 self.stdout.write(f"✓ Created Site ID {site.id}: {site.domain}")
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f"✗ Error checking sites: {e}"))
+            self.stdout.write(self.style.ERROR(f"Error checking sites: {redact(type(e).__name__)}"))
             
         # Test sending email
         self.stdout.write(self.style.SUCCESS("\n=== SENDING TEST EMAIL ===\n"))
@@ -47,6 +48,4 @@ class Command(BaseCommand):
             )
             self.stdout.write(self.style.SUCCESS("✓ Test email sent successfully!"))
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f"✗ Error sending email: {type(e).__name__}: {e}"))
-            import traceback
-            self.stdout.write(self.style.ERROR(traceback.format_exc()))
+            self.stdout.write(self.style.ERROR(f"Error sending email: {redact(type(e).__name__)}"))
