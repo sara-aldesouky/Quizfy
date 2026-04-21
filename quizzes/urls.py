@@ -102,9 +102,19 @@ urlpatterns = [
 
     # Full-class PDF + Excel RAG analytics test page
     path(
-        "teacher/performance-analytics/",
+        "teacher/analytics/",
         views.performance_analytics_dashboard,
         name="performance_analytics_dashboard",
+    ),
+    path(
+        "teacher/performance-analytics/",
+        views.performance_analytics_dashboard,
+        name="performance_analytics_legacy",
+    ),
+    path(
+        "analytics/",
+        views.performance_analytics_dashboard,
+        name="performance_analytics_short",
     ),
     
     # Quiz detail view
