@@ -15,6 +15,8 @@ CANONICAL_COLUMNS = {
         "student id",
         "studentid",
         "id",
+        "university_id",
+        "university id",
         "learner_id",
         "learner id",
         "roll_number",
@@ -23,10 +25,13 @@ CANONICAL_COLUMNS = {
     "student_name": {
         "student_name",
         "student name",
+        "student_full_name",
+        "student full name",
         "name",
         "learner_name",
         "learner name",
         "full_name",
+        "full name",
     },
     "question_number": {
         "question_number",
@@ -69,7 +74,7 @@ class ExcelProcessor:
         elif suffix == ".tsv":
             dataframe = pd.read_csv(excel_path, sep="\t")
         else:
-            dataframe = pd.read_excel(excel_path)
+            dataframe = self._read_excel_table(excel_path)
 
         dataframe = dataframe.dropna(how="all")
         if dataframe.empty:
@@ -80,6 +85,49 @@ class ExcelProcessor:
             return self._normalize_long_format(dataframe, column_map)
 
         return self._normalize_wide_format(dataframe, column_map)
+
+    def _read_excel_table(self, excel_path: str | Path) -> Any:
+        import pandas as pd
+
+        raw = pd.read_excel(excel_path, header=None)
+        if raw.empty:
+            return raw
+
+        header_index = self._find_header_row(raw)
+        if header_index is None:
+            return pd.read_excel(excel_path)
+
+        header_values = [
+            self._string_value(value) or f"column_{index + 1}"
+            for index, value in enumerate(raw.iloc[header_index].tolist())
+        ]
+        dataframe = raw.iloc[header_index + 1 :].copy()
+        dataframe.columns = header_values
+        return dataframe.reset_index(drop=True)
+
+    def _find_header_row(self, dataframe: Any) -> int | None:
+        best_index = None
+        best_score = 0
+        for index, row in dataframe.head(30).iterrows():
+            values = [self._string_value(value) or "" for value in row.tolist()]
+            normalized = {self._normalize_header(value) for value in values if value}
+            question_count = sum(
+                1 for value in values if self._question_number_from_header(value)
+            )
+            canonical_count = 0
+            for aliases in CANONICAL_COLUMNS.values():
+                normalized_aliases = {self._normalize_header(alias) for alias in aliases}
+                if normalized & normalized_aliases:
+                    canonical_count += 1
+
+            score = canonical_count + min(question_count, 5)
+            if question_count:
+                score += 2
+            if score > best_score:
+                best_score = score
+                best_index = index
+
+        return best_index if best_score >= 3 else None
 
     def _normalize_long_format(self, dataframe: Any, column_map: dict[str, str]) -> list[StudentResult]:
         results: list[StudentResult] = []
@@ -239,4 +287,3 @@ class ExcelProcessor:
             pass
         text = str(value).strip()
         return text or None
-

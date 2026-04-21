@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from ..config import config
@@ -26,13 +27,12 @@ class TopicClassifier:
         classified: list[ClassifiedQuestion] = []
         for start in range(0, len(questions), config.LLM_BATCH_SIZE):
             batch = questions[start : start + config.LLM_BATCH_SIZE]
-            labels = self._classify_with_llm(batch, subject=subject)
+            try:
+                labels = self._classify_with_llm(batch, subject=subject)
+            except Exception:
+                labels = self._fallback_labels(batch)
             for question in batch:
-                label = labels.get(question.question_id)
-                if label is None:
-                    raise RuntimeError(
-                        f"Topic classification missing for question {question.question_id}"
-                    )
+                label = labels.get(question.question_id) or self._fallback_label(question)
                 classified.append(
                     ClassifiedQuestion(
                         **question.model_dump(),
@@ -78,6 +78,84 @@ class TopicClassifier:
         parsed = json.loads(content)
         items = parsed.get("items", [])
         return {item["question_id"]: self._normalize_label(item) for item in items}
+
+    def _fallback_labels(
+        self,
+        questions: list[ExtractedQuestion],
+    ) -> dict[str, dict[str, Any]]:
+        return {
+            question.question_id: self._fallback_label(question)
+            for question in questions
+        }
+
+    def _fallback_label(self, question: ExtractedQuestion) -> dict[str, Any]:
+        text = question.question_text.lower()
+        rules = [
+            (
+                r"\b(equation|solve for|linear|variable|expression|simplify|factor|algebra)\b",
+                "Algebra",
+                "Equations and Expressions",
+                ["equation_solving", "algebraic_reasoning"],
+            ),
+            (
+                r"\b(fraction|numerator|denominator|mixed number|equivalent fraction)\b",
+                "Fractions",
+                "Fraction Operations",
+                ["fraction_reasoning", "number_operations"],
+            ),
+            (
+                r"\b(decimal|percent|percentage|place value)\b",
+                "Number Sense",
+                "Decimals and Percents",
+                ["decimal_reasoning", "percent_calculation"],
+            ),
+            (
+                r"\b(angle|triangle|circle|area|perimeter|volume|geometry|shape)\b",
+                "Geometry",
+                "Shapes and Measurement",
+                ["spatial_reasoning", "measurement"],
+            ),
+            (
+                r"\b(graph|coordinate|slope|axis|plot|line graph|bar graph)\b",
+                "Data and Graphs",
+                "Graph Interpretation",
+                ["graph_reading", "data_interpretation"],
+            ),
+            (
+                r"\b(probability|chance|likely|unlikely|outcome)\b",
+                "Probability",
+                "Chance and Outcomes",
+                ["probability_reasoning"],
+            ),
+            (
+                r"\b(mean|median|mode|range|data|table|chart)\b",
+                "Statistics",
+                "Data Analysis",
+                ["statistical_reasoning"],
+            ),
+            (
+                r"\b(ratio|proportion|rate|unit rate)\b",
+                "Ratios and Proportions",
+                "Rates and Proportional Reasoning",
+                ["ratio_reasoning", "proportional_thinking"],
+            ),
+        ]
+        for pattern, topic, subtopic, skills in rules:
+            if re.search(pattern, text):
+                return {
+                    "topic": topic,
+                    "subtopic": subtopic,
+                    "skills": skills,
+                    "difficulty": "medium",
+                    "confidence": 0.68,
+                }
+        return {
+            "topic": "General",
+            "subtopic": "Mixed Skills",
+            "skills": ["general_reasoning"],
+            "difficulty": "medium",
+            "confidence": 0.55,
+        }
 
     def _normalize_label(self, item: dict[str, Any]) -> dict[str, Any]:
         confidence = float(item.get("confidence", item.get("topic_confidence", 0.65)))

@@ -9,7 +9,7 @@ from ..models import ExtractedQuestion, QuestionChoice
 
 
 QUESTION_START_RE = re.compile(
-    r"(?m)^\s*(?:Q(?:uestion)?\.?\s*)?(?P<number>\d{1,3})[\).\:\-]\s+(?P<body>.+)"
+    r"(?im)^\s*(?:Q(?:uestion)?\.?\s*)?(?P<number>\d{1,3})(?:[\).\:\-]\s+|\s*$)(?P<body>.*)"
 )
 CHOICE_RE = re.compile(r"(?m)^\s*(?P<letter>[A-Ha-h])[\).\:\-]\s+(?P<text>.+)")
 ANSWER_RE = re.compile(
@@ -124,7 +124,7 @@ class PDFProcessor:
     def _clean_question_text(self, block: str) -> str:
         block = CHOICE_RE.sub("", block)
         block = ANSWER_RE.sub("", block)
-        block = QUESTION_START_RE.sub(lambda m: m.group("body"), block, count=1)
+        block = QUESTION_START_RE.sub(lambda m: m.group("body") or "", block, count=1)
         return self._clean_text(block)
 
     def _clean_text(self, text: str) -> str:
@@ -143,4 +143,3 @@ class PDFProcessor:
             seen.add(key)
             deduped.append(question)
         return deduped
-
