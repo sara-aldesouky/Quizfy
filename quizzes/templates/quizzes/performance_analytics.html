@@ -6,7 +6,7 @@
   <div>
     <p class="eyebrow">Class-first RAG analytics</p>
     <h1>Class Performance Analytics</h1>
-    <p class="subtitle">Upload an assessment PDF and a full-class results sheet to rank weak topics for the class and each student.</p>
+    <p class="subtitle">Upload the assessment PDF and the class results sheet. The backend reads the PDF questions, infers each topic, then matches Excel mistakes to Q1, Q2, Q3 and ranks weak topics.</p>
   </div>
   <a class="btn secondary" href="{% url 'teacher_quizzes' %}">Back to subjects</a>
 </div>
@@ -25,27 +25,9 @@
       </label>
     </div>
 
-    <div class="field-grid compact">
-      <label>
-        <span>Subject hint</span>
-        <input type="text" name="subject" placeholder="Mathematics">
-      </label>
-      <label>
-        <span>Exam name</span>
-        <input type="text" name="exam_name" placeholder="Midterm">
-      </label>
-      <label>
-        <span>Class name</span>
-        <input type="text" name="class_name" placeholder="Section A">
-      </label>
-      <label>
-        <span>Minimum students affected</span>
-        <input type="number" name="min_students_affected" value="2" min="1">
-      </label>
-      <label>
-        <span>Confidence threshold</span>
-        <input type="number" name="confidence_threshold" value="0.65" min="0" max="1" step="0.05">
-      </label>
+    <div class="excel-guide">
+      <strong>Excel format:</strong>
+      <span>Use columns like <code>student_id</code>, <code>student_name</code>, <code>Q1</code>, <code>Q2</code>, <code>Q3</code>. Put <code>1</code> if correct and <code>0</code> if wrong or unanswered.</span>
     </div>
 
     <button class="btn primary run-btn" type="submit">Run class analysis</button>
@@ -192,10 +174,6 @@
   gap: 16px;
 }
 
-.field-grid.compact {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-}
-
 .field-card,
 .field-grid label {
   display: grid;
@@ -222,6 +200,28 @@
 
 .run-btn {
   width: fit-content;
+}
+
+.excel-guide {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(139, 92, 246, 0.1);
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.excel-guide strong {
+  color: var(--text);
+}
+
+.excel-guide code {
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: rgba(139, 92, 246, 0.14);
+  color: var(--text);
 }
 
 .summary-strip {
@@ -371,7 +371,6 @@
   }
 
   .field-grid,
-  .field-grid.compact,
   .summary-strip,
   .results-grid {
     grid-template-columns: 1fr;

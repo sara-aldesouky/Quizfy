@@ -1193,9 +1193,6 @@ def performance_analytics_dashboard(request):
 
     pdf_file = request.FILES.get("pdf_file")
     excel_file = request.FILES.get("excel_file")
-    subject = (request.POST.get("subject") or "").strip() or None
-    exam_name = (request.POST.get("exam_name") or "").strip() or None
-    class_name = (request.POST.get("class_name") or "").strip() or None
 
     if not pdf_file or not excel_file:
         messages.error(request, "Upload both the assessment PDF and the class results file.")
@@ -1232,24 +1229,19 @@ def performance_analytics_dashboard(request):
         excel_path = store.save_upload(excel_id, excel_file.name, excel_file.read())
 
         extracted = PDFProcessor().extract_questions(pdf_path, pdf_id)
-        classified = TopicClassifier().classify_batch(extracted, subject=subject)
+        classified = TopicClassifier().classify_batch(extracted, subject=None)
         vector_store.ingest_questions(classified)
         store.save_questions(pdf_id, classified)
 
         results = ExcelProcessor().normalize_results(excel_path)
-        if class_name:
-            results = [
-                result.model_copy(update={"class_name": result.class_name or class_name})
-                for result in results
-            ]
         store.save_results(excel_id, results)
 
         analysis = PerformanceAnalyzer().analyze(
             AnalysisRequest(
                 pdf_id=pdf_id,
                 excel_id=excel_id,
-                min_students_affected=max(1, int(request.POST.get("min_students_affected") or 2)),
-                confidence_threshold=float(request.POST.get("confidence_threshold") or 0.65),
+                min_students_affected=2,
+                confidence_threshold=0.65,
             ),
             classified,
             results,
@@ -1260,7 +1252,6 @@ def performance_analytics_dashboard(request):
         context["upload_summary"] = {
             "pdf_id": pdf_id,
             "excel_id": excel_id,
-            "exam_name": exam_name,
             "questions": len(classified),
             "results": len(results),
             "students": len({result.student_id for result in results}),
