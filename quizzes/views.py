@@ -1178,6 +1178,103 @@ def teacher_quizzes(request):
 
 
 @staff_required
+def performance_analytics_dashboard(request):
+    """
+    Teacher-facing test page for the class-first PDF + Excel analytics workflow.
+    Keeps all LLM and vector work on the backend.
+    """
+    context = {
+        "analysis": None,
+        "upload_summary": None,
+    }
+
+    if request.method != "POST":
+        return render(request, "quizzes/performance_analytics.html", context)
+
+    pdf_file = request.FILES.get("pdf_file")
+    excel_file = request.FILES.get("excel_file")
+    subject = (request.POST.get("subject") or "").strip() or None
+    exam_name = (request.POST.get("exam_name") or "").strip() or None
+    class_name = (request.POST.get("class_name") or "").strip() or None
+
+    if not pdf_file or not excel_file:
+        messages.error(request, "Upload both the assessment PDF and the class results file.")
+        return render(request, "quizzes/performance_analytics.html", context)
+
+    if not pdf_file.name.lower().endswith(".pdf"):
+        messages.error(request, "The assessment file must be a PDF.")
+        return render(request, "quizzes/performance_analytics.html", context)
+
+    allowed_results = (".xlsx", ".xls", ".csv", ".tsv")
+    if not excel_file.name.lower().endswith(allowed_results):
+        messages.error(request, "The results file must be Excel, CSV, or TSV.")
+        return render(request, "quizzes/performance_analytics.html", context)
+
+    try:
+        from performance_analytics.config import config
+        from performance_analytics.models import AnalysisRequest
+        from performance_analytics.services.analyzer import PerformanceAnalyzer
+        from performance_analytics.services.excel_processor import ExcelProcessor
+        from performance_analytics.services.pdf_processor import PDFProcessor
+        from performance_analytics.services.topic_classifier import TopicClassifier
+        from performance_analytics.services.vector_store import vector_store
+        from performance_analytics.storage import store
+
+        config.validate_startup()
+        vector_store.configure()
+
+        pdf_id = store.new_id("pdf")
+        excel_id = store.new_id("excel")
+        pdf_path = store.save_upload(pdf_id, pdf_file.name, pdf_file.read())
+        excel_path = store.save_upload(excel_id, excel_file.name, excel_file.read())
+
+        extracted = PDFProcessor().extract_questions(pdf_path, pdf_id)
+        classified = TopicClassifier().classify_batch(extracted, subject=subject)
+        vector_store.ingest_questions(classified)
+        store.save_questions(pdf_id, classified)
+
+        results = ExcelProcessor().normalize_results(excel_path)
+        if class_name:
+            results = [
+                result.model_copy(update={"class_name": result.class_name or class_name})
+                for result in results
+            ]
+        store.save_results(excel_id, results)
+
+        analysis = PerformanceAnalyzer().analyze(
+            AnalysisRequest(
+                pdf_id=pdf_id,
+                excel_id=excel_id,
+                min_students_affected=max(1, int(request.POST.get("min_students_affected") or 2)),
+                confidence_threshold=float(request.POST.get("confidence_threshold") or 0.65),
+            ),
+            classified,
+            results,
+        )
+        store.save_analysis(analysis)
+
+        context["analysis"] = analysis
+        context["upload_summary"] = {
+            "pdf_id": pdf_id,
+            "excel_id": excel_id,
+            "exam_name": exam_name,
+            "questions": len(classified),
+            "results": len(results),
+            "students": len({result.student_id for result in results}),
+        }
+        messages.success(request, "Class performance analysis completed.")
+
+    except ValueError:
+        messages.error(request, "The uploaded files could not be processed. Check the file format and columns.")
+    except RuntimeError:
+        messages.error(request, "Analytics is not fully configured on the backend yet.")
+    except Exception:
+        messages.error(request, "Analysis failed. Please check the uploaded files and try again.")
+
+    return render(request, "quizzes/performance_analytics.html", context)
+
+
+@staff_required
 def create_folder(request):
     form = FolderForm(request.POST or None)
     if request.method == "POST" and form.is_valid():

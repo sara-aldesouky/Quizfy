@@ -99,6 +99,13 @@ urlpatterns = [
     
     # Get live submission counts (AJAX endpoint)
     path("teacher/quizzes/live-counts/", views.quiz_live_counts, name="quiz_live_counts"),
+
+    # Full-class PDF + Excel RAG analytics test page
+    path(
+        "teacher/performance-analytics/",
+        views.performance_analytics_dashboard,
+        name="performance_analytics_dashboard",
+    ),
     
     # Quiz detail view
     path(

@@ -39,6 +39,7 @@
             {% if user.is_staff %}
               <!-- TEACHER NAV -->
               <a href="{% url 'teacher_quizzes' %}" class="nav-link">📚 My Quizzes</a>
+              <a href="{% url 'performance_analytics_dashboard' %}" class="nav-link">📈 Analytics</a>
               <a href="{% url 'change_password' %}" class="nav-link">🔑 Change Password</a>
               <a href="{% url 'app_logout' %}" class="btn danger">🚪 Logout</a>
       
