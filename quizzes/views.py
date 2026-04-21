@@ -2649,23 +2649,19 @@ def export_quiz_pdf(request, quiz_id):
         if question.text:
             story.append(Paragraph(f"<b>{question.text}</b>", normal_style))
         
-        # Question image if exists
-        if question.image:
-            try:
-                img_url = question.image.url
-                # Handle relative URLs (local dev) vs absolute URLs (production)
-                if not img_url.startswith('http'):
-                    img_url = request.build_absolute_uri(img_url)
-                
-                img = Image(img_url, width=4*inch, height=2*inch)
-                story.append(img)
-                story.append(Spacer(1, 0.2*inch))
-            except Exception as e:
-                logger.warning(f"Could not load image for question {question.id}: {e}")
+        # Question image if exists - skip for PDF (may not be accessible on Render)
+        # Images can be missing in production due to ephemeral filesystem
         
         # Options based on question type
         if question.question_type == 'multiple_choice':
-            options = json.loads(question.options) if isinstance(question.options, str) else question.options or []
+            # Get non-empty options from option1, option2, option3, option4
+            options = [
+                question.option1, 
+                question.option2, 
+                question.option3, 
+                question.option4
+            ]
+            options = [opt for opt in options if opt]  # Filter out empty options
             if options:
                 story.append(Paragraph("<i>Options:</i>", option_style))
                 for i, option in enumerate(options, 1):
