@@ -17,7 +17,7 @@ def check_environment_variables():
     
     if missing:
         print(f"  ❌ Missing: {', '.join(missing)}")
-        print(f"\n  Export them before running:\n    export OPENAI_API_KEY=sk-...")
+        print(f"\n  Export them before running:\n    export OPENAI_API_KEY=<your-api-key>")
         return False
     
     print(f"  ✅ All required variables set")

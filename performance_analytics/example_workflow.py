@@ -342,4 +342,4 @@ if __name__ == "__main__":
         print("\nMake sure:")
         print("  1. Service is running (python -m performance_analytics.main)")
         print("  2. You have sample PDF and Excel files (sample_exam.pdf, student_results.xlsx)")
-        print("  3. OpenAI API key is set (export OPENAI_API_KEY=sk-...)")
+        print("  3. OpenAI API key is set (export OPENAI_API_KEY=<your-key>)")

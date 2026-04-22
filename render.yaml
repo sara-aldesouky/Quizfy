@@ -22,3 +22,5 @@ services:
         value: "0"
       - key: ALLOWED_HOSTS
         value: ".onrender.com"
+      - key: OPENAI_API_KEY
+        sync: false

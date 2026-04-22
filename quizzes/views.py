@@ -1344,12 +1344,20 @@ def performance_analytics_dashboard(request):
         )
         messages.error(request, str(exc))
     except RuntimeError as exc:
+        error_msg = str(exc)
         logger.error(
-            "analytics_submit_runtime_failed user_id=%s failure_type=%s",
+            "analytics_submit_runtime_failed user_id=%s failure_type=%s error_msg=%s",
             request.user.id,
             exc.__class__.__name__,
+            error_msg[:100],
         )
-        messages.error(request, "Analytics is not fully configured on the backend yet.")
+        if "OPENAI_API_KEY" in error_msg:
+            messages.error(
+                request,
+                "Analytics requires OpenAI API key. Please add OPENAI_API_KEY to Render environment variables."
+            )
+        else:
+            messages.error(request, "Analytics is not fully configured on the backend yet.")
     except Exception as exc:
         logger.error(
             "analytics_submit_failed user_id=%s failure_type=%s status_code=%s",
