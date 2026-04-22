@@ -32,10 +32,12 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=config.ALLOWED_ORIGINS,
+    allow_origins=["*"],  # Allow all origins for file upload from Safari
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=600,
 )
 
 
@@ -96,24 +98,45 @@ async def upload_pdf(
     exam_name: Annotated[str | None, Form()] = None,
     subject: Annotated[str | None, Form()] = None,
 ) -> UploadResponse:
-    if not file.filename or not file.filename.lower().endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Only PDF files are supported.")
-    content = await _read_limited_file(file)
-    pdf_id = store.new_id("pdf")
-    path = store.save_upload(pdf_id, file.filename, content)
+    try:
+        if not file.filename or not file.filename.lower().endswith(".pdf"):
+            raise HTTPException(status_code=400, detail="Only PDF files are supported.")
+        
+        logger.info(f"Uploading PDF: {file.filename}")
+        content = await _read_limited_file(file)
+        
+        logger.info(f"Processing PDF with PDFProcessor")
+        pdf_id = store.new_id("pdf")
+        path = store.save_upload(pdf_id, file.filename, content)
 
-    extracted = PDFProcessor().extract_questions(path, pdf_id)
-    classified = TopicClassifier().classify_batch(extracted, subject=subject)
-    vector_store.ingest_questions(classified)
-    store.save_questions(pdf_id, classified)
-
-    return UploadResponse(
-        file_id=pdf_id,
-        filename=file.filename,
-        records_processed=len(classified),
-        status="success",
-        message=f"{len(classified)} questions extracted and classified for {exam_name or 'assessment'}.",
-    )
+        extracted = PDFProcessor().extract_questions(path, pdf_id)
+        logger.info(f"Extracted {len(extracted)} questions from PDF")
+        
+        logger.info(f"Classifying questions with TopicClassifier")
+        classified = TopicClassifier().classify_batch(extracted, subject=subject)
+        logger.info(f"Classified {len(classified)} questions")
+        
+        logger.info(f"Ingesting questions into vector store")
+        vector_store.ingest_questions(classified)
+        
+        store.save_questions(pdf_id, classified)
+        
+        logger.info(f"PDF upload complete: {pdf_id}")
+        return UploadResponse(
+            file_id=pdf_id,
+            filename=file.filename,
+            records_processed=len(classified),
+            status="success",
+            message=f"{len(classified)} questions extracted and classified for {exam_name or 'assessment'}.",
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"PDF upload error: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to process PDF: {str(e)}"
+        )
 
 
 @app.post("/upload/excel", response_model=UploadResponse)
@@ -121,42 +144,84 @@ async def upload_excel(
     file: Annotated[UploadFile, File(...)],
     class_name: Annotated[str | None, Form()] = None,
 ) -> UploadResponse:
-    allowed = (".xlsx", ".xls", ".csv", ".tsv")
-    if not file.filename or not file.filename.lower().endswith(allowed):
-        raise HTTPException(status_code=400, detail="Only Excel, CSV, or TSV files are supported.")
-    content = await _read_limited_file(file)
-    excel_id = store.new_id("excel")
-    path = store.save_upload(excel_id, file.filename, content)
+    try:
+        allowed = (".xlsx", ".xls", ".csv", ".tsv")
+        if not file.filename or not file.filename.lower().endswith(allowed):
+            raise HTTPException(status_code=400, detail="Only Excel, CSV, or TSV files are supported.")
+        
+        logger.info(f"Uploading Excel: {file.filename}")
+        content = await _read_limited_file(file)
+        
+        excel_id = store.new_id("excel")
+        path = store.save_upload(excel_id, file.filename, content)
 
-    results = ExcelProcessor().normalize_results(path)
-    if class_name:
-        results = [
-            result.model_copy(update={"class_name": result.class_name or class_name})
-            for result in results
-        ]
-    store.save_results(excel_id, results)
-
-    return UploadResponse(
-        file_id=excel_id,
-        filename=file.filename,
-        records_processed=len(results),
-        status="success",
-        message=f"{len({result.student_id for result in results})} students and {len(results)} result rows imported.",
-    )
+        logger.info(f"Processing Excel with ExcelProcessor")
+        results = ExcelProcessor().normalize_results(path)
+        logger.info(f"Normalized {len(results)} result rows")
+        
+        if class_name:
+            results = [
+                result.model_copy(update={"class_name": result.class_name or class_name})
+                for result in results
+            ]
+        
+        store.save_results(excel_id, results)
+        
+        unique_students = len({result.student_id for result in results})
+        logger.info(f"Excel upload complete: {excel_id} ({unique_students} students)")
+        
+        return UploadResponse(
+            file_id=excel_id,
+            filename=file.filename,
+            records_processed=len(results),
+            status="success",
+            message=f"{unique_students} students and {len(results)} result rows imported.",
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Excel upload error: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to process Excel: {str(e)}"
+        )
 
 
 @app.post("/analyze/class", response_model=AnalysisResponse)
 def run_class_analysis(request: AnalysisRequest) -> AnalysisResponse:
-    questions = store.pdf_questions.get(request.pdf_id)
-    results = store.excel_results.get(request.excel_id)
-    if questions is None:
-        raise HTTPException(status_code=404, detail=f"Unknown pdf_id: {request.pdf_id}")
-    if results is None:
-        raise HTTPException(status_code=404, detail=f"Unknown excel_id: {request.excel_id}")
+    try:
+        logger.info(f"Starting class analysis: pdf_id={request.pdf_id}, excel_id={request.excel_id}")
+        
+        questions = store.pdf_questions.get(request.pdf_id)
+        results = store.excel_results.get(request.excel_id)
+        
+        if questions is None:
+            logger.error(f"PDF not found: {request.pdf_id}")
+            raise HTTPException(status_code=404, detail=f"Unknown pdf_id: {request.pdf_id}")
+        if results is None:
+            logger.error(f"Excel not found: {request.excel_id}")
+            raise HTTPException(status_code=404, detail=f"Unknown excel_id: {request.excel_id}")
 
-    analysis = PerformanceAnalyzer().analyze(request, questions, results)
-    store.save_analysis(analysis)
-    return analysis
+        logger.info(f"Found {len(questions)} questions and {len(results)} results")
+        logger.info(f"Running PerformanceAnalyzer")
+        
+        analysis = PerformanceAnalyzer().analyze(request, questions, results)
+        
+        logger.info(f"Analysis complete: {analysis.analysis_id}")
+        logger.info(f"Class weak topics: {len(analysis.class_summary.weak_topics)}")
+        logger.info(f"Student summaries: {len(analysis.student_summaries)}")
+        
+        store.save_analysis(analysis)
+        
+        return analysis
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Analysis error: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to run analysis: {str(e)}"
+        )
 
 
 @app.get("/analyze/class/summary")
