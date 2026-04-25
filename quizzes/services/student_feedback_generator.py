@@ -142,11 +142,11 @@ class StudentFeedbackGenerator:
                 correct_text = self._get_option_text(question, question.correct_answer)
                 
                 mistakes.append({
-                    "question_number": question.question_number or question.id,
-                    "question_text": question.question_text[:200],  # Limit length
+                    "question_number": question.id,
+                    "question_text": question.text[:200],  # Limit length
                     "correct_option": correct_text,
                     "student_selected": selected_text,
-                    "difficulty": question.difficulty or "medium",
+                    "difficulty": "medium",  # Default difficulty
                 })
         
         return {
