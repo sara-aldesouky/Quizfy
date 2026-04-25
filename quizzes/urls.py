@@ -63,6 +63,13 @@ urlpatterns = [
         name="quiz_result"
     ),
     
+    # Student personalized feedback - AI-generated weak topics, flashcards, practice
+    path(
+        "quiz/<str:quiz_code>/feedback/<int:submission_id>/",
+        views.student_feedback,
+        name="student_feedback"
+    ),
+    
     # Generate QR code image for a quiz
     path("quiz/<str:quiz_code>/qr/", views.quiz_qr_code, name="quiz_qr_code"),
     

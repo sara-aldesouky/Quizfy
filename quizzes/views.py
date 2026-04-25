@@ -1042,7 +1042,83 @@ def _finalize_submission(request, quiz, submission, questions=None):
     submission.submitted_at = timezone.now()
     submission.save()
 
+    # Generate personalized feedback (runs synchronously for now, can be async later)
+    try:
+        _generate_student_feedback(submission)
+    except Exception as e:
+        logger.error(
+            "Failed to generate feedback for submission_id=%d: %s",
+            submission.id,
+            str(e),
+            exc_info=True,
+        )
+        # Don't block quiz submission if feedback generation fails
+
     return redirect("quiz_result", quiz_code=quiz.code, submission_id=submission.id)
+
+
+def _generate_student_feedback(submission):
+    """
+    Generate AI-powered personalized feedback for a student's quiz submission.
+    
+    This function:
+    1. Creates StudentFeedback record
+    2. Uses LLM to analyze mistakes and generate feedback
+    3. Stores feedback JSON (weak topics, flashcards, practice questions)
+    4. Handles errors gracefully without blocking quiz submission
+    """
+    from quizzes.models import StudentFeedback
+    from quizzes.services.student_feedback_generator import StudentFeedbackGenerator
+    
+    # Create or get feedback record
+    feedback, created = StudentFeedback.objects.get_or_create(
+        submission=submission,
+        defaults={
+            'weak_topics': [],
+            'flashcards': [],
+            'practice_questions': [],
+        }
+    )
+    
+    if not created and feedback.weak_topics:
+        # Feedback already generated, skip
+        logger.info(
+            "Feedback already generated for submission_id=%d, skipping",
+            submission.id,
+        )
+        return
+    
+    try:
+        # Generate feedback using LLM
+        generator = StudentFeedbackGenerator()
+        feedback_data = generator.generate_feedback(submission)
+        
+        # Update feedback record with results
+        feedback.weak_topics = feedback_data.get('weak_topics', [])
+        feedback.flashcards = feedback_data.get('flashcards', [])
+        feedback.practice_questions = feedback_data.get('practice_questions', [])
+        feedback.generation_error = None
+        feedback.save()
+        
+        logger.info(
+            "Feedback generated successfully for submission_id=%d student=%s",
+            submission.id,
+            submission.student_name,
+        )
+        
+    except Exception as e:
+        # Store error but don't crash
+        error_msg = f"{type(e).__name__}: {str(e)}"
+        feedback.generation_error = error_msg
+        feedback.save()
+        
+        logger.error(
+            "Failed to generate feedback for submission_id=%d: %s",
+            submission.id,
+            error_msg,
+            exc_info=True,
+        )
+
 
 @staff_required
 @require_POST
@@ -1103,6 +1179,15 @@ def quiz_result(request, quiz_code, submission_id):
     
     # Get file submissions
     file_submissions = submission.file_submissions.select_related('question').all()
+    
+    # Check if feedback is available
+    feedback = None
+    feedback_ready = False
+    try:
+        feedback = submission.feedback
+        feedback_ready = bool(feedback.weak_topics or feedback.generation_error)
+    except:
+        pass
 
     context = {
         "quiz": quiz,
@@ -1111,8 +1196,57 @@ def quiz_result(request, quiz_code, submission_id):
         "university_id": university_id,
         "answers": answers,
         "file_submissions": file_submissions,
+        "feedback": feedback,
+        "feedback_ready": feedback_ready,
     }
     return render(request, "quizzes/quiz_result.html", context)
+
+
+def student_feedback(request, quiz_code, submission_id):
+    """
+    Display personalized learning feedback for a student's quiz submission.
+    
+    Feedback is generated automatically after quiz submission and includes:
+    - Weak topics identified from incorrect answers
+    - Flashcards for revision
+    - Adaptive practice questions with solutions
+    """
+    quiz = get_object_or_404(Quiz, code=quiz_code)
+    submission = get_object_or_404(Submission, id=submission_id, quiz=quiz)
+    
+    # Ensure student can only see their own feedback
+    if submission.student_user and submission.student_user != request.user:
+        messages.error(request, "You do not have access to this feedback.")
+        return redirect("home")
+    
+    # Mark feedback as viewed
+    try:
+        feedback = submission.feedback
+        feedback.mark_as_viewed()
+    except submission.DoesNotExist:
+        messages.warning(request, "Feedback is still being generated. Please try again in a moment.")
+        return redirect("quiz_result", quiz_code=quiz_code, submission_id=submission_id)
+    
+    # Handle any generation errors
+    if feedback.generation_error:
+        messages.error(
+            request,
+            f"Feedback generation encountered an error: {feedback.generation_error}"
+        )
+    
+    # Parse JSON data for template
+    context = {
+        "quiz": quiz,
+        "submission": submission,
+        "student_name": submission.student_name,
+        "feedback": feedback,
+        "weak_topics": feedback.weak_topics or [],
+        "flashcards": feedback.flashcards or [],
+        "practice_questions": feedback.practice_questions or [],
+    }
+    
+    return render(request, "quizzes/student_feedback.html", context)
+
 
 @transaction.atomic
 def teacher_signup(request):

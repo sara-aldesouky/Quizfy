@@ -577,3 +577,79 @@ class FileSubmission(models.Model):
 
     def __str__(self):
         return f"{self.file_name} - {self.submission.student_name}"
+
+
+# =============================================================================
+# STUDENT FEEDBACK MODEL
+# =============================================================================
+
+class StudentFeedback(models.Model):
+    """
+    Stores AI-generated personalized learning feedback for a student's quiz submission.
+    
+    Generated immediately after quiz submission, includes:
+    - Weak topics identified from incorrect answers
+    - Mistake patterns (conceptual, careless, repeated)
+    - Flashcards for revision
+    - Practice questions at adaptive difficulty
+    - Step-by-step solutions
+    """
+    
+    # Relationships
+    submission = models.OneToOneField(
+        Submission,
+        on_delete=models.CASCADE,
+        related_name='feedback',
+        help_text="The quiz submission this feedback is for"
+    )
+    
+    # Feedback data (stored as JSON)
+    weak_topics = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="List of identified weak topics with explanations"
+    )
+    flashcards = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Flashcards for revision on weak topics"
+    )
+    practice_questions = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Generated practice questions with solutions"
+    )
+    
+    # Metadata
+    generated_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When the feedback was generated"
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text="Last update time"
+    )
+    generation_error = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Error message if feedback generation failed"
+    )
+    
+    # Tracking
+    viewed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the student first viewed this feedback"
+    )
+    
+    class Meta:
+        ordering = ['-generated_at']
+    
+    def __str__(self):
+        return f"Feedback for {self.submission.student_name} - {self.submission.quiz.code}"
+    
+    def mark_as_viewed(self):
+        """Mark feedback as viewed by student."""
+        if not self.viewed_at:
+            self.viewed_at = timezone.now()
+            self.save(update_fields=['viewed_at'])

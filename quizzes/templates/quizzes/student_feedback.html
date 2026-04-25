@@ -1,0 +1,514 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Your Learning Feedback - {{ quiz.code }}{% endblock %}
+
+{% block content %}
+<style>
+  .feedback-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .feedback-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px 20px;
+    border-radius: 8px;
+    margin-bottom: 40px;
+    text-align: center;
+  }
+
+  .feedback-header h1 {
+    font-size: 28px;
+    margin: 0 0 10px 0;
+  }
+
+  .feedback-header .subtitle {
+    font-size: 16px;
+    opacity: 0.9;
+  }
+
+  .feedback-score {
+    background: white;
+    color: #333;
+    padding: 15px 30px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .feedback-sections {
+    display: grid;
+    gap: 40px;
+  }
+
+  .section {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  .section h2 {
+    font-size: 22px;
+    margin-top: 0;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-icon {
+    font-size: 24px;
+  }
+
+  /* Weak Topics */
+  .topic-cards {
+    display: grid;
+    gap: 20px;
+  }
+
+  .topic-card {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 6px;
+    border-left: 4px solid #ff6b6b;
+  }
+
+  .topic-card h3 {
+    margin: 0 0 10px 0;
+    color: #ff6b6b;
+    font-size: 18px;
+  }
+
+  .mistake-pattern {
+    display: inline-block;
+    background: #ffe0e0;
+    color: #c92a2a;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  .topic-card p {
+    margin: 10px 0 0 0;
+    color: #555;
+    line-height: 1.5;
+  }
+
+  /* Flashcards */
+  .flashcards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  .flashcard {
+    perspective: 1000px;
+    height: 200px;
+    cursor: pointer;
+  }
+
+  .flashcard-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+  }
+
+  .flashcard.flipped .flashcard-inner {
+    transform: rotateY(180deg);
+  }
+
+  .flashcard-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 500;
+  }
+
+  .flashcard-front {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+
+  .flashcard-back {
+    background: #fff3cd;
+    color: #333;
+    transform: rotateY(180deg);
+  }
+
+  .flashcard-topic {
+    font-size: 12px;
+    opacity: 0.8;
+    margin-bottom: 10px;
+  }
+
+  .flashcard-content {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .flashcard-label {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    font-size: 11px;
+    opacity: 0.7;
+  }
+
+  /* Practice Questions */
+  .practice-questions {
+    display: grid;
+    gap: 20px;
+  }
+
+  .practice-question {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 6px;
+    border-left: 4px solid #4ecdc4;
+  }
+
+  .practice-question h3 {
+    margin-top: 0;
+    color: #4ecdc4;
+    font-size: 16px;
+  }
+
+  .question-text {
+    margin: 15px 0;
+    padding: 15px;
+    background: white;
+    border-radius: 4px;
+    border-left: 3px solid #4ecdc4;
+  }
+
+  .difficulty-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 0 5px 10px 0;
+  }
+
+  .difficulty-easy {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  .difficulty-medium {
+    background: #fff3cd;
+    color: #856404;
+  }
+
+  .difficulty-hard {
+    background: #f8d7da;
+    color: #721c24;
+  }
+
+  .reason-box {
+    background: white;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin: 10px 0;
+    font-size: 14px;
+    color: #555;
+    border-left: 3px solid #6c757d;
+  }
+
+  .solution-box {
+    background: white;
+    padding: 15px;
+    border-radius: 4px;
+    margin-top: 10px;
+    display: none;
+  }
+
+  .solution-box.show {
+    display: block;
+  }
+
+  .solution-header {
+    font-weight: 600;
+    color: #4ecdc4;
+    margin-bottom: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .solution-header:before {
+    content: "▶";
+    display: inline-block;
+    transition: transform 0.3s;
+  }
+
+  .solution-box.show .solution-header:before {
+    transform: rotate(90deg);
+  }
+
+  .solution-steps {
+    padding-left: 20px;
+    line-height: 1.8;
+    color: #555;
+    font-size: 14px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* Empty States */
+  .empty-section {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+  }
+
+  .empty-section p {
+    font-size: 16px;
+    margin: 0;
+  }
+
+  /* Navigation */
+  .feedback-nav {
+    margin-top: 40px;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+  }
+
+  .btn {
+    padding: 12px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-size: 16px;
+    transition: all 0.3s;
+  }
+
+  .btn.primary {
+    background: #667eea;
+    color: white;
+  }
+
+  .btn.primary:hover {
+    background: #5568d3;
+  }
+
+  .btn.secondary {
+    background: #e9ecef;
+    color: #333;
+  }
+
+  .btn.secondary:hover {
+    background: #dee2e6;
+  }
+
+  /* Error States */
+  .error-message {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 768px) {
+    .feedback-header {
+      padding: 30px 15px;
+    }
+
+    .feedback-header h1 {
+      font-size: 24px;
+    }
+
+    .section {
+      padding: 20px;
+    }
+
+    .flashcards-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .feedback-nav {
+      flex-direction: column;
+    }
+  }
+</style>
+
+<div class="feedback-container">
+  <!-- Header -->
+  <div class="feedback-header">
+    <h1>Your Learning Feedback</h1>
+    <p class="subtitle">{{ quiz.code }} - {{ quiz.title }}</p>
+    <div class="feedback-score">
+      Score: {{ submission.score }}/{{ submission.total }}
+      ({{ submission.percentage|floatformat:1 }}%)
+    </div>
+  </div>
+
+  <!-- Messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="error-message">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Main Content -->
+  <div class="feedback-sections">
+
+    <!-- WEAK TOPICS SECTION -->
+    {% if weak_topics %}
+    <section class="section">
+      <h2><span class="section-icon">⚠️</span> Areas for Improvement</h2>
+      {% if weak_topics %}
+        <div class="topic-cards">
+          {% for topic in weak_topics %}
+            <div class="topic-card">
+              <h3>{{ topic.topic }}</h3>
+              <span class="mistake-pattern">
+                {% if topic.mistake_pattern == "concept_misunderstanding" %}
+                  Concept Misunderstanding
+                {% elif topic.mistake_pattern == "careless_error" %}
+                  Careless Error
+                {% elif topic.mistake_pattern == "repeated_mistake" %}
+                  Repeated Mistake
+                {% else %}
+                  {{ topic.mistake_pattern|title }}
+                {% endif %}
+              </span>
+              <p>{{ topic.summary }}</p>
+            </div>
+          {% empty %}
+            <div class="empty-section">
+              <p>Great job! No weak topics identified.</p>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-section">
+          <p>No weak topics to review.</p>
+        </div>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    <!-- FLASHCARDS SECTION -->
+    {% if flashcards %}
+    <section class="section">
+      <h2><span class="section-icon">📇</span> Study Flashcards</h2>
+      <p style="color: #666; margin-bottom: 20px;">Click each card to flip it over.</p>
+      <div class="flashcards-grid">
+        {% for card in flashcards %}
+          <div class="flashcard" onclick="this.classList.toggle('flipped')">
+            <div class="flashcard-inner">
+              <div class="flashcard-face flashcard-front">
+                <div class="flashcard-topic">{{ card.topic }}</div>
+                <div class="flashcard-content">{{ card.front }}</div>
+                <div class="flashcard-label">Click to reveal</div>
+              </div>
+              <div class="flashcard-face flashcard-back">
+                <div class="flashcard-content">{{ card.back }}</div>
+                <div class="flashcard-label">{{ card.explanation }}</div>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <div class="empty-section">
+            <p>No flashcards available.</p>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- PRACTICE QUESTIONS SECTION -->
+    {% if practice_questions %}
+    <section class="section">
+      <h2><span class="section-icon">✏️</span> Practice Questions</h2>
+      <p style="color: #666; margin-bottom: 20px;">Try solving these questions to strengthen your understanding.</p>
+      <div class="practice-questions">
+        {% for question in practice_questions %}
+          <div class="practice-question">
+            <h3>{{ question.topic }}</h3>
+            
+            <div>
+              <span class="difficulty-badge difficulty-{{ question.difficulty }}">
+                Difficulty: {{ question.difficulty|title }}
+              </span>
+            </div>
+
+            <div class="reason-box">
+              <strong>Why this level?</strong> {{ question.reason_for_difficulty }}
+            </div>
+
+            <div class="question-text">
+              <strong>Question:</strong><br>
+              {{ question.question }}
+            </div>
+
+            <div class="solution-box">
+              <div class="solution-header" onclick="this.parentElement.classList.toggle('show')">
+                Step-by-step Solution
+              </div>
+              <div class="solution-steps" style="display:none;">{{ question.solution_steps }}</div>
+            </div>
+          </div>
+        {% empty %}
+          <div class="empty-section">
+            <p>No practice questions available.</p>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+  </div>
+
+  <!-- Navigation -->
+  <div class="feedback-nav">
+    <a href="{% url 'quiz_result' quiz_code=quiz.code submission_id=submission.id %}" class="btn secondary">
+      ← Back to Results
+    </a>
+    <a href="{% url 'home' %}" class="btn primary">
+      Go to Dashboard
+    </a>
+  </div>
+
+</div>
+
+<script>
+  // Make solutions toggleable
+  document.querySelectorAll('.solution-header').forEach(header => {
+    header.addEventListener('click', function(e) {
+      e.preventDefault();
+      const box = this.parentElement;
+      const steps = box.querySelector('.solution-steps');
+      if (steps) {
+        steps.style.display = steps.style.display === 'none' ? 'block' : 'none';
+      }
+    });
+  });
+</script>
+
+{% endblock %}

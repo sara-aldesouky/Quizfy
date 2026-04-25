@@ -1,0 +1,955 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [7 0 R 9 0 R 11 0 R 13 0 R 15 0 R 17 0 R 19 0 R 21 0 R 23 0 R 25 0 R 27 0 R 29 0 R] /Count 12 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+6 0 obj
+<< /Length 3822 >>
+stream
+0.93 0.95 0.99 rg 0 0 595 842 re f
+0 0 0 rg
+BT /F1 9.8 Tf 48.0 788.0 Td () Tj ET
+BT /F2 18.0 Tf 48.0 780.0 Td (Quizfy Features and Architecture Workflow) Tj ET
+BT /F1 9.8 Tf 48.0 750.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 742.0 Td (This document explains what Quizfy does, where the main features live, and how) Tj ET
+BT /F1 9.8 Tf 48.0 728.2 Td (the application flows from user action to backend processing.) Tj ET
+BT /F1 9.8 Tf 48.0 714.4 Td () Tj ET
+BT /F1 9.8 Tf 48.0 706.4 Td () Tj ET
+BT /F2 13.5 Tf 48.0 700.4 Td (1. Product Overview) Tj ET
+BT /F1 9.8 Tf 48.0 678.9 Td () Tj ET
+BT /F1 9.8 Tf 48.0 670.9 Td (Quizfy is a Django-based educational quiz platform for teachers and students.) Tj ET
+BT /F1 9.8 Tf 48.0 657.1 Td (Teachers create quizzes, manage questions, share quizzes through links or QR) Tj ET
+BT /F1 9.8 Tf 48.0 643.3 Td (codes, review submissions, export reports, and run class performance analytics.) Tj ET
+BT /F1 9.8 Tf 48.0 629.5 Td (Students log in, take assigned quizzes, submit answers, and view their results.) Tj ET
+BT /F1 9.8 Tf 48.0 615.7 Td () Tj ET
+BT /F1 9.8 Tf 48.0 607.7 Td (The app is designed around real classroom workflows:) Tj ET
+BT /F1 9.8 Tf 48.0 593.9 Td () Tj ET
+BT /F1 9.8 Tf 60.0 585.9 Td (- Teacher creates an assessment.) Tj ET
+BT /F1 9.8 Tf 60.0 572.1 Td (- Student accesses the assessment securely.) Tj ET
+BT /F1 9.8 Tf 60.0 558.3 Td (- Student submits answers.) Tj ET
+BT /F1 9.8 Tf 60.0 544.5 Td (- Teacher reviews results.) Tj ET
+BT /F1 9.8 Tf 60.0 530.7 Td (- Teacher exports reports.) Tj ET
+BT /F1 9.8 Tf 60.0 516.9 Td (- Teacher can upload the assessment PDF and class Excel results to find weak) Tj ET
+BT /F1 9.8 Tf 48.0 503.1 Td (  class and student topics.) Tj ET
+BT /F1 9.8 Tf 48.0 489.3 Td () Tj ET
+BT /F1 9.8 Tf 48.0 481.3 Td () Tj ET
+BT /F2 13.5 Tf 48.0 475.3 Td (2. Main Features) Tj ET
+BT /F1 9.8 Tf 48.0 453.8 Td () Tj ET
+BT /F1 9.8 Tf 48.0 445.8 Td () Tj ET
+BT /F2 11.2 Tf 48.0 442.8 Td (Teacher Features) Tj ET
+BT /F1 9.8 Tf 48.0 425.6 Td () Tj ET
+BT /F1 9.8 Tf 60.0 417.6 Td (- Teacher signup, login, logout, and password management.) Tj ET
+BT /F1 9.8 Tf 60.0 403.8 Td (- Create quizzes.) Tj ET
+BT /F1 9.8 Tf 60.0 390.0 Td (- Edit quiz settings.) Tj ET
+BT /F1 9.8 Tf 60.0 376.2 Td (- Add, edit, and delete questions.) Tj ET
+BT /F1 9.8 Tf 60.0 362.4 Td (- Support multiple question types:) Tj ET
+BT /F1 9.8 Tf 48.0 348.6 Td (  - Multiple choice) Tj ET
+BT /F1 9.8 Tf 48.0 334.8 Td (  - True/false) Tj ET
+BT /F1 9.8 Tf 48.0 321.0 Td (  - File upload/manual review questions) Tj ET
+BT /F1 9.8 Tf 60.0 307.2 Td (- Organize quizzes into subject folders.) Tj ET
+BT /F1 9.8 Tf 60.0 293.4 Td (- Move quizzes between folders.) Tj ET
+BT /F1 9.8 Tf 60.0 279.6 Td (- Enable or disable quizzes.) Tj ET
+BT /F1 9.8 Tf 60.0 265.8 Td (- Generate QR codes for quizzes.) Tj ET
+BT /F1 9.8 Tf 60.0 252.0 Td (- View student submissions.) Tj ET
+BT /F1 9.8 Tf 60.0 238.2 Td (- Grade file-upload questions.) Tj ET
+BT /F1 9.8 Tf 60.0 224.4 Td (- Allow extra attempts for students.) Tj ET
+BT /F1 9.8 Tf 60.0 210.6 Td (- Export quiz submissions to Excel.) Tj ET
+BT /F1 9.8 Tf 60.0 196.8 Td (- Export folder-level reports.) Tj ET
+BT /F1 9.8 Tf 60.0 183.0 Td (- Export student-level reports.) Tj ET
+BT /F1 9.8 Tf 60.0 169.2 Td (- Export quiz questions as PDF.) Tj ET
+BT /F1 9.8 Tf 60.0 155.4 Td (- Run class performance analytics from PDF + Excel uploads.) Tj ET
+BT /F1 9.8 Tf 48.0 141.6 Td () Tj ET
+BT /F1 9.8 Tf 48.0 133.6 Td () Tj ET
+BT /F2 11.2 Tf 48.0 130.6 Td (Student Features) Tj ET
+BT /F1 9.8 Tf 48.0 113.4 Td () Tj ET
+BT /F1 9.8 Tf 60.0 105.4 Td (- Student signup, login, logout, and password management.) Tj ET
+BT /F1 9.8 Tf 60.0 91.6 Td (- Join quizzes by code or QR flow.) Tj ET
+BT /F1 9.8 Tf 60.0 77.8 Td (- Take active quizzes.) Tj ET
+BT /F1 8 Tf 487 28 Td (Page 1 of 12) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 3743 >>
+stream
+0 0 0 rg
+BT /F1 9.8 Tf 60.0 788.0 Td (- Answer questions online.) Tj ET
+BT /F1 9.8 Tf 60.0 774.2 Td (- Submit quiz attempts.) Tj ET
+BT /F1 9.8 Tf 60.0 760.4 Td (- See quiz result feedback after submission.) Tj ET
+BT /F1 9.8 Tf 60.0 746.6 Td (- View previous submissions from the student dashboard.) Tj ET
+BT /F1 9.8 Tf 48.0 732.8 Td () Tj ET
+BT /F1 9.8 Tf 48.0 724.8 Td () Tj ET
+BT /F2 11.2 Tf 48.0 721.8 Td (Reporting Features) Tj ET
+BT /F1 9.8 Tf 48.0 704.6 Td () Tj ET
+BT /F1 9.8 Tf 60.0 696.6 Td (- Quiz submission Excel export.) Tj ET
+BT /F1 9.8 Tf 60.0 682.8 Td (- Folder boxes Excel export.) Tj ET
+BT /F1 9.8 Tf 60.0 669.0 Td (- Student folder report export.) Tj ET
+BT /F1 9.8 Tf 60.0 655.2 Td (- Per-question correctness columns such as Q1, Q2, Q3.) Tj ET
+BT /F1 9.8 Tf 60.0 641.4 Td (- Correct/wrong values represented as:) Tj ET
+BT /F1 9.8 Tf 48.0 627.6 Td (  - 1 = correct) Tj ET
+BT /F1 9.8 Tf 48.0 613.8 Td (  - 0 = wrong or unanswered) Tj ET
+BT /F1 9.8 Tf 60.0 600.0 Td (- PDF quiz export for teacher reference.) Tj ET
+BT /F1 9.8 Tf 48.0 586.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 578.2 Td () Tj ET
+BT /F2 11.2 Tf 48.0 575.2 Td (Class Performance Analytics / RAG Feature) Tj ET
+BT /F1 9.8 Tf 48.0 558.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 550.0 Td (The analytics feature lets a teacher upload:) Tj ET
+BT /F1 9.8 Tf 48.0 536.2 Td () Tj ET
+BT /F1 9.8 Tf 56.0 528.2 Td (1. A PDF containing assessment questions.) Tj ET
+BT /F1 9.8 Tf 56.0 514.4 Td (2. An Excel/CSV/TSV file containing class results.) Tj ET
+BT /F1 9.8 Tf 48.0 500.6 Td () Tj ET
+BT /F1 9.8 Tf 48.0 492.6 Td (The system then returns:) Tj ET
+BT /F1 9.8 Tf 48.0 478.8 Td () Tj ET
+BT /F1 9.8 Tf 60.0 470.8 Td (- Class-level weak topics.) Tj ET
+BT /F1 9.8 Tf 60.0 457.0 Td (- Student-level weak topics.) Tj ET
+BT /F1 9.8 Tf 60.0 443.2 Td (- Evidence question numbers.) Tj ET
+BT /F1 9.8 Tf 60.0 429.4 Td (- Mistake counts.) Tj ET
+BT /F1 9.8 Tf 60.0 415.6 Td (- Attempt counts.) Tj ET
+BT /F1 9.8 Tf 60.0 401.8 Td (- Error rates.) Tj ET
+BT /F1 9.8 Tf 60.0 388.0 Td (- Weakness scores.) Tj ET
+BT /F1 9.8 Tf 60.0 374.2 Td (- Confidence values.) Tj ET
+BT /F1 9.8 Tf 60.0 360.4 Td (- Teacher-friendly explanations.) Tj ET
+BT /F1 9.8 Tf 48.0 346.6 Td () Tj ET
+BT /F1 9.8 Tf 48.0 338.6 Td (The analytics workflow is class-first. It analyzes the entire class by default,) Tj ET
+BT /F1 9.8 Tf 48.0 324.8 Td (then also provides per-student summaries.) Tj ET
+BT /F1 9.8 Tf 48.0 311.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 303.0 Td () Tj ET
+BT /F2 13.5 Tf 48.0 297.0 Td (3. High-Level Architecture) Tj ET
+BT /F1 9.8 Tf 48.0 275.5 Td () Tj ET
+BT /F1 9.8 Tf 48.0 267.5 Td () Tj ET
+BT /F3 8.2 Tf 48.0 260.5 Td (Browser / Django Templates) Tj ET
+BT /F3 8.2 Tf 48.0 249.5 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 238.5 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 227.5 Td (Django URL Router) Tj ET
+BT /F3 8.2 Tf 48.0 216.5 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 205.5 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 194.5 Td (Django Views) Tj ET
+BT /F3 8.2 Tf 48.0 183.5 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 172.5 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 161.5 Td (Domain Services) Tj ET
+BT /F3 8.2 Tf 48.0 150.5 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 139.5 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 128.5 Td (Database / File Storage / External APIs) Tj ET
+BT /F1 9.8 Tf 48.0 117.5 Td () Tj ET
+BT /F1 9.8 Tf 48.0 110.5 Td () Tj ET
+BT /F1 9.8 Tf 48.0 102.5 Td (In Quizfy, most user-facing pages are rendered with Django templates. The) Tj ET
+BT /F1 9.8 Tf 48.0 88.7 Td (backend is responsible for authentication, quiz rules, grading, exports, file) Tj ET
+BT /F1 9.8 Tf 48.0 74.9 Td (processing, analytics, and calls to external services.) Tj ET
+BT /F1 9.8 Tf 48.0 61.1 Td () Tj ET
+BT /F1 8 Tf 487 28 Td (Page 2 of 12) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 8 0 R >>
+endobj
+10 0 obj
+<< /Length 3581 >>
+stream
+0 0 0 rg
+BT /F1 9.8 Tf 48.0 788.0 Td () Tj ET
+BT /F2 13.5 Tf 48.0 782.0 Td (4. Core Project Structure) Tj ET
+BT /F1 9.8 Tf 48.0 760.5 Td () Tj ET
+BT /F1 9.8 Tf 48.0 752.5 Td () Tj ET
+BT /F3 8.2 Tf 48.0 745.5 Td (Quizfy/) Tj ET
+BT /F3 8.2 Tf 48.0 734.5 Td (+-- quizzes/) Tj ET
+BT /F3 8.2 Tf 48.0 723.5 Td (|   +-- models.py) Tj ET
+BT /F3 8.2 Tf 48.0 712.5 Td (|   +-- views.py) Tj ET
+BT /F3 8.2 Tf 48.0 701.5 Td (|   +-- forms.py) Tj ET
+BT /F3 8.2 Tf 48.0 690.5 Td (|   +-- urls.py) Tj ET
+BT /F3 8.2 Tf 48.0 679.5 Td (|   +-- signals.py) Tj ET
+BT /F3 8.2 Tf 48.0 668.5 Td (|   +-- templates/) Tj ET
+BT /F3 8.2 Tf 48.0 657.5 Td (|       +-- quizzes/) Tj ET
+BT /F3 8.2 Tf 48.0 646.5 Td (|) Tj ET
+BT /F3 8.2 Tf 48.0 635.5 Td (+-- quizz_app/) Tj ET
+BT /F3 8.2 Tf 48.0 624.5 Td (|   +-- settings.py) Tj ET
+BT /F3 8.2 Tf 48.0 613.5 Td (|   +-- urls.py) Tj ET
+BT /F3 8.2 Tf 48.0 602.5 Td (|   +-- wsgi.py) Tj ET
+BT /F3 8.2 Tf 48.0 591.5 Td (|   +-- safe_logging.py) Tj ET
+BT /F3 8.2 Tf 48.0 580.5 Td (|) Tj ET
+BT /F3 8.2 Tf 48.0 569.5 Td (+-- performance_analytics/) Tj ET
+BT /F3 8.2 Tf 48.0 558.5 Td (|   +-- config.py) Tj ET
+BT /F3 8.2 Tf 48.0 547.5 Td (|   +-- models.py) Tj ET
+BT /F3 8.2 Tf 48.0 536.5 Td (|   +-- prompts.py) Tj ET
+BT /F3 8.2 Tf 48.0 525.5 Td (|   +-- storage.py) Tj ET
+BT /F3 8.2 Tf 48.0 514.5 Td (|   +-- startup_check.py) Tj ET
+BT /F3 8.2 Tf 48.0 503.5 Td (|   +-- services/) Tj ET
+BT /F3 8.2 Tf 48.0 492.5 Td (|   |   +-- pdf_processor.py) Tj ET
+BT /F3 8.2 Tf 48.0 481.5 Td (|   |   +-- topic_classifier.py) Tj ET
+BT /F3 8.2 Tf 48.0 470.5 Td (|   |   +-- excel_processor.py) Tj ET
+BT /F3 8.2 Tf 48.0 459.5 Td (|   |   +-- analyzer.py) Tj ET
+BT /F3 8.2 Tf 48.0 448.5 Td (|   |   +-- vector_store.py) Tj ET
+BT /F3 8.2 Tf 48.0 437.5 Td (|   +-- tests/) Tj ET
+BT /F3 8.2 Tf 48.0 426.5 Td (|) Tj ET
+BT /F3 8.2 Tf 48.0 415.5 Td (+-- scripts/) Tj ET
+BT /F3 8.2 Tf 48.0 404.5 Td (|   +-- security_scan.py) Tj ET
+BT /F3 8.2 Tf 48.0 393.5 Td (|) Tj ET
+BT /F3 8.2 Tf 48.0 382.5 Td (+-- docs/) Tj ET
+BT /F3 8.2 Tf 48.0 371.5 Td (+-- manage.py) Tj ET
+BT /F3 8.2 Tf 48.0 360.5 Td (+-- requirements.txt) Tj ET
+BT /F3 8.2 Tf 48.0 349.5 Td (+-- render.yaml) Tj ET
+BT /F3 8.2 Tf 48.0 338.5 Td (+-- .env.example) Tj ET
+BT /F3 8.2 Tf 48.0 327.5 Td (+-- .gitignore) Tj ET
+BT /F1 9.8 Tf 48.0 316.5 Td () Tj ET
+BT /F1 9.8 Tf 48.0 309.5 Td () Tj ET
+BT /F1 9.8 Tf 48.0 301.5 Td () Tj ET
+BT /F2 13.5 Tf 48.0 295.5 Td (5. Main Files and Responsibilities) Tj ET
+BT /F1 9.8 Tf 48.0 274.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 266.0 Td () Tj ET
+BT /F2 11.2 Tf 48.0 263.0 Td (quizzes/models.py) Tj ET
+BT /F1 9.8 Tf 48.0 245.8 Td () Tj ET
+BT /F1 9.8 Tf 48.0 237.8 Td (Defines the main database models for quizzes, questions, submissions, answers,) Tj ET
+BT /F1 9.8 Tf 48.0 224.0 Td (folders, student profiles, and attempt permissions.) Tj ET
+BT /F1 9.8 Tf 48.0 210.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 202.2 Td (This file represents the app's persistent academic data.) Tj ET
+BT /F1 9.8 Tf 48.0 188.4 Td () Tj ET
+BT /F1 9.8 Tf 48.0 180.4 Td () Tj ET
+BT /F2 11.2 Tf 48.0 177.4 Td (quizzes/views.py) Tj ET
+BT /F1 9.8 Tf 48.0 160.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 152.2 Td (Contains the main Django view functions.) Tj ET
+BT /F1 9.8 Tf 48.0 138.4 Td () Tj ET
+BT /F1 9.8 Tf 48.0 130.4 Td (It handles:) Tj ET
+BT /F1 9.8 Tf 48.0 116.6 Td () Tj ET
+BT /F1 9.8 Tf 60.0 108.6 Td (- Teacher dashboards.) Tj ET
+BT /F1 9.8 Tf 60.0 94.8 Td (- Student dashboards.) Tj ET
+BT /F1 9.8 Tf 60.0 81.0 Td (- Quiz creation.) Tj ET
+BT /F1 9.8 Tf 60.0 67.2 Td (- Question management.) Tj ET
+BT /F1 8 Tf 487 28 Td (Page 3 of 12) Tj ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 10 0 R >>
+endobj
+12 0 obj
+<< /Length 3597 >>
+stream
+0 0 0 rg
+BT /F1 9.8 Tf 60.0 788.0 Td (- Quiz taking.) Tj ET
+BT /F1 9.8 Tf 60.0 774.2 Td (- Submission handling.) Tj ET
+BT /F1 9.8 Tf 60.0 760.4 Td (- Grading.) Tj ET
+BT /F1 9.8 Tf 60.0 746.6 Td (- Excel exports.) Tj ET
+BT /F1 9.8 Tf 60.0 732.8 Td (- PDF exports.) Tj ET
+BT /F1 9.8 Tf 60.0 719.0 Td (- The analytics upload page.) Tj ET
+BT /F1 9.8 Tf 48.0 705.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 697.2 Td (The analytics entry point is:) Tj ET
+BT /F1 9.8 Tf 48.0 683.4 Td () Tj ET
+BT /F1 9.8 Tf 48.0 675.4 Td () Tj ET
+BT /F3 8.2 Tf 48.0 668.4 Td (performance_analytics_dashboard) Tj ET
+BT /F1 9.8 Tf 48.0 657.4 Td () Tj ET
+BT /F1 9.8 Tf 48.0 650.4 Td () Tj ET
+BT /F1 9.8 Tf 48.0 642.4 Td () Tj ET
+BT /F2 11.2 Tf 48.0 639.4 Td (quizzes/forms.py) Tj ET
+BT /F1 9.8 Tf 48.0 622.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 614.2 Td (Defines Django forms used for login, signup, quiz creation, question creation,) Tj ET
+BT /F1 9.8 Tf 48.0 600.4 Td (folder movement, settings, password changes, and file-upload submissions.) Tj ET
+BT /F1 9.8 Tf 48.0 586.6 Td () Tj ET
+BT /F1 9.8 Tf 48.0 578.6 Td () Tj ET
+BT /F2 11.2 Tf 48.0 575.6 Td (quizzes/urls.py) Tj ET
+BT /F1 9.8 Tf 48.0 558.4 Td () Tj ET
+BT /F1 9.8 Tf 48.0 550.4 Td (Maps app URLs to Django views.) Tj ET
+BT /F1 9.8 Tf 48.0 536.6 Td () Tj ET
+BT /F1 9.8 Tf 48.0 528.6 Td (Important analytics routes:) Tj ET
+BT /F1 9.8 Tf 48.0 514.8 Td () Tj ET
+BT /F1 9.8 Tf 48.0 506.8 Td () Tj ET
+BT /F3 8.2 Tf 48.0 499.8 Td (/teacher/analytics/) Tj ET
+BT /F3 8.2 Tf 48.0 488.8 Td (/teacher/performance-analytics/) Tj ET
+BT /F3 8.2 Tf 48.0 477.8 Td (/analytics/) Tj ET
+BT /F3 8.2 Tf 48.0 466.8 Td (/a/) Tj ET
+BT /F1 9.8 Tf 48.0 455.8 Td () Tj ET
+BT /F1 9.8 Tf 48.0 448.8 Td () Tj ET
+BT /F1 9.8 Tf 48.0 440.8 Td () Tj ET
+BT /F2 11.2 Tf 48.0 437.8 Td (quizzes/templates/) Tj ET
+BT /F1 9.8 Tf 48.0 420.6 Td () Tj ET
+BT /F1 9.8 Tf 48.0 412.6 Td (Contains the HTML pages rendered by Django.) Tj ET
+BT /F1 9.8 Tf 48.0 398.8 Td () Tj ET
+BT /F1 9.8 Tf 48.0 390.8 Td (Important analytics template:) Tj ET
+BT /F1 9.8 Tf 48.0 377.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 369.0 Td () Tj ET
+BT /F3 8.2 Tf 48.0 362.0 Td (quizzes/templates/quizzes/performance_analytics.html) Tj ET
+BT /F1 9.8 Tf 48.0 351.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 344.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 336.0 Td (This file renders the upload UI and displays class/student analytics results.) Tj ET
+BT /F1 9.8 Tf 48.0 322.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 314.2 Td () Tj ET
+BT /F2 11.2 Tf 48.0 311.2 Td (quizz_app/settings.py) Tj ET
+BT /F1 9.8 Tf 48.0 294.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 286.0 Td (Main Django settings file.) Tj ET
+BT /F1 9.8 Tf 48.0 272.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 264.2 Td (It controls:) Tj ET
+BT /F1 9.8 Tf 48.0 250.4 Td () Tj ET
+BT /F1 9.8 Tf 60.0 242.4 Td (- Installed apps.) Tj ET
+BT /F1 9.8 Tf 60.0 228.6 Td (- Middleware.) Tj ET
+BT /F1 9.8 Tf 60.0 214.8 Td (- Database settings.) Tj ET
+BT /F1 9.8 Tf 60.0 201.0 Td (- Static and media files.) Tj ET
+BT /F1 9.8 Tf 60.0 187.2 Td (- Allowed hosts.) Tj ET
+BT /F1 9.8 Tf 60.0 173.4 Td (- CSRF trusted origins.) Tj ET
+BT /F1 9.8 Tf 60.0 159.6 Td (- Logging.) Tj ET
+BT /F1 9.8 Tf 60.0 145.8 Td (- Deployment-related settings.) Tj ET
+BT /F1 9.8 Tf 48.0 132.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 124.0 Td () Tj ET
+BT /F2 11.2 Tf 48.0 121.0 Td (quizz_app/urls.py) Tj ET
+BT /F1 9.8 Tf 48.0 103.8 Td () Tj ET
+BT /F1 9.8 Tf 48.0 95.8 Td (Root URL configuration.) Tj ET
+BT /F1 9.8 Tf 48.0 82.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 74.0 Td (It includes the quizzes.urls routes and admin routes.) Tj ET
+BT /F1 9.8 Tf 48.0 60.2 Td () Tj ET
+BT /F1 8 Tf 487 28 Td (Page 4 of 12) Tj ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 12 0 R >>
+endobj
+14 0 obj
+<< /Length 3666 >>
+stream
+0 0 0 rg
+BT /F1 9.8 Tf 48.0 788.0 Td () Tj ET
+BT /F2 11.2 Tf 48.0 785.0 Td (quizz_app/safe_logging.py) Tj ET
+BT /F1 9.8 Tf 48.0 767.8 Td () Tj ET
+BT /F1 9.8 Tf 48.0 759.8 Td (Provides redaction-safe logging helpers. It redacts common secret-looking values) Tj ET
+BT /F1 9.8 Tf 48.0 746.0 Td (from logs as a safety layer.) Tj ET
+BT /F1 9.8 Tf 48.0 732.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 724.2 Td (This protects against accidental logging of sensitive values.) Tj ET
+BT /F1 9.8 Tf 48.0 710.4 Td () Tj ET
+BT /F1 9.8 Tf 48.0 702.4 Td () Tj ET
+BT /F2 11.2 Tf 48.0 699.4 Td (scripts/security_scan.py) Tj ET
+BT /F1 9.8 Tf 48.0 682.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 674.2 Td (Scans the repository for secret leakage risks.) Tj ET
+BT /F1 9.8 Tf 48.0 660.4 Td () Tj ET
+BT /F1 9.8 Tf 48.0 652.4 Td (It checks for risky patterns such as:) Tj ET
+BT /F1 9.8 Tf 48.0 638.6 Td () Tj ET
+BT /F1 9.8 Tf 60.0 630.6 Td (- Printing environment variables.) Tj ET
+BT /F1 9.8 Tf 60.0 616.8 Td (- OpenAI key-shaped strings.) Tj ET
+BT /F1 9.8 Tf 60.0 603.0 Td (- SendGrid key-shaped strings.) Tj ET
+BT /F1 9.8 Tf 60.0 589.2 Td (- Bearer token-looking strings.) Tj ET
+BT /F1 9.8 Tf 60.0 575.4 Td (- Header dumps.) Tj ET
+BT /F1 9.8 Tf 60.0 561.6 Td (- Cookie/token/auth logging.) Tj ET
+BT /F1 9.8 Tf 60.0 547.8 Td (- Secret-like JSON values.) Tj ET
+BT /F1 9.8 Tf 48.0 534.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 526.0 Td () Tj ET
+BT /F2 13.5 Tf 48.0 520.0 Td (6. Quiz Creation Workflow) Tj ET
+BT /F1 9.8 Tf 48.0 498.5 Td () Tj ET
+BT /F1 9.8 Tf 48.0 490.5 Td () Tj ET
+BT /F3 8.2 Tf 48.0 483.5 Td (Teacher logs in) Tj ET
+BT /F3 8.2 Tf 48.0 472.5 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 461.5 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 450.5 Td (Teacher opens quiz dashboard) Tj ET
+BT /F3 8.2 Tf 48.0 439.5 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 428.5 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 417.5 Td (Teacher creates quiz) Tj ET
+BT /F3 8.2 Tf 48.0 406.5 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 395.5 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 384.5 Td (Teacher adds questions) Tj ET
+BT /F3 8.2 Tf 48.0 373.5 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 362.5 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 351.5 Td (Teacher activates quiz) Tj ET
+BT /F3 8.2 Tf 48.0 340.5 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 329.5 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 318.5 Td (System generates quiz link / QR code) Tj ET
+BT /F1 9.8 Tf 48.0 307.5 Td () Tj ET
+BT /F1 9.8 Tf 48.0 300.5 Td () Tj ET
+BT /F1 9.8 Tf 48.0 292.5 Td (Important files:) Tj ET
+BT /F1 9.8 Tf 48.0 278.7 Td () Tj ET
+BT /F1 9.8 Tf 48.0 270.7 Td () Tj ET
+BT /F3 8.2 Tf 48.0 263.7 Td (quizzes/views.py) Tj ET
+BT /F3 8.2 Tf 48.0 252.7 Td (quizzes/forms.py) Tj ET
+BT /F3 8.2 Tf 48.0 241.7 Td (quizzes/models.py) Tj ET
+BT /F3 8.2 Tf 48.0 230.7 Td (quizzes/templates/quizzes/create_quiz.html) Tj ET
+BT /F3 8.2 Tf 48.0 219.7 Td (quizzes/templates/quizzes/create_question.html) Tj ET
+BT /F1 9.8 Tf 48.0 208.7 Td () Tj ET
+BT /F1 9.8 Tf 48.0 201.7 Td () Tj ET
+BT /F1 9.8 Tf 48.0 193.7 Td () Tj ET
+BT /F2 13.5 Tf 48.0 187.7 Td (7. Student Quiz-Taking Workflow) Tj ET
+BT /F1 9.8 Tf 48.0 166.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 158.2 Td () Tj ET
+BT /F3 8.2 Tf 48.0 151.2 Td (Student opens quiz link or scans QR code) Tj ET
+BT /F3 8.2 Tf 48.0 140.2 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 129.2 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 118.2 Td (If not logged in, student is redirected to login) Tj ET
+BT /F3 8.2 Tf 48.0 107.2 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 96.2 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 85.2 Td (Student opens quiz page) Tj ET
+BT /F3 8.2 Tf 48.0 74.2 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 63.2 Td (        v) Tj ET
+BT /F1 8 Tf 487 28 Td (Page 5 of 12) Tj ET
+endstream
+endobj
+15 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 14 0 R >>
+endobj
+16 0 obj
+<< /Length 3688 >>
+stream
+0 0 0 rg
+BT /F3 8.2 Tf 48.0 788.0 Td (Student answers questions) Tj ET
+BT /F3 8.2 Tf 48.0 777.0 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 766.0 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 755.0 Td (Student submits quiz) Tj ET
+BT /F3 8.2 Tf 48.0 744.0 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 733.0 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 722.0 Td (Backend grades objective questions) Tj ET
+BT /F3 8.2 Tf 48.0 711.0 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 700.0 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 689.0 Td (Student sees result page) Tj ET
+BT /F1 9.8 Tf 48.0 678.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 671.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 663.0 Td (Important files:) Tj ET
+BT /F1 9.8 Tf 48.0 649.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 641.2 Td () Tj ET
+BT /F3 8.2 Tf 48.0 634.2 Td (quizzes/views.py) Tj ET
+BT /F3 8.2 Tf 48.0 623.2 Td (quizzes/templates/quizzes/take_quiz.html) Tj ET
+BT /F3 8.2 Tf 48.0 612.2 Td (quizzes/templates/quizzes/quiz_result.html) Tj ET
+BT /F3 8.2 Tf 48.0 601.2 Td (quizzes/models.py) Tj ET
+BT /F1 9.8 Tf 48.0 590.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 583.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 575.2 Td () Tj ET
+BT /F2 13.5 Tf 48.0 569.2 Td (8. Submission and Grading Workflow) Tj ET
+BT /F1 9.8 Tf 48.0 547.7 Td () Tj ET
+BT /F1 9.8 Tf 48.0 539.7 Td () Tj ET
+BT /F3 8.2 Tf 48.0 532.7 Td (Student submits quiz) Tj ET
+BT /F3 8.2 Tf 48.0 521.7 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 510.7 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 499.7 Td (Submission record is created) Tj ET
+BT /F3 8.2 Tf 48.0 488.7 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 477.7 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 466.7 Td (Answer records are created) Tj ET
+BT /F3 8.2 Tf 48.0 455.7 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 444.7 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 433.7 Td (Objective questions are graded automatically) Tj ET
+BT /F3 8.2 Tf 48.0 422.7 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 411.7 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 400.7 Td (File-upload questions wait for teacher grading) Tj ET
+BT /F3 8.2 Tf 48.0 389.7 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 378.7 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 367.7 Td (Teacher reviews submission) Tj ET
+BT /F3 8.2 Tf 48.0 356.7 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 345.7 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 334.7 Td (Teacher grades manual items if needed) Tj ET
+BT /F1 9.8 Tf 48.0 323.7 Td () Tj ET
+BT /F1 9.8 Tf 48.0 316.7 Td () Tj ET
+BT /F1 9.8 Tf 48.0 308.7 Td (Important files:) Tj ET
+BT /F1 9.8 Tf 48.0 294.9 Td () Tj ET
+BT /F1 9.8 Tf 48.0 286.9 Td () Tj ET
+BT /F3 8.2 Tf 48.0 279.9 Td (quizzes/views.py) Tj ET
+BT /F3 8.2 Tf 48.0 268.9 Td (quizzes/models.py) Tj ET
+BT /F3 8.2 Tf 48.0 257.9 Td (quizzes/templates/quizzes/quiz_submissions.html) Tj ET
+BT /F3 8.2 Tf 48.0 246.9 Td (quizzes/templates/quizzes/grade_submission.html) Tj ET
+BT /F1 9.8 Tf 48.0 235.9 Td () Tj ET
+BT /F1 9.8 Tf 48.0 228.9 Td () Tj ET
+BT /F1 9.8 Tf 48.0 220.9 Td () Tj ET
+BT /F2 13.5 Tf 48.0 214.9 Td (9. Excel Export Workflow) Tj ET
+BT /F1 9.8 Tf 48.0 193.4 Td () Tj ET
+BT /F1 9.8 Tf 48.0 185.4 Td () Tj ET
+BT /F3 8.2 Tf 48.0 178.4 Td (Teacher clicks Export Excel) Tj ET
+BT /F3 8.2 Tf 48.0 167.4 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 156.4 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 145.4 Td (Django loads quiz submissions) Tj ET
+BT /F3 8.2 Tf 48.0 134.4 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 123.4 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 112.4 Td (Backend creates workbook with openpyxl) Tj ET
+BT /F3 8.2 Tf 48.0 101.4 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 90.4 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 79.4 Td (Workbook includes student info, score, percentage, Q1/Q2/Q3 columns) Tj ET
+BT /F3 8.2 Tf 48.0 68.4 Td (        |) Tj ET
+BT /F1 8 Tf 487 28 Td (Page 6 of 12) Tj ET
+endstream
+endobj
+17 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 16 0 R >>
+endobj
+18 0 obj
+<< /Length 3734 >>
+stream
+0 0 0 rg
+BT /F3 8.2 Tf 48.0 788.0 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 777.0 Td (Browser downloads the Excel file) Tj ET
+BT /F1 9.8 Tf 48.0 766.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 759.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 751.0 Td (The per-question columns are important because analytics can later read:) Tj ET
+BT /F1 9.8 Tf 48.0 737.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 729.2 Td () Tj ET
+BT /F3 8.2 Tf 48.0 722.2 Td (Q1 = 1 or 0) Tj ET
+BT /F3 8.2 Tf 48.0 711.2 Td (Q2 = 1 or 0) Tj ET
+BT /F3 8.2 Tf 48.0 700.2 Td (Q3 = 1 or 0) Tj ET
+BT /F1 9.8 Tf 48.0 689.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 682.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 674.2 Td (Important file:) Tj ET
+BT /F1 9.8 Tf 48.0 660.4 Td () Tj ET
+BT /F1 9.8 Tf 48.0 652.4 Td () Tj ET
+BT /F3 8.2 Tf 48.0 645.4 Td (quizzes/views.py) Tj ET
+BT /F1 9.8 Tf 48.0 634.4 Td () Tj ET
+BT /F1 9.8 Tf 48.0 627.4 Td () Tj ET
+BT /F1 9.8 Tf 48.0 619.4 Td (Important functions include the Excel export views.) Tj ET
+BT /F1 9.8 Tf 48.0 605.6 Td () Tj ET
+BT /F1 9.8 Tf 48.0 597.6 Td () Tj ET
+BT /F2 13.5 Tf 48.0 591.6 Td (10. PDF Export Workflow) Tj ET
+BT /F1 9.8 Tf 48.0 570.1 Td () Tj ET
+BT /F1 9.8 Tf 48.0 562.1 Td () Tj ET
+BT /F3 8.2 Tf 48.0 555.1 Td (Teacher clicks Export PDF) Tj ET
+BT /F3 8.2 Tf 48.0 544.1 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 533.1 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 522.1 Td (Backend loads quiz questions) Tj ET
+BT /F3 8.2 Tf 48.0 511.1 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 500.1 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 489.1 Td (Backend generates a formatted PDF) Tj ET
+BT /F3 8.2 Tf 48.0 478.1 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 467.1 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 456.1 Td (PDF includes numbered questions) Tj ET
+BT /F3 8.2 Tf 48.0 445.1 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 434.1 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 423.1 Td (Browser downloads the PDF) Tj ET
+BT /F1 9.8 Tf 48.0 412.1 Td () Tj ET
+BT /F1 9.8 Tf 48.0 405.1 Td () Tj ET
+BT /F1 9.8 Tf 48.0 397.1 Td (The numbered questions are important for analytics because the PDF question) Tj ET
+BT /F1 9.8 Tf 48.0 383.3 Td (numbers must match Excel columns such as Q1, Q2, and Q3.) Tj ET
+BT /F1 9.8 Tf 48.0 369.5 Td () Tj ET
+BT /F1 9.8 Tf 48.0 361.5 Td (Important file:) Tj ET
+BT /F1 9.8 Tf 48.0 347.7 Td () Tj ET
+BT /F1 9.8 Tf 48.0 339.7 Td () Tj ET
+BT /F3 8.2 Tf 48.0 332.7 Td (quizzes/views.py) Tj ET
+BT /F1 9.8 Tf 48.0 321.7 Td () Tj ET
+BT /F1 9.8 Tf 48.0 314.7 Td () Tj ET
+BT /F1 9.8 Tf 48.0 306.7 Td () Tj ET
+BT /F2 13.5 Tf 48.0 300.7 Td (11. Class Performance Analytics Workflow) Tj ET
+BT /F1 9.8 Tf 48.0 279.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 271.2 Td () Tj ET
+BT /F3 8.2 Tf 48.0 264.2 Td (Teacher opens /teacher/analytics/) Tj ET
+BT /F3 8.2 Tf 48.0 253.2 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 242.2 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 231.2 Td (Teacher uploads PDF assessment + Excel class results) Tj ET
+BT /F3 8.2 Tf 48.0 220.2 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 209.2 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 198.2 Td (Frontend sends FormData POST to Django) Tj ET
+BT /F3 8.2 Tf 48.0 187.2 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 176.2 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 165.2 Td (Django receives files) Tj ET
+BT /F3 8.2 Tf 48.0 154.2 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 143.2 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 132.2 Td (PDFProcessor extracts questions from PDF) Tj ET
+BT /F3 8.2 Tf 48.0 121.2 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 110.2 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 99.2 Td (TopicClassifier assigns topic/subtopic to each question) Tj ET
+BT /F3 8.2 Tf 48.0 88.2 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 77.2 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 66.2 Td (VectorStore stores question evidence for RAG) Tj ET
+BT /F1 8 Tf 487 28 Td (Page 7 of 12) Tj ET
+endstream
+endobj
+19 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 18 0 R >>
+endobj
+20 0 obj
+<< /Length 3744 >>
+stream
+0 0 0 rg
+BT /F3 8.2 Tf 48.0 788.0 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 777.0 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 766.0 Td (ExcelProcessor normalizes class results) Tj ET
+BT /F3 8.2 Tf 48.0 755.0 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 744.0 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 733.0 Td (PerformanceAnalyzer matches results to questions) Tj ET
+BT /F3 8.2 Tf 48.0 722.0 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 711.0 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 700.0 Td (PerformanceAnalyzer calculates class and student weak topics) Tj ET
+BT /F3 8.2 Tf 48.0 689.0 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 678.0 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 667.0 Td (Template displays the result) Tj ET
+BT /F1 9.8 Tf 48.0 656.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 649.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 641.0 Td () Tj ET
+BT /F2 13.5 Tf 48.0 635.0 Td (12. Analytics File Responsibilities) Tj ET
+BT /F1 9.8 Tf 48.0 613.5 Td () Tj ET
+BT /F1 9.8 Tf 48.0 605.5 Td () Tj ET
+BT /F2 11.2 Tf 48.0 602.5 Td (performance_analytics/config.py) Tj ET
+BT /F1 9.8 Tf 48.0 585.3 Td () Tj ET
+BT /F1 9.8 Tf 48.0 577.3 Td (Reads analytics environment variables and validates required settings.) Tj ET
+BT /F1 9.8 Tf 48.0 563.5 Td () Tj ET
+BT /F1 9.8 Tf 48.0 555.5 Td (Important values:) Tj ET
+BT /F1 9.8 Tf 48.0 541.7 Td () Tj ET
+BT /F1 9.8 Tf 48.0 533.7 Td () Tj ET
+BT /F3 8.2 Tf 48.0 526.7 Td (OPENAI_API_KEY) Tj ET
+BT /F3 8.2 Tf 48.0 515.7 Td (OPENAI_MODEL) Tj ET
+BT /F3 8.2 Tf 48.0 504.7 Td (VECTOR_DB_TYPE) Tj ET
+BT /F3 8.2 Tf 48.0 493.7 Td (VECTOR_DB_PATH) Tj ET
+BT /F3 8.2 Tf 48.0 482.7 Td (UPLOAD_DIR) Tj ET
+BT /F3 8.2 Tf 48.0 471.7 Td (LLM_BATCH_SIZE) Tj ET
+BT /F3 8.2 Tf 48.0 460.7 Td (CONFIDENCE_THRESHOLD) Tj ET
+BT /F1 9.8 Tf 48.0 449.7 Td () Tj ET
+BT /F1 9.8 Tf 48.0 442.7 Td () Tj ET
+BT /F1 9.8 Tf 48.0 434.7 Td (The API key is read only from the backend environment.) Tj ET
+BT /F1 9.8 Tf 48.0 420.9 Td () Tj ET
+BT /F1 9.8 Tf 48.0 412.9 Td () Tj ET
+BT /F2 11.2 Tf 48.0 409.9 Td (performance_analytics/models.py) Tj ET
+BT /F1 9.8 Tf 48.0 392.7 Td () Tj ET
+BT /F1 9.8 Tf 48.0 384.7 Td (Defines typed data models for analytics.) Tj ET
+BT /F1 9.8 Tf 48.0 370.9 Td () Tj ET
+BT /F1 9.8 Tf 48.0 362.9 Td (Important models:) Tj ET
+BT /F1 9.8 Tf 48.0 349.1 Td () Tj ET
+BT /F1 9.8 Tf 48.0 341.1 Td () Tj ET
+BT /F3 8.2 Tf 48.0 334.1 Td (ExtractedQuestion) Tj ET
+BT /F3 8.2 Tf 48.0 323.1 Td (ClassifiedQuestion) Tj ET
+BT /F3 8.2 Tf 48.0 312.1 Td (StudentResult) Tj ET
+BT /F3 8.2 Tf 48.0 301.1 Td (ClassWeakTopic) Tj ET
+BT /F3 8.2 Tf 48.0 290.1 Td (StudentWeakTopic) Tj ET
+BT /F3 8.2 Tf 48.0 279.1 Td (ClassSummary) Tj ET
+BT /F3 8.2 Tf 48.0 268.1 Td (StudentSummary) Tj ET
+BT /F3 8.2 Tf 48.0 257.1 Td (AnalysisRequest) Tj ET
+BT /F3 8.2 Tf 48.0 246.1 Td (AnalysisResponse) Tj ET
+BT /F1 9.8 Tf 48.0 235.1 Td () Tj ET
+BT /F1 9.8 Tf 48.0 228.1 Td () Tj ET
+BT /F1 9.8 Tf 48.0 220.1 Td () Tj ET
+BT /F2 11.2 Tf 48.0 217.1 Td (performance_analytics/services/pdf_processor.py) Tj ET
+BT /F1 9.8 Tf 48.0 199.9 Td () Tj ET
+BT /F1 9.8 Tf 48.0 191.9 Td (Reads a PDF and extracts structured question records.) Tj ET
+BT /F1 9.8 Tf 48.0 178.1 Td () Tj ET
+BT /F1 9.8 Tf 48.0 170.1 Td (It supports question styles such as:) Tj ET
+BT /F1 9.8 Tf 48.0 156.3 Td () Tj ET
+BT /F1 9.8 Tf 48.0 148.3 Td () Tj ET
+BT /F3 8.2 Tf 48.0 141.3 Td (1. Question text) Tj ET
+BT /F3 8.2 Tf 48.0 130.3 Td (Q1. Question text) Tj ET
+BT /F3 8.2 Tf 48.0 119.3 Td (Question 1: Question text) Tj ET
+BT /F3 8.2 Tf 48.0 108.3 Td (QUESTION 1) Tj ET
+BT /F1 9.8 Tf 48.0 97.3 Td () Tj ET
+BT /F1 9.8 Tf 48.0 90.3 Td () Tj ET
+BT /F1 9.8 Tf 48.0 82.3 Td () Tj ET
+BT /F2 11.2 Tf 48.0 79.3 Td (performance_analytics/services/topic_classifier.py) Tj ET
+BT /F1 9.8 Tf 48.0 62.1 Td () Tj ET
+BT /F1 8 Tf 487 28 Td (Page 8 of 12) Tj ET
+endstream
+endobj
+21 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 20 0 R >>
+endobj
+22 0 obj
+<< /Length 3810 >>
+stream
+0 0 0 rg
+BT /F1 9.8 Tf 48.0 788.0 Td (Assigns each question a topic and subtopic.) Tj ET
+BT /F1 9.8 Tf 48.0 774.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 766.2 Td (It can use OpenAI through the backend. If OpenAI is temporarily unavailable, it) Tj ET
+BT /F1 9.8 Tf 48.0 752.4 Td (has a deterministic fallback for common math topics.) Tj ET
+BT /F1 9.8 Tf 48.0 738.6 Td () Tj ET
+BT /F1 9.8 Tf 48.0 730.6 Td () Tj ET
+BT /F2 11.2 Tf 48.0 727.6 Td (performance_analytics/services/excel_processor.py) Tj ET
+BT /F1 9.8 Tf 48.0 710.4 Td () Tj ET
+BT /F1 9.8 Tf 48.0 702.4 Td (Reads Excel/CSV/TSV class results.) Tj ET
+BT /F1 9.8 Tf 48.0 688.6 Td () Tj ET
+BT /F1 9.8 Tf 48.0 680.6 Td (It supports:) Tj ET
+BT /F1 9.8 Tf 48.0 666.8 Td () Tj ET
+BT /F1 9.8 Tf 48.0 658.8 Td () Tj ET
+BT /F3 8.2 Tf 48.0 651.8 Td (student_id | student_name | Q1 | Q2 | Q3) Tj ET
+BT /F1 9.8 Tf 48.0 640.8 Td () Tj ET
+BT /F1 9.8 Tf 48.0 633.8 Td () Tj ET
+BT /F1 9.8 Tf 48.0 625.8 Td (and the app's exported Excel format:) Tj ET
+BT /F1 9.8 Tf 48.0 612.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 604.0 Td () Tj ET
+BT /F3 8.2 Tf 48.0 597.0 Td (Student Full Name | University ID | Score | Total | Percentage | Q1 | Q2 | Q3) Tj ET
+BT /F1 9.8 Tf 48.0 586.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 579.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 571.0 Td (It converts wide rows into normalized per-question records.) Tj ET
+BT /F1 9.8 Tf 48.0 557.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 549.2 Td () Tj ET
+BT /F2 11.2 Tf 48.0 546.2 Td (performance_analytics/services/analyzer.py) Tj ET
+BT /F1 9.8 Tf 48.0 529.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 521.0 Td (Calculates class and student weak topics.) Tj ET
+BT /F1 9.8 Tf 48.0 507.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 499.2 Td (It matches:) Tj ET
+BT /F1 9.8 Tf 48.0 485.4 Td () Tj ET
+BT /F1 9.8 Tf 48.0 477.4 Td () Tj ET
+BT /F3 8.2 Tf 48.0 470.4 Td (Excel Q1 -> PDF Question 1) Tj ET
+BT /F3 8.2 Tf 48.0 459.4 Td (Excel Q2 -> PDF Question 2) Tj ET
+BT /F3 8.2 Tf 48.0 448.4 Td (Excel Q3 -> PDF Question 3) Tj ET
+BT /F1 9.8 Tf 48.0 437.4 Td () Tj ET
+BT /F1 9.8 Tf 48.0 430.4 Td () Tj ET
+BT /F1 9.8 Tf 48.0 422.4 Td (Then it calculates:) Tj ET
+BT /F1 9.8 Tf 48.0 408.6 Td () Tj ET
+BT /F1 9.8 Tf 60.0 400.6 Td (- Mistakes.) Tj ET
+BT /F1 9.8 Tf 60.0 386.8 Td (- Attempts.) Tj ET
+BT /F1 9.8 Tf 60.0 373.0 Td (- Error rate.) Tj ET
+BT /F1 9.8 Tf 60.0 359.2 Td (- Students affected.) Tj ET
+BT /F1 9.8 Tf 60.0 345.4 Td (- Weakness score.) Tj ET
+BT /F1 9.8 Tf 60.0 331.6 Td (- Confidence.) Tj ET
+BT /F1 9.8 Tf 60.0 317.8 Td (- Evidence question numbers.) Tj ET
+BT /F1 9.8 Tf 48.0 304.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 296.0 Td () Tj ET
+BT /F2 11.2 Tf 48.0 293.0 Td (performance_analytics/services/vector_store.py) Tj ET
+BT /F1 9.8 Tf 48.0 275.8 Td () Tj ET
+BT /F1 9.8 Tf 48.0 267.8 Td (Stores classified questions for RAG-style evidence retrieval.) Tj ET
+BT /F1 9.8 Tf 48.0 254.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 246.0 Td (It stores metadata such as:) Tj ET
+BT /F1 9.8 Tf 48.0 232.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 224.2 Td () Tj ET
+BT /F3 8.2 Tf 48.0 217.2 Td (question_id) Tj ET
+BT /F3 8.2 Tf 48.0 206.2 Td (question_number) Tj ET
+BT /F3 8.2 Tf 48.0 195.2 Td (topic) Tj ET
+BT /F3 8.2 Tf 48.0 184.2 Td (subtopic) Tj ET
+BT /F3 8.2 Tf 48.0 173.2 Td (source_pdf) Tj ET
+BT /F3 8.2 Tf 48.0 162.2 Td (page_number) Tj ET
+BT /F1 9.8 Tf 48.0 151.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 144.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 136.2 Td (This lets the system connect explanations back to real uploaded questions.) Tj ET
+BT /F1 9.8 Tf 48.0 122.4 Td () Tj ET
+BT /F1 9.8 Tf 48.0 114.4 Td () Tj ET
+BT /F2 11.2 Tf 48.0 111.4 Td (performance_analytics/prompts.py) Tj ET
+BT /F1 9.8 Tf 48.0 94.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 86.2 Td (Contains internal prompts used for topic classification and weak-topic) Tj ET
+BT /F1 9.8 Tf 48.0 72.4 Td (explanations.) Tj ET
+BT /F1 8 Tf 487 28 Td (Page 9 of 12) Tj ET
+endstream
+endobj
+23 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 22 0 R >>
+endobj
+24 0 obj
+<< /Length 3782 >>
+stream
+0 0 0 rg
+BT /F1 9.8 Tf 48.0 788.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 780.0 Td () Tj ET
+BT /F2 11.2 Tf 48.0 777.0 Td (performance_analytics/storage.py) Tj ET
+BT /F1 9.8 Tf 48.0 759.8 Td () Tj ET
+BT /F1 9.8 Tf 48.0 751.8 Td (Stores uploaded files and JSON snapshots of questions, results, and analyses.) Tj ET
+BT /F1 9.8 Tf 48.0 738.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 730.0 Td () Tj ET
+BT /F2 11.2 Tf 48.0 727.0 Td (performance_analytics/startup_check.py) Tj ET
+BT /F1 9.8 Tf 48.0 709.8 Td () Tj ET
+BT /F1 9.8 Tf 48.0 701.8 Td (Validates analytics startup requirements.) Tj ET
+BT /F1 9.8 Tf 48.0 688.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 680.0 Td () Tj ET
+BT /F2 11.2 Tf 48.0 677.0 Td (performance_analytics/example_workflow.py) Tj ET
+BT /F1 9.8 Tf 48.0 659.8 Td () Tj ET
+BT /F1 9.8 Tf 48.0 651.8 Td (Developer-oriented example showing how the analytics pipeline can be run outside) Tj ET
+BT /F1 9.8 Tf 48.0 638.0 Td (the UI.) Tj ET
+BT /F1 9.8 Tf 48.0 624.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 616.2 Td () Tj ET
+BT /F2 13.5 Tf 48.0 610.2 Td (13. Analytics Data Flow Example) Tj ET
+BT /F1 9.8 Tf 48.0 588.7 Td () Tj ET
+BT /F1 9.8 Tf 48.0 580.7 Td (PDF:) Tj ET
+BT /F1 9.8 Tf 48.0 566.9 Td () Tj ET
+BT /F1 9.8 Tf 48.0 558.9 Td () Tj ET
+BT /F3 8.2 Tf 48.0 551.9 Td (Q1: Solve 2x = 10) Tj ET
+BT /F3 8.2 Tf 48.0 540.9 Td (Q2: Solve x + 3 = 9) Tj ET
+BT /F3 8.2 Tf 48.0 529.9 Td (Q3: Find the area of a rectangle) Tj ET
+BT /F1 9.8 Tf 48.0 518.9 Td () Tj ET
+BT /F1 9.8 Tf 48.0 511.9 Td () Tj ET
+BT /F1 9.8 Tf 48.0 503.9 Td (Topic classification:) Tj ET
+BT /F1 9.8 Tf 48.0 490.1 Td () Tj ET
+BT /F1 9.8 Tf 48.0 482.1 Td () Tj ET
+BT /F3 8.2 Tf 48.0 475.1 Td (Q1 = Algebra > Linear Equations) Tj ET
+BT /F3 8.2 Tf 48.0 464.1 Td (Q2 = Algebra > Linear Equations) Tj ET
+BT /F3 8.2 Tf 48.0 453.1 Td (Q3 = Geometry > Area) Tj ET
+BT /F1 9.8 Tf 48.0 442.1 Td () Tj ET
+BT /F1 9.8 Tf 48.0 435.1 Td () Tj ET
+BT /F1 9.8 Tf 48.0 427.1 Td (Excel:) Tj ET
+BT /F1 9.8 Tf 48.0 413.3 Td () Tj ET
+BT /F1 9.8 Tf 48.0 405.3 Td () Tj ET
+BT /F3 8.2 Tf 48.0 398.3 Td (student_id | student_name | Q1 | Q2 | Q3) Tj ET
+BT /F3 8.2 Tf 48.0 387.3 Td (S001       | Student A    | 0  | 0  | 1) Tj ET
+BT /F3 8.2 Tf 48.0 376.3 Td (S002       | Student B    | 1  | 0  | 1) Tj ET
+BT /F3 8.2 Tf 48.0 365.3 Td (S003       | Student C    | 0  | 1  | 0) Tj ET
+BT /F1 9.8 Tf 48.0 354.3 Td () Tj ET
+BT /F1 9.8 Tf 48.0 347.3 Td () Tj ET
+BT /F1 9.8 Tf 48.0 339.3 Td (Normalized backend records:) Tj ET
+BT /F1 9.8 Tf 48.0 325.5 Td () Tj ET
+BT /F1 9.8 Tf 48.0 317.5 Td () Tj ET
+BT /F3 8.2 Tf 48.0 310.5 Td (S001 Q1 wrong) Tj ET
+BT /F3 8.2 Tf 48.0 299.5 Td (S001 Q2 wrong) Tj ET
+BT /F3 8.2 Tf 48.0 288.5 Td (S001 Q3 correct) Tj ET
+BT /F3 8.2 Tf 48.0 277.5 Td (S002 Q1 correct) Tj ET
+BT /F3 8.2 Tf 48.0 266.5 Td (S002 Q2 wrong) Tj ET
+BT /F3 8.2 Tf 48.0 255.5 Td (S002 Q3 correct) Tj ET
+BT /F3 8.2 Tf 48.0 244.5 Td (S003 Q1 wrong) Tj ET
+BT /F3 8.2 Tf 48.0 233.5 Td (S003 Q2 correct) Tj ET
+BT /F3 8.2 Tf 48.0 222.5 Td (S003 Q3 wrong) Tj ET
+BT /F1 9.8 Tf 48.0 211.5 Td () Tj ET
+BT /F1 9.8 Tf 48.0 204.5 Td () Tj ET
+BT /F1 9.8 Tf 48.0 196.5 Td (Combined result:) Tj ET
+BT /F1 9.8 Tf 48.0 182.7 Td () Tj ET
+BT /F1 9.8 Tf 48.0 174.7 Td () Tj ET
+BT /F3 8.2 Tf 48.0 167.7 Td (Algebra mistakes = Q1 + Q2 mistakes) Tj ET
+BT /F3 8.2 Tf 48.0 156.7 Td (Geometry mistakes = Q3 mistakes) Tj ET
+BT /F1 9.8 Tf 48.0 145.7 Td () Tj ET
+BT /F1 9.8 Tf 48.0 138.7 Td () Tj ET
+BT /F1 9.8 Tf 48.0 130.7 Td (UI result:) Tj ET
+BT /F1 9.8 Tf 48.0 116.9 Td () Tj ET
+BT /F1 9.8 Tf 48.0 108.9 Td () Tj ET
+BT /F3 8.2 Tf 48.0 101.9 Td (Top class weak topic:) Tj ET
+BT /F3 8.2 Tf 48.0 90.9 Td (Algebra > Linear Equations) Tj ET
+BT /F3 8.2 Tf 48.0 79.9 Td (Evidence: Q1, Q2) Tj ET
+BT /F1 9.8 Tf 48.0 68.9 Td () Tj ET
+BT /F1 9.8 Tf 48.0 61.9 Td () Tj ET
+BT /F1 8 Tf 487 28 Td (Page 10 of 12) Tj ET
+endstream
+endobj
+25 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 24 0 R >>
+endobj
+26 0 obj
+<< /Length 3586 >>
+stream
+0 0 0 rg
+BT /F1 9.8 Tf 48.0 788.0 Td () Tj ET
+BT /F2 13.5 Tf 48.0 782.0 Td (14. Security Architecture) Tj ET
+BT /F1 9.8 Tf 48.0 760.5 Td () Tj ET
+BT /F1 9.8 Tf 48.0 752.5 Td (Security rules in this app:) Tj ET
+BT /F1 9.8 Tf 48.0 738.7 Td () Tj ET
+BT /F1 9.8 Tf 60.0 730.7 Td (- API keys are never hardcoded.) Tj ET
+BT /F1 9.8 Tf 60.0 716.9 Td (- API keys are loaded from backend environment variables.) Tj ET
+BT /F1 9.8 Tf 60.0 703.1 Td (- Frontend never receives the OpenAI API key.) Tj ET
+BT /F1 9.8 Tf 60.0 689.3 Td (- .env is ignored by Git.) Tj ET
+BT /F1 9.8 Tf 60.0 675.5 Td (- .env.example contains placeholders only.) Tj ET
+BT /F1 9.8 Tf 60.0 661.7 Td (- Logs are redacted through safe logging.) Tj ET
+BT /F1 9.8 Tf 60.0 647.9 Td (- The security scanner checks for secret leakage risks.) Tj ET
+BT /F1 9.8 Tf 60.0 634.1 Td (- CSRF protection is enabled.) Tj ET
+BT /F1 9.8 Tf 60.0 620.3 Td (- Analytics upload uses Django CSRF protection.) Tj ET
+BT /F1 9.8 Tf 48.0 606.5 Td () Tj ET
+BT /F1 9.8 Tf 48.0 598.5 Td (Important files:) Tj ET
+BT /F1 9.8 Tf 48.0 584.7 Td () Tj ET
+BT /F1 9.8 Tf 48.0 576.7 Td () Tj ET
+BT /F3 8.2 Tf 48.0 569.7 Td (quizz_app/safe_logging.py) Tj ET
+BT /F3 8.2 Tf 48.0 558.7 Td (scripts/security_scan.py) Tj ET
+BT /F3 8.2 Tf 48.0 547.7 Td (.gitignore) Tj ET
+BT /F3 8.2 Tf 48.0 536.7 Td (.env.example) Tj ET
+BT /F3 8.2 Tf 48.0 525.7 Td (performance_analytics/config.py) Tj ET
+BT /F1 9.8 Tf 48.0 514.7 Td () Tj ET
+BT /F1 9.8 Tf 48.0 507.7 Td () Tj ET
+BT /F1 9.8 Tf 48.0 499.7 Td () Tj ET
+BT /F2 13.5 Tf 48.0 493.7 Td (15. Deployment Workflow) Tj ET
+BT /F1 9.8 Tf 48.0 472.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 464.2 Td () Tj ET
+BT /F3 8.2 Tf 48.0 457.2 Td (Code pushed to GitHub) Tj ET
+BT /F3 8.2 Tf 48.0 446.2 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 435.2 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 424.2 Td (Render deploy starts) Tj ET
+BT /F3 8.2 Tf 48.0 413.2 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 402.2 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 391.2 Td (Dependencies install from requirements.txt) Tj ET
+BT /F3 8.2 Tf 48.0 380.2 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 369.2 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 358.2 Td (Django app starts with gunicorn) Tj ET
+BT /F3 8.2 Tf 48.0 347.2 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 336.2 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 325.2 Td (Environment variables are read from Render settings) Tj ET
+BT /F3 8.2 Tf 48.0 314.2 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 303.2 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 292.2 Td (App serves teacher/student workflows) Tj ET
+BT /F1 9.8 Tf 48.0 281.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 274.2 Td () Tj ET
+BT /F1 9.8 Tf 48.0 266.2 Td (Important deployment files:) Tj ET
+BT /F1 9.8 Tf 48.0 252.4 Td () Tj ET
+BT /F1 9.8 Tf 48.0 244.4 Td () Tj ET
+BT /F3 8.2 Tf 48.0 237.4 Td (render.yaml) Tj ET
+BT /F3 8.2 Tf 48.0 226.4 Td (requirements.txt) Tj ET
+BT /F3 8.2 Tf 48.0 215.4 Td (build.sh) Tj ET
+BT /F3 8.2 Tf 48.0 204.4 Td (Dockerfile) Tj ET
+BT /F3 8.2 Tf 48.0 193.4 Td (quizz_app/settings.py) Tj ET
+BT /F1 9.8 Tf 48.0 182.4 Td () Tj ET
+BT /F1 9.8 Tf 48.0 175.4 Td () Tj ET
+BT /F1 9.8 Tf 48.0 167.4 Td () Tj ET
+BT /F2 13.5 Tf 48.0 161.4 Td (16. End-to-End User Workflow) Tj ET
+BT /F1 9.8 Tf 48.0 139.9 Td () Tj ET
+BT /F1 9.8 Tf 48.0 131.9 Td () Tj ET
+BT /F3 8.2 Tf 48.0 124.9 Td (Teacher creates quiz) Tj ET
+BT /F3 8.2 Tf 48.0 113.9 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 102.9 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 91.9 Td (Teacher adds questions) Tj ET
+BT /F3 8.2 Tf 48.0 80.9 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 69.9 Td (        v) Tj ET
+BT /F1 8 Tf 487 28 Td (Page 11 of 12) Tj ET
+endstream
+endobj
+27 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 26 0 R >>
+endobj
+28 0 obj
+<< /Length 1936 >>
+stream
+0 0 0 rg
+BT /F3 8.2 Tf 48.0 788.0 Td (Teacher shares quiz with students) Tj ET
+BT /F3 8.2 Tf 48.0 777.0 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 766.0 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 755.0 Td (Students submit answers) Tj ET
+BT /F3 8.2 Tf 48.0 744.0 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 733.0 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 722.0 Td (Teacher exports PDF and Excel) Tj ET
+BT /F3 8.2 Tf 48.0 711.0 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 700.0 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 689.0 Td (Teacher uploads PDF + Excel to analytics) Tj ET
+BT /F3 8.2 Tf 48.0 678.0 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 667.0 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 656.0 Td (System identifies weak topics) Tj ET
+BT /F3 8.2 Tf 48.0 645.0 Td (        |) Tj ET
+BT /F3 8.2 Tf 48.0 634.0 Td (        v) Tj ET
+BT /F3 8.2 Tf 48.0 623.0 Td (Teacher uses results to reteach or support students) Tj ET
+BT /F1 9.8 Tf 48.0 612.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 605.0 Td () Tj ET
+BT /F1 9.8 Tf 48.0 597.0 Td () Tj ET
+BT /F2 13.5 Tf 48.0 591.0 Td (17. Why This Architecture Works) Tj ET
+BT /F1 9.8 Tf 48.0 569.5 Td () Tj ET
+BT /F1 9.8 Tf 48.0 561.5 Td (The app keeps responsibilities separated:) Tj ET
+BT /F1 9.8 Tf 48.0 547.7 Td () Tj ET
+BT /F1 9.8 Tf 60.0 539.7 Td (- Django views coordinate requests.) Tj ET
+BT /F1 9.8 Tf 60.0 525.9 Td (- Templates display pages.) Tj ET
+BT /F1 9.8 Tf 60.0 512.1 Td (- Models define database data.) Tj ET
+BT /F1 9.8 Tf 60.0 498.3 Td (- Forms validate user input.) Tj ET
+BT /F1 9.8 Tf 60.0 484.5 Td (- Analytics services do specialized processing.) Tj ET
+BT /F1 9.8 Tf 60.0 470.7 Td (- Security tools protect secrets.) Tj ET
+BT /F1 9.8 Tf 60.0 456.9 Td (- Docs explain setup and workflows.) Tj ET
+BT /F1 9.8 Tf 48.0 443.1 Td () Tj ET
+BT /F1 9.8 Tf 48.0 435.1 Td (This makes the project easier to maintain, debug, and extend.) Tj ET
+BT /F1 9.8 Tf 48.0 421.3 Td () Tj ET
+BT /F1 8 Tf 487 28 Td (Page 12 of 12) Tj ET
+endstream
+endobj
+29 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 28 0 R >>
+endobj
+xref
+0 30
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000192 00000 n 
+0000000262 00000 n 
+0000000337 00000 n 
+0000000405 00000 n 
+0000004279 00000 n 
+0000004425 00000 n 
+0000008220 00000 n 
+0000008366 00000 n 
+0000012000 00000 n 
+0000012148 00000 n 
+0000015798 00000 n 
+0000015946 00000 n 
+0000019665 00000 n 
+0000019813 00000 n 
+0000023554 00000 n 
+0000023702 00000 n 
+0000027489 00000 n 
+0000027637 00000 n 
+0000031434 00000 n 
+0000031582 00000 n 
+0000035445 00000 n 
+0000035593 00000 n 
+0000039428 00000 n 
+0000039576 00000 n 
+0000043215 00000 n 
+0000043363 00000 n 
+0000045352 00000 n 
+trailer
+<< /Size 30 /Root 1 0 R >>
+startxref
+45500
+%%EOF
