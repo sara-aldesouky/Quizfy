@@ -1266,7 +1266,11 @@ def log_quiz_security_violation(request, quiz_code, submission_id):
     result_url = None
 
     if should_auto_submit:
-        submission = _finalize_security_forced_submission(quiz, submission)
+        reason_text = (
+            f"Your quiz was automatically submitted after {violation_count} recorded security violations. "
+            f"Last recorded action: {violation.get_violation_type_display()}."
+        )
+        submission = _finalize_security_forced_submission(quiz, submission, reason=reason_text)
         result_url = reverse(
             "quiz_result",
             kwargs={"quiz_code": quiz.code, "submission_id": submission.id},
@@ -1323,7 +1327,7 @@ def _attach_security_summary(submission, prefetched_violations=None):
     return submission
 
 
-def _finalize_security_forced_submission(quiz, submission):
+def _finalize_security_forced_submission(quiz, submission, reason=None):
     """Force-submit a quiz attempt after repeated security violations."""
     if submission.is_submitted:
         return submission
@@ -1357,7 +1361,16 @@ def _finalize_security_forced_submission(quiz, submission):
     submission.total = total
     submission.is_submitted = True
     submission.submitted_at = timezone.now()
-    submission.save(update_fields=["score", "total", "is_submitted", "submitted_at"])
+    submission.security_forced_submit_reason = reason or (
+        f"Auto-submitted after reaching {SECURE_QUIZ_AUTO_SUBMIT_THRESHOLD} recorded security violations."
+    )
+    submission.save(update_fields=[
+        "score",
+        "total",
+        "is_submitted",
+        "submitted_at",
+        "security_forced_submit_reason",
+    ])
     _generate_student_feedback(submission)
     return submission
 
@@ -1502,6 +1515,7 @@ def quiz_result(request, quiz_code, submission_id):
         "file_submissions": file_submissions,
         "feedback": feedback,
         "feedback_ready": feedback_ready,
+        "security_forced_submit": bool(submission.security_forced_submit_reason),
     }
     return render(request, "quizzes/quiz_result.html", context)
 

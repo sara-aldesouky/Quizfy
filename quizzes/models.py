@@ -362,6 +362,11 @@ class Submission(models.Model):
     )
     teacher_file_name = models.CharField(max_length=255, blank=True, null=True)
     graded_at = models.DateTimeField(null=True, blank=True)
+    security_forced_submit_reason = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Reason stored when the quiz was auto-submitted due to security violations"
+    )
 
     class Meta:
         ordering = ['-submitted_at', '-id']

@@ -181,4 +181,5 @@ class SecureQuizViolationLoggingTests(TestCase):
         self.submission.refresh_from_db()
         self.assertTrue(self.submission.is_submitted)
         self.assertIsNotNone(self.submission.submitted_at)
+        self.assertIn("automatically submitted", self.submission.security_forced_submit_reason.lower())
         self.assertIn("result/", payload["result_url"])
