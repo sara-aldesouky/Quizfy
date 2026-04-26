@@ -10,6 +10,7 @@ Uses OpenAI to analyze quiz mistakes and generate:
 
 import json
 import logging
+import re
 from typing import Dict, List, Any, Optional
 
 from django.conf import settings
@@ -62,27 +63,28 @@ class StudentFeedbackGenerator:
             )
             
             # Call OpenAI API
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": self._system_prompt(),
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    }
-                ],
-                temperature=0.7,
-                response_format={"type": "json_object"},
+            response = self._create_completion_with_json_fallback(
+                {
+                    "model": self.model,
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": self._system_prompt(),
+                        },
+                        {
+                            "role": "user",
+                            "content": prompt,
+                        }
+                    ],
+                    "temperature": 0.7,
+                }
             )
             
             # Extract and parse JSON response
-            response_text = response.choices[0].message.content
+            response_text = response.choices[0].message.content or "{}"
             logger.debug("Raw API response: %s", response_text[:500])
             
-            feedback = json.loads(response_text)
+            feedback = json.loads(self._extract_json_payload(response_text))
             
             logger.info(
                 "Feedback generated: weak_topics=%d flashcards=%d practice_questions=%d",
@@ -107,6 +109,34 @@ class StudentFeedbackGenerator:
                 exc_info=True,
             )
             raise
+
+    def _create_completion_with_json_fallback(self, request_kwargs: Dict[str, Any]):
+        try:
+            return self.client.chat.completions.create(
+                response_format={"type": "json_object"},
+                **request_kwargs,
+            )
+        except Exception as exc:
+            if not self._is_unsupported_json_response_format_error(exc):
+                raise
+            return self.client.chat.completions.create(**request_kwargs)
+
+    def _extract_json_payload(self, content: str) -> str:
+        stripped = (content or "").strip()
+        if stripped.startswith("{") and stripped.endswith("}"):
+            return stripped
+        fenced = re.search(r"```(?:json)?\s*(\{.*\})\s*```", stripped, re.DOTALL)
+        if fenced:
+            return fenced.group(1)
+        start = stripped.find("{")
+        end = stripped.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            return stripped[start : end + 1]
+        return stripped
+
+    def _is_unsupported_json_response_format_error(self, exc: Exception) -> bool:
+        message = str(exc).lower()
+        return "response_format" in message and "json_object" in message and "not supported" in message
     
     def _prepare_submission_data(self, submission) -> Dict[str, Any]:
         """

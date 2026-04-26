@@ -59,11 +59,10 @@ class TopicClassifier:
             }
             for q in questions
         ]
-        response = self._client.chat.completions.create(
-            model=config.OPENAI_MODEL,
-            temperature=config.OPENAI_TEMPERATURE,
-            response_format={"type": "json_object"},
-            messages=[
+        request_kwargs = {
+            "model": config.OPENAI_MODEL,
+            "temperature": config.OPENAI_TEMPERATURE,
+            "messages": [
                 {"role": "system", "content": TOPIC_CLASSIFICATION_SYSTEM_PROMPT},
                 {
                     "role": "user",
@@ -73,11 +72,40 @@ class TopicClassifier:
                     ),
                 },
             ],
-        )
+        }
+        response = self._create_completion_with_json_fallback(request_kwargs)
         content = response.choices[0].message.content or "{}"
-        parsed = json.loads(content)
+        parsed = json.loads(self._extract_json_payload(content))
         items = parsed.get("items", [])
         return {item["question_id"]: self._normalize_label(item) for item in items}
+
+    def _create_completion_with_json_fallback(self, request_kwargs: dict[str, Any]) -> Any:
+        try:
+            return self._client.chat.completions.create(
+                response_format={"type": "json_object"},
+                **request_kwargs,
+            )
+        except Exception as exc:
+            if not self._is_unsupported_json_response_format_error(exc):
+                raise
+            return self._client.chat.completions.create(**request_kwargs)
+
+    def _extract_json_payload(self, content: str) -> str:
+        stripped = content.strip()
+        if stripped.startswith("{") and stripped.endswith("}"):
+            return stripped
+        fenced = re.search(r"```(?:json)?\s*(\{.*\})\s*```", stripped, re.DOTALL)
+        if fenced:
+            return fenced.group(1)
+        start = stripped.find("{")
+        end = stripped.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            return stripped[start : end + 1]
+        return stripped
+
+    def _is_unsupported_json_response_format_error(self, exc: Exception) -> bool:
+        message = str(exc).lower()
+        return "response_format" in message and "json_object" in message and "not supported" in message
 
     def _fallback_labels(
         self,
