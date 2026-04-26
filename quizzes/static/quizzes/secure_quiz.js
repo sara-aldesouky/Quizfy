@@ -8,10 +8,6 @@
     return "";
   }
 
-  function nowStamp() {
-    return new Date().toLocaleString();
-  }
-
   document.addEventListener("DOMContentLoaded", function () {
     const page = document.getElementById("secureQuizPage");
     if (!page) {
@@ -22,12 +18,9 @@
     const startBtn = document.getElementById("startSecureQuizBtn");
     const startOverlay = document.getElementById("secureStartOverlay");
     const warningBox = document.getElementById("secureWarningBox");
-    const watermark = document.getElementById("secureWatermark");
     const autoSubmitReason = document.getElementById("securityAutoSubmitReason");
 
     const config = {
-      studentName: page.dataset.studentName || "Student",
-      studentId: page.dataset.studentId || "Unknown ID",
       quizTitle: page.dataset.quizTitle || "Quiz",
       logUrl: page.dataset.logUrl || "",
       autoSubmitThreshold: Number(page.dataset.autoSubmitThreshold || "3"),
@@ -38,20 +31,6 @@
     let serverViolationCount = 0;
     const violationCooldownMs = 1500;
     const lastViolationTimes = {};
-
-    function buildWatermark() {
-      if (!watermark) {
-        return;
-      }
-      watermark.innerHTML = "";
-      const text = `${config.studentName}\n${config.studentId}\n${config.quizTitle}\n${nowStamp()}`;
-      for (let index = 0; index < 18; index += 1) {
-        const item = document.createElement("div");
-        item.className = "secure-watermark-item";
-        item.textContent = text;
-        watermark.appendChild(item);
-      }
-    }
 
     function showWarning(message, highRisk) {
       if (!warningBox) {
@@ -156,8 +135,6 @@
       secureStarted = true;
       hideStartOverlay();
       showWarning("Secure Quiz Mode is active. Stay on this page until you submit.", false);
-      buildWatermark();
-      setInterval(buildWatermark, 60000);
     }
 
     if (startBtn) {
@@ -295,6 +272,5 @@
     });
 
     history.pushState(null, "", window.location.href);
-    buildWatermark();
   });
 })();
