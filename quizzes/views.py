@@ -115,7 +115,8 @@ import logging
 # Local imports
 from .models import (
     Quiz, Question, Submission, Answer, 
-    StudentProfile, SubjectFolder, QuizAttemptPermission, FileSubmission
+    StudentProfile, SubjectFolder, QuizAttemptPermission, FileSubmission,
+    QuizSecurityViolation,
 )
 from .forms import (
     TeacherLoginForm, TeacherSignupForm, QuizForm, QuestionForm,
@@ -130,6 +131,10 @@ from .forms import (
 # =============================================================================
 
 logger = logging.getLogger(__name__)
+
+SECURE_QUIZ_AUTO_SUBMIT_THRESHOLD = 3
+SECURE_QUIZ_SUSPICIOUS_THRESHOLD = 1
+SECURE_QUIZ_HIGH_RISK_THRESHOLD = 3
 
 
 # =============================================================================
@@ -1005,11 +1010,16 @@ def take_quiz(request, quiz_code):
         return _finalize_submission(request, quiz, submission, questions)
 
     # ✅ 6) GET = show quiz
+    student_profile = request.user.student_profile
     return render(request, "quizzes/take_quiz.html", {
         "quiz": quiz,
         "questions": questions,
         "remaining_seconds": remaining_seconds,
         "submission": submission,
+        "secure_quiz_enabled": True,
+        "secure_quiz_violation_limit": SECURE_QUIZ_AUTO_SUBMIT_THRESHOLD,
+        "student_display_name": submission.student_name,
+        "student_university_id": student_profile.university_id,
     })
 
 @transaction.atomic
@@ -1226,6 +1236,52 @@ def _generate_student_feedback(submission):
         )
 
 
+@student_required
+@require_POST
+def log_quiz_security_violation(request, quiz_code, submission_id):
+    quiz = get_object_or_404(Quiz, code=quiz_code.upper())
+    submission = get_object_or_404(
+        Submission,
+        id=submission_id,
+        quiz=quiz,
+        student_user=request.user,
+    )
+
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except Exception:
+        payload = {}
+
+    violation_type = str(payload.get("violation_type") or "").strip().upper()
+    details = str(payload.get("details") or "").strip()
+    allowed_types = {
+        choice[0] for choice in QuizSecurityViolation.VIOLATION_TYPE_CHOICES
+    }
+
+    if violation_type not in allowed_types:
+        return JsonResponse({"ok": False, "error": "Invalid violation type."}, status=400)
+
+    violation = QuizSecurityViolation.objects.create(
+        student=request.user,
+        quiz=quiz,
+        attempt=submission,
+        violation_type=violation_type,
+        details=details or None,
+    )
+    violation_count = submission.security_violations.count()
+    should_auto_submit = violation_count >= SECURE_QUIZ_AUTO_SUBMIT_THRESHOLD and not submission.is_submitted
+
+    return JsonResponse(
+        {
+            "ok": True,
+            "violation_id": violation.id,
+            "violation_count": violation_count,
+            "security_status": _security_status_from_count(violation_count),
+            "should_auto_submit": should_auto_submit,
+        }
+    )
+
+
 def _feedback_has_saved_study_set(feedback):
     if not feedback:
         return False
@@ -1245,6 +1301,24 @@ def _get_submission_feedback(submission):
 
 def _normalize_practice_answer(value):
     return str(value or "").strip()
+
+
+def _security_status_from_count(violation_count):
+    count = int(violation_count or 0)
+    if count >= SECURE_QUIZ_HIGH_RISK_THRESHOLD:
+        return "High Risk"
+    if count >= SECURE_QUIZ_SUSPICIOUS_THRESHOLD:
+        return "Suspicious"
+    return "Clean"
+
+
+def _attach_security_summary(submission, prefetched_violations=None):
+    violations = list(prefetched_violations if prefetched_violations is not None else submission.security_violations.all())
+    violation_count = len(violations)
+    submission.security_violation_count = violation_count
+    submission.security_status = _security_status_from_count(violation_count)
+    submission.security_violations_list = violations
+    return submission
 
 
 def _grade_saved_practice_questions(practice_questions, submitted_answers):
@@ -2106,12 +2180,18 @@ def create_question(request, quiz_id):
 def quiz_submissions(request, quiz_id):
     quiz = get_object_or_404(Quiz, id=quiz_id, teacher=request.user)
 
-    submissions = (
+    submissions = list(
         Submission.objects
         .filter(quiz=quiz, is_submitted=True)
         .select_related("student_user", "student_user__student_profile")
+        .prefetch_related("security_violations")
         .order_by("-submitted_at", "-id")
     )
+    for submission in submissions:
+        _attach_security_summary(
+            submission,
+            prefetched_violations=getattr(submission, "_prefetched_objects_cache", {}).get("security_violations"),
+        )
 
     student_ids = [s.student_user_id for s in submissions if s.student_user_id]
 
@@ -2138,6 +2218,8 @@ def grade_submission(request, quiz_id, submission_id):
     # Get answers and file submissions
     answers = submission.answers.select_related('question').order_by('id')
     file_submissions = submission.file_submissions.select_related('question').all()
+    violations = list(submission.security_violations.all())
+    _attach_security_summary(submission, prefetched_violations=violations)
     
     # Get student info
     student_name = submission.student_name or ""
@@ -2182,6 +2264,7 @@ def grade_submission(request, quiz_id, submission_id):
         "university_id": university_id,
         "answers": answers,
         "file_submissions": file_submissions,
+        "security_violations": violations,
     })
 
 

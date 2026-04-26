@@ -663,3 +663,64 @@ class StudentFeedback(models.Model):
         if not self.viewed_at:
             self.viewed_at = timezone.now()
             self.save(update_fields=['viewed_at'])
+
+
+# =============================================================================
+# QUIZ SECURITY VIOLATION MODEL
+# =============================================================================
+
+class QuizSecurityViolation(models.Model):
+    """Stores suspicious actions detected while a student is taking a quiz."""
+
+    TAB_SWITCH = "TAB_SWITCH"
+    FULLSCREEN_EXIT = "FULLSCREEN_EXIT"
+    WINDOW_BLUR = "WINDOW_BLUR"
+    COPY_ATTEMPT = "COPY_ATTEMPT"
+    RIGHT_CLICK = "RIGHT_CLICK"
+    DEVTOOLS_SHORTCUT = "DEVTOOLS_SHORTCUT"
+    PRINT_ATTEMPT = "PRINT_ATTEMPT"
+
+    VIOLATION_TYPE_CHOICES = [
+        (TAB_SWITCH, "Tab Switch"),
+        (FULLSCREEN_EXIT, "Fullscreen Exit"),
+        (WINDOW_BLUR, "Window Blur"),
+        (COPY_ATTEMPT, "Copy Attempt"),
+        (RIGHT_CLICK, "Right Click"),
+        (DEVTOOLS_SHORTCUT, "Developer Tools Shortcut"),
+        (PRINT_ATTEMPT, "Print Attempt"),
+    ]
+
+    student = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="quiz_security_violations",
+    )
+    quiz = models.ForeignKey(
+        Quiz,
+        on_delete=models.CASCADE,
+        related_name="security_violations",
+    )
+    attempt = models.ForeignKey(
+        Submission,
+        on_delete=models.CASCADE,
+        related_name="security_violations",
+    )
+    violation_type = models.CharField(
+        max_length=32,
+        choices=VIOLATION_TYPE_CHOICES,
+    )
+    timestamp = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When the security violation was recorded",
+    )
+    details = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Optional extra details captured by the frontend detector",
+    )
+
+    class Meta:
+        ordering = ["-timestamp", "-id"]
+
+    def __str__(self):
+        return f"{self.student.username} - {self.quiz.code} - {self.violation_type}"

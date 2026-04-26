@@ -81,6 +81,13 @@ urlpatterns = [
     
     # Check quiz status (AJAX endpoint)
     path("quiz/<str:quiz_code>/status/", views.quiz_status, name="quiz_status"),
+
+    # Log secure quiz violations during a student's attempt
+    path(
+        "quiz/<str:quiz_code>/security/<int:submission_id>/",
+        views.log_quiz_security_violation,
+        name="log_quiz_security_violation",
+    ),
     
     # Take quiz - main quiz-taking interface (must be last quiz pattern)
     path("quiz/<str:quiz_code>/", views.take_quiz, name="take_quiz"),

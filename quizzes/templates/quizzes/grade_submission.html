@@ -33,6 +33,38 @@
   </div>
 </div>
 
+<div class="security-card">
+  <div>
+    <div class="security-label">Security Status</div>
+    <div class="security-status-badge {% if submission.security_status == 'High Risk' %}high-risk{% elif submission.security_status == 'Suspicious' %}suspicious{% else %}clean{% endif %}">
+      {{ submission.security_status }}
+    </div>
+  </div>
+  <div class="security-summary">
+    <div class="security-count">{{ submission.security_violation_count }}</div>
+    <div class="security-caption">Logged violation{{ submission.security_violation_count|pluralize }}</div>
+  </div>
+</div>
+
+{% if security_violations %}
+  <div class="security-details-card">
+    <div class="section-header">
+      <h2>🔒 Security Violation Details</h2>
+    </div>
+    <div class="violation-list">
+      {% for violation in security_violations %}
+        <div class="violation-item">
+          <div class="violation-type">{{ violation.get_violation_type_display }}</div>
+          <div class="violation-time">{{ violation.timestamp|date:"M d, Y H:i:s" }}</div>
+          {% if violation.details %}
+            <div class="violation-details">{{ violation.details }}</div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
 <form method="post" enctype="multipart/form-data" class="grade-form">
   {% csrf_token %}
   
@@ -259,6 +291,104 @@
 <style>
 .grade-header {
   margin-bottom: 24px;
+}
+
+.security-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 22px;
+  margin-bottom: 22px;
+  border-radius: 18px;
+  background: var(--card0);
+  border: 1px solid var(--border);
+}
+
+.security-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.security-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.security-status-badge.clean {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.security-status-badge.suspicious {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.security-status-badge.high-risk {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+}
+
+.security-summary {
+  text-align: right;
+}
+
+.security-count {
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+
+.security-caption {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.security-details-card {
+  margin-bottom: 22px;
+  padding: 22px;
+  border-radius: 18px;
+  background: var(--card0);
+  border: 1px solid var(--border);
+}
+
+.violation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.violation-item {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+}
+
+.violation-type {
+  font-size: 14px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.violation-time {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.violation-details {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
 }
 
 .back-link {

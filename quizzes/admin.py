@@ -22,7 +22,8 @@ Author: Quizfy Team
 from django.contrib import admin
 from .models import (
     Quiz, Question, Submission, Answer, 
-    StudentProfile, SubjectFolder, QuizAttemptPermission, FileSubmission
+    StudentProfile, SubjectFolder, QuizAttemptPermission, FileSubmission,
+    QuizSecurityViolation,
 )
 
 
@@ -196,3 +197,14 @@ class FileSubmissionAdmin(admin.ModelAdmin):
             'fields': ('grade', 'teacher_comment', 'teacher_file', 'teacher_file_name', 'graded_at')
         }),
     )
+
+
+@admin.register(QuizSecurityViolation)
+class QuizSecurityViolationAdmin(admin.ModelAdmin):
+    """Admin interface for quiz security violations."""
+
+    list_display = ("id", "quiz", "student", "attempt", "violation_type", "timestamp")
+    list_filter = ("violation_type", "quiz", "timestamp")
+    search_fields = ("student__username", "quiz__title", "quiz__code", "details")
+    raw_id_fields = ("student", "quiz", "attempt")
+    readonly_fields = ("timestamp",)
