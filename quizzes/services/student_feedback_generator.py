@@ -115,7 +115,7 @@ class StudentFeedbackGenerator:
         Returns: {
             "student_name": str,
             "quiz_code": str,
-            "quiz_subject": str,
+            "quiz_title": str,
             "total_questions": int,
             "score": int,
             "percentage": float,
@@ -139,7 +139,7 @@ class StudentFeedbackGenerator:
             if not answer.is_correct:
                 # Map option numbers to actual text
                 selected_text = self._get_option_text(question, answer.selected)
-                correct_text = self._get_option_text(question, question.correct_answer)
+                correct_text = self._get_option_text(question, question.correct_option)
                 
                 mistakes.append({
                     "question_number": question.id,
@@ -152,7 +152,7 @@ class StudentFeedbackGenerator:
         return {
             "student_name": submission.student_name,
             "quiz_code": submission.quiz.code,
-            "quiz_subject": submission.quiz.subject or "General",
+            "quiz_title": submission.quiz.title,
             "total_questions": submission.total,
             "score": submission.score,
             "percentage": (submission.score / submission.total * 100) if submission.total > 0 else 0,
@@ -189,7 +189,7 @@ class StudentFeedbackGenerator:
 
 STUDENT PERFORMANCE:
 - Name: {submission_data['student_name']}
-- Quiz: {submission_data['quiz_code']} ({submission_data['quiz_subject']})
+- Quiz: {submission_data['quiz_code']} - {submission_data['quiz_title']}
 - Score: {submission_data['score']}/{submission_data['total_questions']} ({submission_data['percentage']:.1f}%)
 - Questions with mistakes:
 {mistake_details}
