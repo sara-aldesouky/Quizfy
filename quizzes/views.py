@@ -898,6 +898,15 @@ def take_quiz(request, quiz_code):
             is_submitted=False,
             attempt_no=attempts_used + 1,
         )
+        logger.info(
+            "quiz_submission_created: "
+            "submission_id=%d student_user=%s student_name=%s quiz=%s total_questions=%d",
+            submission.id,
+            request.user.id,
+            submission.student_name,
+            quiz.code,
+            total_questions,
+        )
     else:
         # ✅ IMPORTANT PATCH: old rows may have started_at = NULL
         if submission.started_at is None:
@@ -1040,7 +1049,28 @@ def _finalize_submission(request, quiz, submission, questions=None):
     submission.total = total
     submission.is_submitted = True
     submission.submitted_at = timezone.now()
+    
+    logger.info(
+        "quiz_submission_finalizing: "
+        "submission_id=%d student_user=%s student_name=%s quiz=%s score=%d/%d is_submitted=%s",
+        submission.id,
+        submission.student_user_id,
+        submission.student_name,
+        submission.quiz.code,
+        score,
+        total,
+        submission.is_submitted,
+    )
+    
     submission.save()
+    
+    logger.info(
+        "quiz_submission_saved: "
+        "submission_id=%d student_user=%s is_submitted=%s",
+        submission.id,
+        submission.student_user_id,
+        submission.is_submitted,
+    )
 
     # Generate personalized feedback (runs synchronously for now, can be async later)
     try:
