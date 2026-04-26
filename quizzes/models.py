@@ -619,7 +619,12 @@ class StudentFeedback(models.Model):
         blank=True,
         help_text="Generated practice questions with solutions"
     )
-    
+    practice_question_attempts = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Student's saved answers and results for generated practice questions"
+    )
+
     # Metadata
     generated_at = models.DateTimeField(
         auto_now_add=True,
@@ -640,6 +645,11 @@ class StudentFeedback(models.Model):
         null=True,
         blank=True,
         help_text="When the student first viewed this feedback"
+    )
+    practice_attempted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the student last submitted the saved practice question set"
     )
     
     class Meta:

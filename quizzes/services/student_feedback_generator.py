@@ -21,6 +21,24 @@ logger = logging.getLogger(__name__)
 
 class StudentFeedbackGenerator:
     """Generate AI-powered personalized feedback for student quiz submissions."""
+
+    FLASHCARD_TARGET = 10
+    PRACTICE_TARGET = 7
+    PRACTICE_TYPE_SEQUENCE = ["mcq", "true_false", "mcq", "true_false", "mcq", "true_false", "mcq"]
+
+    @classmethod
+    def has_expected_feedback_shape(cls, feedback) -> bool:
+        flashcards = getattr(feedback, "flashcards", []) or []
+        practice_questions = getattr(feedback, "practice_questions", []) or []
+        if len(flashcards) != cls.FLASHCARD_TARGET or len(practice_questions) != cls.PRACTICE_TARGET:
+            return False
+        expected_types = cls.PRACTICE_TYPE_SEQUENCE
+        actual_types = [
+            str(item.get("type", "")).strip().lower()
+            for item in practice_questions
+            if isinstance(item, dict)
+        ]
+        return actual_types == expected_types
     
     def __init__(self):
         """Initialize OpenAI client."""
@@ -85,6 +103,7 @@ class StudentFeedbackGenerator:
             logger.debug("Raw API response: %s", response_text[:500])
             
             feedback = json.loads(self._extract_json_payload(response_text))
+            feedback = self._normalize_feedback(feedback, submission_data)
             
             logger.info(
                 "Feedback generated: weak_topics=%d flashcards=%d practice_questions=%d",
@@ -230,6 +249,11 @@ TASK:
 3. Provide clear, student-friendly explanations
 4. Generate flashcards for revision
 5. Create practice questions (not duplicates) with solutions
+6. Return EXACTLY 10 flashcards
+7. Return EXACTLY 7 practice questions
+8. Practice questions must be a mix of:
+   - 4 MCQ questions
+   - 3 True/False questions
 6. Apply DIFFICULTY ADAPTATION:
    - Careless error → increase difficulty by one level
    - Conceptual misunderstanding → keep same difficulty, simplify explanation
@@ -240,8 +264,11 @@ RULES:
 - Output ONLY valid JSON (no markdown, no extra text)
 - Be specific to the student's mistakes, not generic
 - Flashcards must be concise and practical
-- Generate 2-3 flashcards per weak topic
-- Generate 2-3 practice questions per weak topic
+- Flashcards must total exactly 10 items
+- Practice questions must total exactly 7 items
+- Every practice question must include a "type" field equal to "mcq" or "true_false"
+- MCQ practice questions must include 4 answer options and the correct answer
+- True/False practice questions must include the correct answer as either "True" or "False"
 - Include step-by-step solutions for each practice question"""
         
         return prompt
@@ -271,7 +298,10 @@ Your output MUST be valid JSON with this exact structure:
   "practice_questions": [
     {
       "topic": "Which weak topic this practices",
+      "type": "mcq or true_false",
       "question": "A new practice question (NOT identical to original)",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correct_answer": "Correct answer text, or True/False",
       "difficulty": "easy", "medium", or "hard",
       "reason_for_difficulty": "Why this difficulty level was chosen based on mistake pattern",
       "solution_steps": "Step-by-step solution or explanation"
@@ -285,3 +315,184 @@ CRITICAL RULES:
 - Never include the original quiz questions in practice questions
 - Match the student's learning level — do not overwhelm
 - Be specific to the mistakes shown, not generic explanations"""
+
+    def _normalize_feedback(self, feedback: Dict[str, Any], submission_data: Dict[str, Any]) -> Dict[str, Any]:
+        weak_topics = feedback.get("weak_topics", [])
+        flashcards = self._normalize_flashcards(feedback.get("flashcards", []), weak_topics, submission_data)
+        practice_questions = self._normalize_practice_questions(
+            feedback.get("practice_questions", []),
+            weak_topics,
+            submission_data,
+        )
+        return {
+            "weak_topics": weak_topics,
+            "flashcards": flashcards,
+            "practice_questions": practice_questions,
+        }
+
+    def _normalize_flashcards(
+        self,
+        raw_flashcards: List[Dict[str, Any]],
+        weak_topics: List[Dict[str, Any]],
+        submission_data: Dict[str, Any],
+    ) -> List[Dict[str, str]]:
+        normalized: List[Dict[str, str]] = []
+        topics = self._topic_names(weak_topics, submission_data)
+        mistake_prompts = submission_data.get("mistakes", [])
+
+        for card in raw_flashcards:
+            topic = self._safe_text(card.get("topic")) or topics[len(normalized) % len(topics)]
+            front = self._safe_text(card.get("front"))
+            back = self._safe_text(card.get("back"))
+            explanation = self._safe_text(card.get("explanation"))
+            if not front or not back:
+                continue
+            normalized.append(
+                {
+                    "topic": topic,
+                    "front": front,
+                    "back": back,
+                    "explanation": explanation or f"Review this idea to strengthen {topic}.",
+                }
+            )
+            if len(normalized) == self.FLASHCARD_TARGET:
+                return normalized
+
+        index = 0
+        while len(normalized) < self.FLASHCARD_TARGET:
+            topic = topics[index % len(topics)]
+            mistake = mistake_prompts[index % len(mistake_prompts)] if mistake_prompts else {}
+            question_number = mistake.get("question_number", index + 1)
+            normalized.append(
+                {
+                    "topic": topic,
+                    "front": f"What key idea should you remember from {topic} for question {question_number}?",
+                    "back": f"Focus on the core rule behind {topic} and how to avoid the mistake made on question {question_number}.",
+                    "explanation": "This saved card was generated to keep your revision set complete.",
+                }
+            )
+            index += 1
+
+        return normalized[: self.FLASHCARD_TARGET]
+
+    def _normalize_practice_questions(
+        self,
+        raw_questions: List[Dict[str, Any]],
+        weak_topics: List[Dict[str, Any]],
+        submission_data: Dict[str, Any],
+    ) -> List[Dict[str, Any]]:
+        topics = self._topic_names(weak_topics, submission_data)
+        grouped: Dict[str, List[Dict[str, Any]]] = {"mcq": [], "true_false": []}
+
+        for item in raw_questions:
+            normalized = self._normalize_single_practice_question(item, topics)
+            grouped[normalized["type"]].append(normalized)
+
+        final_questions: List[Dict[str, Any]] = []
+        fallback_index = 0
+        for required_type in self.PRACTICE_TYPE_SEQUENCE:
+            if grouped[required_type]:
+                final_questions.append(grouped[required_type].pop(0))
+                continue
+            topic = topics[fallback_index % len(topics)]
+            final_questions.append(self._build_fallback_practice_question(topic, required_type, fallback_index))
+            fallback_index += 1
+
+        return final_questions[: self.PRACTICE_TARGET]
+
+    def _normalize_single_practice_question(
+        self,
+        item: Dict[str, Any],
+        topics: List[str],
+    ) -> Dict[str, Any]:
+        raw_type = self._safe_text(item.get("type")).lower().replace("/", "_")
+        question_type = "true_false" if raw_type in {"true_false", "truefalse", "tf", "t_f"} else "mcq"
+        topic = self._safe_text(item.get("topic")) or topics[0]
+        question = self._safe_text(item.get("question")) or f"Practice {topic}."
+        difficulty = self._safe_text(item.get("difficulty")).lower()
+        if difficulty not in {"easy", "medium", "hard"}:
+            difficulty = "medium"
+        reason = self._safe_text(item.get("reason_for_difficulty")) or f"This question gives you another chance to practice {topic}."
+        solution_steps = self._safe_text(item.get("solution_steps")) or f"Review the main rule for {topic} and solve step by step."
+
+        if question_type == "true_false":
+            correct_answer = self._safe_text(item.get("correct_answer"))
+            if correct_answer.lower() not in {"true", "false"}:
+                correct_answer = "True"
+            return {
+                "topic": topic,
+                "type": "true_false",
+                "question": question,
+                "options": ["True", "False"],
+                "correct_answer": correct_answer.title(),
+                "difficulty": difficulty,
+                "reason_for_difficulty": reason,
+                "solution_steps": solution_steps,
+            }
+
+        options = item.get("options")
+        if not isinstance(options, list):
+            options = []
+        cleaned_options = [self._safe_text(option) for option in options if self._safe_text(option)]
+        while len(cleaned_options) < 4:
+            cleaned_options.append(f"Option {chr(65 + len(cleaned_options))}")
+        cleaned_options = cleaned_options[:4]
+        correct_answer = self._safe_text(item.get("correct_answer")) or cleaned_options[0]
+        if correct_answer not in cleaned_options:
+            cleaned_options[0] = correct_answer
+        return {
+            "topic": topic,
+            "type": "mcq",
+            "question": question,
+            "options": cleaned_options,
+            "correct_answer": correct_answer,
+            "difficulty": difficulty,
+            "reason_for_difficulty": reason,
+            "solution_steps": solution_steps,
+        }
+
+    def _build_fallback_practice_question(self, topic: str, question_type: str, index: int) -> Dict[str, Any]:
+        if question_type == "true_false":
+            statement = f"A strong understanding of {topic} helps you choose the correct method before solving."
+            return {
+                "topic": topic,
+                "type": "true_false",
+                "question": statement,
+                "options": ["True", "False"],
+                "correct_answer": "True",
+                "difficulty": "medium",
+                "reason_for_difficulty": f"This true/false check reinforces a key idea in {topic}.",
+                "solution_steps": f"The statement is true because success in {topic} depends on recognizing the correct rule before solving.",
+            }
+
+        correct = f"The best answer uses the core rule of {topic} correctly."
+        options = [
+            correct,
+            f"It ignores the main rule of {topic}.",
+            f"It applies the wrong method to {topic}.",
+            f"It skips an important step in {topic}.",
+        ]
+        return {
+            "topic": topic,
+            "type": "mcq",
+            "question": f"Which statement best shows the correct thinking for {topic}?",
+            "options": options,
+            "correct_answer": correct,
+            "difficulty": "medium",
+            "reason_for_difficulty": f"This MCQ helps you review the main rule behind {topic}.",
+            "solution_steps": f"The correct answer is the one that follows the main rule of {topic}. The other options show common mistakes or missing steps.",
+        }
+
+    def _topic_names(self, weak_topics: List[Dict[str, Any]], submission_data: Dict[str, Any]) -> List[str]:
+        topics = [self._safe_text(topic.get("topic")) for topic in weak_topics if self._safe_text(topic.get("topic"))]
+        if topics:
+            return topics
+        mistakes = submission_data.get("mistakes", [])
+        if mistakes:
+            return [f"Question {mistakes[0].get('question_number', 1)} Review"]
+        return ["General Review"]
+
+    def _safe_text(self, value: Any) -> str:
+        if value is None:
+            return ""
+        return str(value).strip()

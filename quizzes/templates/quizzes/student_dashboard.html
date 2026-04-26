@@ -98,6 +98,11 @@
                 <span>Awaiting teacher review</span>
               </div>
             {% endif %}
+            {% if s.feedback_ready %}
+              <div class="saved-study-meta">
+                Saved AI study set: {{ s.feedback_flashcard_count }} flashcards and {{ s.feedback_practice_count }} questions
+              </div>
+            {% endif %}
           </div>
           
           <div class="history-card-footer">
@@ -107,9 +112,18 @@
               <span class="time-divider">•</span>
               <span>{{ s.submitted_at|date:"H:i" }}</span>
             </div>
-            <a class="view-btn" href="{% url 'student_submission_detail' s.id %}">
-              View Details →
-            </a>
+            <div class="history-actions">
+              <a class="view-btn" href="{% url 'student_submission_detail' s.id %}">
+                View Details →
+              </a>
+              {% if s.feedback_ready %}
+                <a class="feedback-btn" href="{% url 'student_feedback' quiz_code=s.quiz.code submission_id=s.id %}">
+                  Open Saved Feedback
+                </a>
+              {% elif s.feedback %}
+                <span class="feedback-pending">Feedback processing</span>
+              {% endif %}
+            </div>
           </div>
         </div>
       {% endfor %}
@@ -474,6 +488,17 @@
   color: var(--muted);
 }
 
+.saved-study-meta {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(79, 70, 229, 0.08);
+  border: 1px solid rgba(129, 140, 248, 0.14);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .pending-review {
   display: flex;
   align-items: center;
@@ -490,6 +515,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
   padding: 16px 20px;
   background: rgba(139, 92, 246, 0.03);
   border-top: 1px solid var(--border);
@@ -515,6 +542,13 @@
   opacity: 0.4;
 }
 
+.history-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .view-btn {
   padding: 10px 18px;
   background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
@@ -530,6 +564,27 @@
 .view-btn:hover {
   transform: translateX(4px);
   box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.feedback-btn,
+.feedback-pending {
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.feedback-btn {
+  background: rgba(79, 70, 229, 0.12);
+  color: #a78bfa;
+  text-decoration: none;
+  border: 1px solid rgba(167, 139, 250, 0.2);
+}
+
+.feedback-pending {
+  background: rgba(148, 163, 184, 0.12);
+  color: var(--muted);
+  border: 1px solid rgba(148, 163, 184, 0.14);
 }
 
 /* Responsive */
@@ -583,8 +638,19 @@
     flex-direction: column;
     gap: 14px;
   }
+
+  .history-actions {
+    width: 100%;
+    flex-direction: column;
+  }
   
   .view-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .feedback-btn,
+  .feedback-pending {
     width: 100%;
     text-align: center;
   }

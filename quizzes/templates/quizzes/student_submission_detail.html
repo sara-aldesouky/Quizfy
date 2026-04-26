@@ -9,6 +9,25 @@
   <h1>Submission Details</h1>
 </div>
 
+{% if feedback_ready and feedback %}
+<div class="saved-feedback-banner">
+  <div class="saved-feedback-copy">
+    <strong>Saved learning feedback is ready.</strong>
+    <span>Your 10 flashcards and 7 practice questions are stored with this submission.{% if practice_answers_saved %} Your practice answers are saved there too.{% endif %}</span>
+  </div>
+  <a class="btn primary" href="{% url 'student_feedback' quiz_code=quiz.code submission_id=submission.id %}">
+    Open Feedback
+  </a>
+</div>
+{% elif feedback %}
+<div class="saved-feedback-banner pending">
+  <div class="saved-feedback-copy">
+    <strong>Learning feedback is processing.</strong>
+    <span>Come back later and it will still be saved here.</span>
+  </div>
+</div>
+{% endif %}
+
 <!-- Quiz Info Card -->
 <div class="quiz-info-card">
   <div class="quiz-main-info">
@@ -172,6 +191,36 @@
 {% endif %}
 
 <style>
+.saved-feedback-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(129, 140, 248, 0.2);
+}
+
+.saved-feedback-banner.pending {
+  background: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.16);
+}
+
+.saved-feedback-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.saved-feedback-copy strong {
+  color: var(--text);
+}
+
+.saved-feedback-copy span {
+  color: var(--muted);
+}
+
 .submission-header {
   margin-bottom: 28px;
 }
@@ -847,6 +896,11 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .saved-feedback-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .quiz-info-card {
     flex-direction: column;
     text-align: center;

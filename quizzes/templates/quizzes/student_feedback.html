@@ -41,6 +41,23 @@
     font-weight: 600;
   }
 
+  .study-set-summary {
+    margin-top: 18px;
+    display: inline-flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .study-pill {
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
   .feedback-sections {
     display: grid;
     gap: 40px;
@@ -192,12 +209,114 @@
     font-size: 16px;
   }
 
+  .practice-type {
+    display: inline-block;
+    margin-bottom: 12px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    background: rgba(78, 205, 196, 0.14);
+    color: #0f766e;
+  }
+
   .question-text {
     margin: 15px 0;
     padding: 15px;
     background: white;
     border-radius: 4px;
     border-left: 3px solid #4ecdc4;
+  }
+
+  .practice-options {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .practice-option {
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: white;
+    border: 1px solid #dbe4ea;
+    color: #444;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .practice-option.input {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .practice-option.input:hover {
+    border-color: #4ecdc4;
+    box-shadow: 0 4px 18px rgba(78, 205, 196, 0.12);
+  }
+
+  .practice-option.input input {
+    margin-top: 3px;
+  }
+
+  .practice-option.correct-answer {
+    border-color: #16a34a;
+    background: #f0fdf4;
+  }
+
+  .practice-option.selected-answer {
+    border-color: #0ea5e9;
+    background: #f0f9ff;
+  }
+
+  .practice-option.wrong-answer {
+    border-color: #ef4444;
+    background: #fef2f2;
+  }
+
+  .practice-submit-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+
+  .review-summary {
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: #ecfeff;
+    color: #155e75;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .answer-feedback {
+    margin-top: 14px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .answer-feedback.correct {
+    background: #ecfdf5;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+  }
+
+  .answer-feedback.incorrect {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+  }
+
+  .correct-answer-note {
+    margin-top: 8px;
+    font-weight: 600;
   }
 
   .difficulty-badge {
@@ -363,7 +482,12 @@
     <p class="subtitle">{{ quiz.code }} - {{ quiz.title }}</p>
     <div class="feedback-score">
       Score: {{ submission.score }}/{{ submission.total }}
-      ({{ submission.percentage|floatformat:1 }}%)
+      ({% if submission.total %}{% widthratio submission.score submission.total 100 %}{% else %}0{% endif %}%)
+    </div>
+    <div class="study-set-summary">
+      <span class="study-pill">10 saved flashcards</span>
+      <span class="study-pill">7 saved questions</span>
+      <span class="study-pill">MCQ + True / False only</span>
     </div>
   </div>
 
@@ -417,7 +541,7 @@
     {% if flashcards %}
     <section class="section">
       <h2><span class="section-icon">📇</span> Study Flashcards</h2>
-      <p style="color: #666; margin-bottom: 20px;">Click each card to flip it over.</p>
+      <p style="color: #666; margin-bottom: 20px;">Click each card to flip it over. Your saved set always contains 10 flashcards.</p>
       <div class="flashcards-grid">
         {% for card in flashcards %}
           <div class="flashcard" onclick="this.classList.toggle('flipped')">
@@ -446,40 +570,94 @@
     {% if practice_questions %}
     <section class="section">
       <h2><span class="section-icon">✏️</span> Practice Questions</h2>
-      <p style="color: #666; margin-bottom: 20px;">Try solving these questions to strengthen your understanding.</p>
-      <div class="practice-questions">
-        {% for question in practice_questions %}
-          <div class="practice-question">
-            <h3>{{ question.topic }}</h3>
-            
-            <div>
-              <span class="difficulty-badge difficulty-{{ question.difficulty }}">
-                Difficulty: {{ question.difficulty|title }}
-              </span>
-            </div>
-
-            <div class="reason-box">
-              <strong>Why this level?</strong> {{ question.reason_for_difficulty }}
-            </div>
-
-            <div class="question-text">
-              <strong>Question:</strong><br>
-              {{ question.question }}
-            </div>
-
-            <div class="solution-box">
-              <div class="solution-header" onclick="this.parentElement.classList.toggle('show')">
-                Step-by-step Solution
+      <p style="color: #666; margin-bottom: 20px;">Answer all 7 saved questions, then submit to see the correct answer and explanation for each one. These answers stay saved with this quiz attempt.</p>
+      <form method="post">
+        {% csrf_token %}
+        <div class="practice-questions">
+          {% for question in practice_questions %}
+            <div class="practice-question">
+              <h3>Question {{ forloop.counter }} · {{ question.topic }}</h3>
+              <div class="practice-type">
+                {% if question.type == "true_false" %}
+                  True / False
+                {% else %}
+                  Multiple Choice
+                {% endif %}
               </div>
-              <div class="solution-steps" style="display:none;">{{ question.solution_steps }}</div>
+
+              <div>
+                <span class="difficulty-badge difficulty-{{ question.difficulty }}">
+                  Difficulty: {{ question.difficulty|title }}
+                </span>
+              </div>
+
+              <div class="reason-box">
+                <strong>Why this level?</strong> {{ question.reason_for_difficulty }}
+              </div>
+
+              <div class="question-text">
+                <strong>Question:</strong><br>
+                {{ question.question }}
+
+                {% if question.option_rows %}
+                  <div class="practice-options">
+                    {% for option in question.option_rows %}
+                      <label class="practice-option input{% if practice_answers_saved and option.is_correct %} correct-answer{% endif %}{% if practice_answers_saved and option.is_selected and not option.is_correct %} wrong-answer{% elif practice_answers_saved and option.is_selected %} selected-answer{% endif %}">
+                        <input
+                          type="radio"
+                          name="{{ question.field_name }}"
+                          value="{{ option.value }}"
+                          {% if option.is_selected %}checked{% endif %}
+                        >
+                        <span>
+                          {% if option.label %}<strong>{{ option.label }}.</strong> {% endif %}
+                          {{ option.value }}
+                        </span>
+                      </label>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+
+              {% if practice_answers_saved and question.attempt %}
+                <div class="answer-feedback {% if question.attempt.is_correct %}correct{% else %}incorrect{% endif %}">
+                  <strong>
+                    {% if question.attempt.is_correct %}
+                      Correct answer selected.
+                    {% else %}
+                      Not quite.
+                    {% endif %}
+                  </strong>
+                  <div class="correct-answer-note">
+                    Correct answer: {{ question.correct_answer }}
+                  </div>
+                  {% if question.solution_steps %}
+                    <div style="margin-top: 8px;">
+                      <strong>Explanation:</strong> {{ question.solution_steps }}
+                    </div>
+                  {% endif %}
+                </div>
+              {% endif %}
             </div>
-          </div>
-        {% empty %}
-          <div class="empty-section">
-            <p>No practice questions available.</p>
-          </div>
-        {% endfor %}
-      </div>
+          {% empty %}
+            <div class="empty-section">
+              <p>No practice questions available.</p>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="practice-submit-row">
+          {% if practice_answers_saved %}
+            <div class="review-summary">
+              Saved practice result: {{ practice_score }}/{{ practice_total }} correct
+              {% if feedback.practice_attempted_at %} · Reviewed on {{ feedback.practice_attempted_at|date:"M d, Y H:i" }}{% endif %}
+            </div>
+          {% endif %}
+          <button class="btn primary" type="submit">
+            {% if practice_answers_saved %}Save Answers Again{% else %}Submit Practice Questions{% endif %}
+          </button>
+        </div>
+      </form>
     </section>
     {% endif %}
 
@@ -496,19 +674,5 @@
   </div>
 
 </div>
-
-<script>
-  // Make solutions toggleable
-  document.querySelectorAll('.solution-header').forEach(header => {
-    header.addEventListener('click', function(e) {
-      e.preventDefault();
-      const box = this.parentElement;
-      const steps = box.querySelector('.solution-steps');
-      if (steps) {
-        steps.style.display = steps.style.display === 'none' ? 'block' : 'none';
-      }
-    });
-  });
-</script>
 
 {% endblock %}

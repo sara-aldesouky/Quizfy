@@ -1110,7 +1110,7 @@ def _generate_student_feedback(submission):
         }
     )
     
-    if not created and feedback.weak_topics:
+    if not created and StudentFeedbackGenerator.has_expected_feedback_shape(feedback):
         # Feedback already generated, skip
         logger.info(
             "Feedback already generated for submission_id=%d, skipping",
@@ -1148,6 +1148,92 @@ def _generate_student_feedback(submission):
             error_msg,
             exc_info=True,
         )
+
+
+def _feedback_has_saved_study_set(feedback):
+    if not feedback:
+        return False
+    return bool(
+        (feedback.weak_topics or [])
+        or (feedback.flashcards or [])
+        or (feedback.practice_questions or [])
+    )
+
+
+def _get_submission_feedback(submission):
+    try:
+        return submission.feedback
+    except Exception:
+        return None
+
+
+def _normalize_practice_answer(value):
+    return str(value or "").strip()
+
+
+def _grade_saved_practice_questions(practice_questions, submitted_answers):
+    attempts = []
+    for index, question in enumerate(practice_questions):
+        selected_answer = _normalize_practice_answer(
+            submitted_answers.get(f"practice_answer_{index}")
+        )
+        correct_answer = _normalize_practice_answer(question.get("correct_answer"))
+        attempts.append(
+            {
+                "question_index": index,
+                "selected_answer": selected_answer,
+                "correct_answer": correct_answer,
+                "is_correct": selected_answer.lower() == correct_answer.lower(),
+            }
+        )
+    return attempts
+
+
+def _build_practice_question_cards(practice_questions, saved_attempts=None, draft_answers=None):
+    attempt_map = {}
+    for attempt in saved_attempts or []:
+        if not isinstance(attempt, dict):
+            continue
+        try:
+            question_index = int(attempt.get("question_index"))
+        except (TypeError, ValueError):
+            continue
+        attempt_map[question_index] = attempt
+
+    cards = []
+    for index, question in enumerate(practice_questions or []):
+        selected_answer = _normalize_practice_answer(
+            (draft_answers or {}).get(f"practice_answer_{index}")
+        )
+        saved_attempt = attempt_map.get(index)
+        if saved_attempt:
+            selected_answer = _normalize_practice_answer(saved_attempt.get("selected_answer"))
+
+        option_rows = []
+        for option_index, option in enumerate(question.get("options") or []):
+            option_value = str(option)
+            option_rows.append(
+                {
+                    "label": chr(65 + option_index) if question.get("type") == "mcq" else "",
+                    "value": option_value,
+                    "is_selected": selected_answer == option_value,
+                    "is_correct": _normalize_practice_answer(question.get("correct_answer")).lower() == option_value.strip().lower(),
+                }
+            )
+
+        card = dict(question)
+        card.update(
+            {
+                "index": index,
+                "field_name": f"practice_answer_{index}",
+                "selected_answer": selected_answer,
+                "option_rows": option_rows,
+                "attempt": saved_attempt,
+            }
+        )
+        cards.append(card)
+
+    return cards
 
 
 @staff_required
@@ -1213,11 +1299,8 @@ def quiz_result(request, quiz_code, submission_id):
     # Check if feedback is available
     feedback = None
     feedback_ready = False
-    try:
-        feedback = submission.feedback
-        feedback_ready = bool(feedback.weak_topics or feedback.generation_error)
-    except:
-        pass
+    feedback = _get_submission_feedback(submission)
+    feedback_ready = _feedback_has_saved_study_set(feedback)
 
     context = {
         "quiz": quiz,
@@ -1241,6 +1324,9 @@ def student_feedback(request, quiz_code, submission_id):
     - Flashcards for revision
     - Adaptive practice questions with solutions
     """
+    from quizzes.models import StudentFeedback
+    from quizzes.services.student_feedback_generator import StudentFeedbackGenerator
+
     quiz = get_object_or_404(Quiz, code=quiz_code)
     submission = get_object_or_404(Submission, id=submission_id, quiz=quiz)
     
@@ -1249,11 +1335,20 @@ def student_feedback(request, quiz_code, submission_id):
         messages.error(request, "You do not have access to this feedback.")
         return redirect("home")
     
+    draft_answers = {}
+
     # Mark feedback as viewed
     try:
         feedback = submission.feedback
+        if _feedback_has_saved_study_set(feedback) and not StudentFeedbackGenerator.has_expected_feedback_shape(feedback):
+            _generate_student_feedback(submission)
+            feedback.refresh_from_db()
         feedback.mark_as_viewed()
-    except submission.DoesNotExist:
+    except StudentFeedback.DoesNotExist:
+        messages.warning(request, "Feedback is still being generated. Please try again in a moment.")
+        return redirect("quiz_result", quiz_code=quiz_code, submission_id=submission_id)
+
+    if not _feedback_has_saved_study_set(feedback) and not feedback.generation_error:
         messages.warning(request, "Feedback is still being generated. Please try again in a moment.")
         return redirect("quiz_result", quiz_code=quiz_code, submission_id=submission_id)
     
@@ -1263,7 +1358,41 @@ def student_feedback(request, quiz_code, submission_id):
             request,
             f"Feedback generation encountered an error: {feedback.generation_error}"
         )
-    
+
+    practice_questions = feedback.practice_questions or []
+    if request.method == "POST" and practice_questions:
+        draft_answers = {
+            f"practice_answer_{index}": request.POST.get(f"practice_answer_{index}", "")
+            for index in range(len(practice_questions))
+        }
+        missing_answers = [
+            str(index + 1)
+            for index, question in enumerate(practice_questions)
+            if not _normalize_practice_answer(draft_answers.get(f"practice_answer_{index}"))
+        ]
+        if missing_answers:
+            messages.error(
+                request,
+                "Please answer all 7 saved practice questions before submitting."
+            )
+        else:
+            feedback.practice_question_attempts = _grade_saved_practice_questions(
+                practice_questions,
+                draft_answers,
+            )
+            feedback.practice_attempted_at = timezone.now()
+            feedback.save(update_fields=["practice_question_attempts", "practice_attempted_at", "updated_at"])
+            messages.success(request, "Your saved practice answers were checked and stored with this quiz.")
+            return redirect("student_feedback", quiz_code=quiz_code, submission_id=submission_id)
+
+    practice_question_cards = _build_practice_question_cards(
+        practice_questions,
+        saved_attempts=feedback.practice_question_attempts or [],
+        draft_answers=draft_answers,
+    )
+    practice_attempts = feedback.practice_question_attempts or []
+    practice_score = sum(1 for attempt in practice_attempts if attempt.get("is_correct"))
+
     # Parse JSON data for template
     context = {
         "quiz": quiz,
@@ -1272,7 +1401,11 @@ def student_feedback(request, quiz_code, submission_id):
         "feedback": feedback,
         "weak_topics": feedback.weak_topics or [],
         "flashcards": feedback.flashcards or [],
-        "practice_questions": feedback.practice_questions or [],
+        "practice_questions": practice_question_cards,
+        "practice_answers_saved": bool(practice_attempts),
+        "practice_score": practice_score,
+        "practice_total": len(practice_question_cards),
+        "feedback_ready": _feedback_has_saved_study_set(feedback),
     }
     
     return render(request, "quizzes/student_feedback.html", context)
@@ -2131,12 +2264,17 @@ def student_dashboard(request):
     profile = request.user.student_profile
 
     # show history
-    submissions = (
+    submissions = list(
         Submission.objects
         .filter(student_user=request.user)
-        .select_related("quiz")
+        .select_related("quiz", "feedback")
         .order_by("-submitted_at")
     )
+    for submission in submissions:
+        feedback = _get_submission_feedback(submission)
+        submission.feedback_ready = _feedback_has_saved_study_set(feedback)
+        submission.feedback_flashcard_count = len(feedback.flashcards or []) if feedback else 0
+        submission.feedback_practice_count = len(feedback.practice_questions or []) if feedback else 0
 
     # quiz code form on dashboard
     form = EnterQuizForm(request.POST or None)
@@ -2169,12 +2307,17 @@ def student_submission_detail(request, submission_id):
 
     answers = submission.answers.select_related("question").all().order_by("question__id")
     file_submissions = submission.file_submissions.select_related("question").all()
+    feedback = _get_submission_feedback(submission)
+    feedback_ready = _feedback_has_saved_study_set(feedback)
 
     return render(request, "quizzes/student_submission_detail.html", {
         "submission": submission,
         "quiz": submission.quiz,
         "answers": answers,
         "file_submissions": file_submissions,
+        "feedback": feedback,
+        "feedback_ready": feedback_ready,
+        "practice_answers_saved": bool(feedback and (feedback.practice_question_attempts or [])),
     })
 
 
