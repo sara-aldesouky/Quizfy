@@ -111,26 +111,33 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <script>
-// Mobile menu toggle with smooth animations
-function toggleMenu(){
+function setMobileMenuState(isOpen){
   const nav = document.getElementById('mobile-nav');
   const btn = document.getElementById('hamburger-btn');
   const overlay = document.getElementById('mobile-overlay');
   if(!nav || !btn) return;
-  
-  const isOpen = nav.classList.toggle('open');
+
+  nav.classList.toggle('open', isOpen);
   btn.classList.toggle('active', isOpen);
-  btn.setAttribute('aria-expanded', isOpen);
-  
-  // Toggle overlay
+  btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+
   if(overlay) overlay.classList.toggle('active', isOpen);
-  
-  // Prevent body scroll when menu is open
   document.body.style.overflow = isOpen ? 'hidden' : '';
-  
-  // Update hamburger icon
+
   const icon = btn.querySelector('.hamburger-icon');
   if(icon) icon.textContent = isOpen ? '✕' : '☰';
+}
+
+// Mobile menu toggle with smooth animations
+function toggleMenu(forceState){
+  const nav = document.getElementById('mobile-nav');
+  if(!nav) return;
+
+  const isOpen = typeof forceState === 'boolean'
+    ? forceState
+    : !nav.classList.contains('open');
+
+  setMobileMenuState(isOpen);
 }
 
 // Close menu when clicking a link
@@ -139,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function(){
   document.querySelectorAll('#mobile-nav .nav-link, #mobile-nav .btn').forEach(function(link){
     link.addEventListener('click', function(){
       if(window.innerWidth <= 600){
-        toggleMenu();
+        toggleMenu(false);
       }
     });
   });
@@ -153,17 +160,7 @@ document.addEventListener('DOMContentLoaded', function(){
   window.addEventListener('resize', function(){
     if(window.innerWidth > 600){
       const nav = document.getElementById('mobile-nav');
-      const btn = document.getElementById('hamburger-btn');
-      const overlay = document.getElementById('mobile-overlay');
-      if(nav) nav.classList.remove('open');
-      if(btn){
-        btn.classList.remove('active');
-        btn.setAttribute('aria-expanded', 'false');
-        const icon = btn.querySelector('.hamburger-icon');
-        if(icon) icon.textContent = '☰';
-      }
-      if(overlay) overlay.classList.remove('active');
-      document.body.style.overflow = '';
+      if(nav) setMobileMenuState(false);
     }
   });
 
@@ -172,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function(){
     if(e.key === 'Escape'){
       const nav = document.getElementById('mobile-nav');
       if(nav && nav.classList.contains('open')){
-        toggleMenu();
+        toggleMenu(false);
       }
     }
   });

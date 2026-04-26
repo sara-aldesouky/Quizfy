@@ -303,6 +303,57 @@ TEACHER_KB = [
             "💡 Requires OpenAI API key in settings!"
         )
     },
+    {
+        "tags": ["flashcards", "ai flashcards", "student flashcards", "saved flashcards", "revision cards"],
+        "q": "How do AI flashcards work for students?",
+        "a": (
+            "📇 **AI Flashcards for Students:**\\n\\n"
+            "After a student submits a quiz, Quizfy can generate a saved revision set tied to that submission.\\n\\n"
+            "What students get:\\n"
+            "• **Exactly 10 flashcards**\\n"
+            "• Each card is based on weak topics or mistakes\\n"
+            "• Cards are saved with the solved quiz\\n\\n"
+            "Where students see them:\\n"
+            "• **Quiz Result** page\\n"
+            "• **Submission Details** page\\n"
+            "• **Saved Feedback** screen from the student dashboard\\n\\n"
+            "💡 These flashcards are meant for quick review before trying the practice questions."
+        )
+    },
+    {
+        "tags": ["practice questions", "mcq practice", "true false practice", "ai questions", "saved practice", "7 questions"],
+        "q": "What practice questions do students get after a quiz?",
+        "a": (
+            "✏️ **Saved AI Practice Questions:**\\n\\n"
+            "After submission, students receive a saved practice set linked to that quiz attempt.\\n\\n"
+            "The current practice set includes:\\n"
+            "• **Exactly 7 questions**\\n"
+            "• **MCQ and True/False only**\\n"
+            "• A fixed mix of **4 MCQ** and **3 True/False**\\n\\n"
+            "Students can answer them on the feedback page, submit, and immediately see:\\n"
+            "• The correct answer\\n"
+            "• Whether their answer was correct\\n"
+            "• The explanation for the answer\\n\\n"
+            "💡 Their practice answers are saved with the same quiz submission."
+        )
+    },
+    {
+        "tags": ["saved feedback", "student feedback", "ai feedback", "open feedback", "saved ai study set"],
+        "q": "Where can students find their saved AI feedback?",
+        "a": (
+            "💡 **Where Students Find Saved AI Feedback:**\\n\\n"
+            "Students can open their saved AI study materials from multiple places:\\n\\n"
+            "1. **Quiz Result** right after submitting\\n"
+            "2. **Student Dashboard** from the quiz history card\\n"
+            "3. **Submission Details** for that solved quiz\\n\\n"
+            "The saved feedback page includes:\\n"
+            "• Weak topics\\n"
+            "• 10 flashcards\\n"
+            "• 7 AI practice questions\\n"
+            "• Correct answers and explanations after submitting practice\\n\\n"
+            "💡 Everything is stored per submission, so each solved quiz keeps its own study set."
+        )
+    },
     
     # ========== ACCOUNT & SECURITY ==========
     {
@@ -380,6 +431,10 @@ TEACHER_KB = [
             "• Export to Excel regularly\\n"
             "• Use analytics to find weak areas\\n"
             "• Provide detailed feedback on file uploads\\n\\n"
+            "**AI Study Support:**\\n"
+            "• Encourage students to open **Saved Feedback** after every quiz\\n"
+            "• Use the flashcards for quick revision\\n"
+            "• Ask students to complete the 7 saved practice questions for reinforcement\\n\\n"
             "**Students:**\\n"
             "• Share the code clearly\\n"
             "• Remind them to click Submit!"
@@ -395,7 +450,8 @@ TEACHER_KB = [
             "• Organizing subject folders\\n"
             "• Grading student submissions\\n"
             "• Exporting grades to Excel\\n"
-            "• Using analytics features\\n\\n"
+            "• Using analytics features\\n"
+            "• Understanding saved AI flashcards and practice feedback\\n\\n"
             "Just ask me a question!"
         )
     },
@@ -491,6 +547,10 @@ def _best_answer(message: str) -> str:
         "• How do I view submissions?\\n"
         "• How do I grade file uploads?\\n"
         "• How do I export to Excel?\\n\\n"
+        "**AI Feedback:**\\n"
+        "• How do AI flashcards work for students?\\n"
+        "• What practice questions do students get after a quiz?\\n"
+        "• Where can students find their saved AI feedback?\\n\\n"
         "**Organization:**\\n"
         "• How do I create folders?\\n"
         "• How do I use analytics?\\n\\n"

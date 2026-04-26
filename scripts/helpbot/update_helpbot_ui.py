@@ -23,7 +23,8 @@ NEW_HELPBOT_UI = '''<!-- ✅ Smart Teacher Help Bot Widget -->
         • Creating quizzes & folders<br>
         • Grading submissions<br>
         • Exporting to Excel<br>
-        • Using analytics<br><br>
+        • Using analytics<br>
+        • Explaining student AI feedback, flashcards, and practice sets<br><br>
         <em>Try one of the quick questions below or type your own!</em>
       </div>
     </div>
@@ -32,8 +33,9 @@ NEW_HELPBOT_UI = '''<!-- ✅ Smart Teacher Help Bot Widget -->
   <!-- Quick suggestion buttons -->
   <div id="helpbot-suggestions" class="helpbot-suggestions">
     <button type="button" class="suggestion-btn" data-q="How do I create a quiz?">📝 Create quiz</button>
-    <button type="button" class="suggestion-btn" data-q="How do I grade file uploads?">✏️ Grading</button>
-    <button type="button" class="suggestion-btn" data-q="How do I export to Excel?">📥 Export</button>
+    <button type="button" class="suggestion-btn" data-q="How do AI flashcards work for students?">📇 Flashcards</button>
+    <button type="button" class="suggestion-btn" data-q="What practice questions do students get after a quiz?">✏️ Practice</button>
+    <button type="button" class="suggestion-btn" data-q="Where can students find their saved AI feedback?">💡 Saved Feedback</button>
     <button type="button" class="suggestion-btn" data-q="How do I use analytics?">📊 Analytics</button>
   </div>
 
