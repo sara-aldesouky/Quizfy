@@ -178,3 +178,7 @@ class SecureQuizViolationLoggingTests(TestCase):
         self.assertEqual(payload["violation_count"], 3)
         self.assertEqual(payload["security_status"], "High Risk")
         self.assertTrue(payload["should_auto_submit"])
+        self.submission.refresh_from_db()
+        self.assertTrue(self.submission.is_submitted)
+        self.assertIsNotNone(self.submission.submitted_at)
+        self.assertIn("result/", payload["result_url"])

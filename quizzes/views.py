@@ -1263,6 +1263,14 @@ def log_quiz_security_violation(request, quiz_code, submission_id):
     )
     violation_count = submission.security_violations.count()
     should_auto_submit = violation_count >= SECURE_QUIZ_AUTO_SUBMIT_THRESHOLD and not submission.is_submitted
+    result_url = None
+
+    if should_auto_submit:
+        submission = _finalize_security_forced_submission(quiz, submission)
+        result_url = reverse(
+            "quiz_result",
+            kwargs={"quiz_code": quiz.code, "submission_id": submission.id},
+        )
 
     return JsonResponse(
         {
@@ -1271,6 +1279,7 @@ def log_quiz_security_violation(request, quiz_code, submission_id):
             "violation_count": violation_count,
             "security_status": _security_status_from_count(violation_count),
             "should_auto_submit": should_auto_submit,
+            "result_url": result_url,
         }
     )
 
@@ -1311,6 +1320,45 @@ def _attach_security_summary(submission, prefetched_violations=None):
     submission.security_violation_count = violation_count
     submission.security_status = _security_status_from_count(violation_count)
     submission.security_violations_list = violations
+    return submission
+
+
+def _finalize_security_forced_submission(quiz, submission):
+    """Force-submit a quiz attempt after repeated security violations."""
+    if submission.is_submitted:
+        return submission
+
+    questions = quiz.questions.all().order_by("id")
+    submission.answers.all().delete()
+    submission.file_submissions.all().delete()
+
+    score = 0
+    total = 0
+
+    for question in questions:
+        if question.question_type == "file_upload":
+            Answer.objects.create(
+                submission=submission,
+                question=question,
+                selected=None,
+                is_correct=False,
+            )
+            continue
+
+        total += 1
+        Answer.objects.create(
+            submission=submission,
+            question=question,
+            selected=None,
+            is_correct=False,
+        )
+
+    submission.score = score
+    submission.total = total
+    submission.is_submitted = True
+    submission.submitted_at = timezone.now()
+    submission.save(update_fields=["score", "total", "is_submitted", "submitted_at"])
+    _generate_student_feedback(submission)
     return submission
 
 

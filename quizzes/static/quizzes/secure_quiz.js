@@ -47,7 +47,7 @@
       }
     }
 
-    function autoSubmit(reason) {
+    function autoSubmit(reason, resultUrl) {
       if (!formEl || submitting) {
         return;
       }
@@ -57,6 +57,10 @@
       }
       showWarning("Too many suspicious actions were detected. Your quiz is being submitted.", true);
       setTimeout(function () {
+        if (resultUrl) {
+          window.location.href = resultUrl;
+          return;
+        }
         formEl.submit();
       }, 900);
     }
@@ -93,7 +97,10 @@
         serverViolationCount = Number(payload.violation_count || serverViolationCount);
 
         if (payload.should_auto_submit || serverViolationCount >= config.autoSubmitThreshold) {
-          autoSubmit(`${violationType}: ${details || "threshold reached"}`);
+          autoSubmit(
+            `${violationType}: ${details || "threshold reached"}`,
+            payload.result_url || ""
+          );
           return;
         }
 
