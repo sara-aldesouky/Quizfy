@@ -211,6 +211,9 @@
   <div class="login-card">
     <form method="post" autocomplete="off" novalidate>
       {% csrf_token %}
+      {% if next_url %}
+        <input type="hidden" name="next" value="{{ next_url }}">
+      {% endif %}
 
       {% if form.non_field_errors %}
         <div class="form-errors">
@@ -237,7 +240,7 @@
   </div>
 
   <div class="login-footer">
-    <p>Don't have an account? <a href="{% url 'student_signup' %}">Sign up here</a></p>
+    <p>Don't have an account? <a href="{% url 'student_signup' %}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}">Sign up here</a></p>
     <p class="forgot-link"><a href="{% url 'password_reset' %}">Forgot password?</a></p>
   </div>
 </div>

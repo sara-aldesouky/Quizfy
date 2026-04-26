@@ -886,12 +886,8 @@ def quiz_join(request, quiz_code):
             "is_closed": True,
         })
     
-    # If user is already logged in as a student, redirect to quiz
-    if request.user.is_authenticated:
-        if hasattr(request.user, "student_profile"):
-            return redirect('take_quiz', quiz_code=quiz.code)
-        elif request.user.is_staff:
-            messages.info(request, "You're logged in as a teacher. Students can join this quiz.")
+    if request.user.is_authenticated and request.user.is_staff:
+        messages.info(request, "You're logged in as a teacher. Students can join this quiz.")
     
     return render(request, "quizzes/quiz_join.html", {
         "quiz": quiz,
@@ -906,19 +902,16 @@ def quiz_scan_redirect(request, quiz_code):
     Checks authentication and redirects to login if needed,
     then to the quiz with proper next parameter.
     """
+    join_url = reverse("quiz_join", kwargs={"quiz_code": quiz_code})
+
     if not request.user.is_authenticated:
-        # User not logged in - redirect to login with next parameter
-        from django.urls import reverse
-        next_url = reverse('take_quiz', kwargs={'quiz_code': quiz_code})
-        return redirect(f"/student/login/?next={next_url}")
-    
-    # User is logged in - check if they're a student
+        return redirect(join_url)
+
     if not hasattr(request.user, "student_profile"):
         messages.error(request, "Only students can take quizzes.")
         return redirect("student_dashboard")
-    
-    # Redirect to the actual quiz
-    return redirect('take_quiz', quiz_code=quiz_code)
+
+    return redirect(join_url)
 
 @ensure_csrf_cookie
 def take_quiz(request, quiz_code):
@@ -2366,6 +2359,7 @@ def student_signup(request):
         return redirect("student_dashboard")
 
     form = StudentSignupForm(request.POST or None)
+    next_url = request.GET.get("next") or request.POST.get("next")
 
     if request.method == "POST":
         if form.is_valid():
@@ -2383,11 +2377,13 @@ def student_signup(request):
 
             login(request, user)
             messages.success(request, "Student account created successfully.")
+            if next_url and next_url.startswith("/"):
+                return redirect(next_url)
             return redirect("student_dashboard")
 
         messages.error(request, "Signup failed. Please fix the errors below.")
 
-    return render(request, "quizzes/student_signup.html", {"form": form})
+    return render(request, "quizzes/student_signup.html", {"form": form, "next_url": next_url})
 
 
 def student_login(request):
@@ -2395,7 +2391,7 @@ def student_login(request):
         return redirect("student_dashboard")
 
     form = StudentLoginForm(request, data=request.POST or None)
-    next_url = request.GET.get("next", None)
+    next_url = request.GET.get("next") or request.POST.get("next")
 
     if request.method == "POST":
         if form.is_valid():
@@ -2404,7 +2400,7 @@ def student_login(request):
             # ✅ Keep teacher accounts out of student login
             if user.is_staff:
                 messages.error(request, "This login is for students only.")
-                return render(request, "quizzes/student_login.html", {"form": form})
+                return render(request, "quizzes/student_login.html", {"form": form, "next_url": next_url})
 
             login(request, user)
             
@@ -2415,7 +2411,7 @@ def student_login(request):
 
         messages.error(request, "Invalid University ID or password.")
 
-    return render(request, "quizzes/student_login.html", {"form": form})
+    return render(request, "quizzes/student_login.html", {"form": form, "next_url": next_url})
 
 
 @student_required

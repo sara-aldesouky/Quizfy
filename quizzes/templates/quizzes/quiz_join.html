@@ -36,12 +36,19 @@
       <div style="display: flex; flex-direction: column; gap: 12px;">
         {% if user.is_authenticated and user.student_profile %}
           <!-- Already logged in as student -->
+          <div style="text-align: left; padding: 16px 18px; border-radius: 12px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.24);">
+            <p style="margin: 0 0 8px 0; font-weight: 700; color: var(--text);">🔒 Secure Quiz Mode Notice</p>
+            <p style="margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6;">
+              This quiz is protected. When you start, suspicious actions like tab switching, leaving fullscreen,
+              copying, or opening restricted shortcuts may be recorded.
+            </p>
+          </div>
           <a href="{% url 'take_quiz' quiz_code %}" class="btn primary" style="width: 100%; padding: 16px; font-size: 16px;">
             ✅ Start Quiz Now
           </a>
         {% else %}
           <!-- Not logged in or not a student -->
-          <a href="{% url 'student_login' %}?next=/quiz/{{ quiz_code }}/" class="btn primary" style="width: 100%; padding: 16px; font-size: 16px;">
+          <a href="{% url 'student_login' %}?next=/quiz/{{ quiz_code }}/join/" class="btn primary" style="width: 100%; padding: 16px; font-size: 16px;">
             🔐 Login to Join
           </a>
           
@@ -51,7 +58,7 @@
             <hr style="flex: 1; border: none; border-top: 1px solid var(--border);">
           </div>
           
-          <a href="{% url 'student_signup' %}?next=/quiz/{{ quiz_code }}/" class="btn secondary" style="width: 100%; padding: 14px;">
+          <a href="{% url 'student_signup' %}?next=/quiz/{{ quiz_code }}/join/" class="btn secondary" style="width: 100%; padding: 14px;">
             📝 Create Account
           </a>
         {% endif %}
